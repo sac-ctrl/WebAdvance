@@ -165,11 +165,6 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
         wv = findViewById(R.id.webview);
         progressBar = findViewById(R.id.progressBar);
 
-        if (webapp.isUseAdblock()) {
-            wv.setVisibility(View.GONE);
-            wv = findViewById(R.id.adblockwebview);
-            wv.setVisibility(View.VISIBLE);
-        }
         String fieldName = Stream.of(WebViewActivity.class.getDeclaredFields()).filter(f -> f.getType() == WebView.class).findFirst().orElseThrow(null).getName();
         String uaString = wv.getSettings().getUserAgentString().replace("; " + fieldName, "");
         wv.getSettings().setUserAgentString(uaString);
