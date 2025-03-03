@@ -833,7 +833,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
 
                 if(uri.getHost() != null) {
                     if (!uri.getHost().endsWith(webapp_uri.getHost())) {
-                        return null;
+                        return new WebResourceResponse("text/plain", "utf-8", null);
                     }
                 }
             }
