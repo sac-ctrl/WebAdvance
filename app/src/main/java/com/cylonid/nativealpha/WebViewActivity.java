@@ -56,6 +56,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.ShareCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuCompat;
+import androidx.lifecycle.Observer;
 import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewFeature;
 
@@ -84,6 +85,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import io.github.edsuns.adfilter.AdFilter;
+import io.github.edsuns.adfilter.Filter;
+import io.github.edsuns.adfilter.util.None;
 import pub.devrel.easypermissions.EasyPermissions;
 import static com.cylonid.nativealpha.util.Const.CODE_OPEN_FILE;
 
@@ -109,6 +113,8 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
     private String urlOnFirstPageload = "";
     private boolean fallbackToDefaultLongClickBehaviour = false;
     private PopupMenu mPopupMenu = null;
+
+    private AdFilter adFilter = AdFilter.Companion.get();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -164,6 +170,14 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
 
         wv = findViewById(R.id.webview);
         progressBar = findViewById(R.id.progressBar);
+
+        adFilter.setupWebView(wv);
+        if(!adFilter.getHasInstallation()) {
+            Filter filter = adFilter.getViewModel().addFilter("EasyList", "https://easylist.to/easylist/easylist.txt");
+            adFilter.getViewModel().download(filter.getId());
+        }
+
+        adFilter.getViewModel().getOnDirty().observe(this, none -> wv.clearCache(false));
 
         String fieldName = Stream.of(WebViewActivity.class.getDeclaredFields()).filter(f -> f.getType() == WebView.class).findFirst().orElseThrow(null).getName();
         String uaString = wv.getSettings().getUserAgentString().replace("; " + fieldName, "");
@@ -813,6 +827,8 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
 
     private class CustomBrowser extends WebViewClient {
 
+        private AdFilter adFilter = AdFilter.Companion.get();
+
         @Override
         public void onPageFinished(WebView view, String url) {
             if(url.equals("about:blank")) {
@@ -823,10 +839,20 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
             super.onPageFinished(view, url);
         }
 
+        @Override
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            adFilter.performScript(view, url);
+            super.onPageStarted(view, url, favicon);
+        }
+
         @Nullable
         @Override
         public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
             if(urlOnFirstPageload.equals("")) urlOnFirstPageload = request.getUrl().toString();
+
+            if(webapp.isUseAdblock()) {
+                return (adFilter.shouldIntercept(view, request)).getResourceResponse();
+            }
             if (webapp.isBlockThirdPartyRequests()) {
                 Uri uri = request.getUrl();
                 Uri webapp_uri = Uri.parse(webapp.getBaseUrl());

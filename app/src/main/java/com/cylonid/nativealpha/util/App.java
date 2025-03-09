@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 
+import io.github.edsuns.adfilter.AdFilter;
+
 public class App extends Application {
 
     @SuppressLint("StaticFieldLeak") //We are using app context which is never deleted during runtime, so this is not a leak per se.
@@ -13,6 +15,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         App.context = getApplicationContext();
+        AdFilter filter = AdFilter.Companion.create(this);
     }
 
     public static Context getAppContext() {
