@@ -1,15 +1,24 @@
 package com.cylonid.nativealpha.fragments.webapplist
 
+import android.content.DialogInterface
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.View
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.cylonid.nativealpha.R
+import com.cylonid.nativealpha.WebAppSettingsActivity
+import com.cylonid.nativealpha.model.AdblockConfig
 import com.cylonid.nativealpha.model.DataManager
 import com.cylonid.nativealpha.model.WebApp
+import com.cylonid.nativealpha.util.Const
 import com.ernestoyaquello.dragdropswiperecyclerview.DragDropSwipeRecyclerView
 import com.ernestoyaquello.dragdropswiperecyclerview.listener.OnItemDragListener
+import com.ernestoyaquello.dragdropswiperecyclerview.listener.OnItemSwipeListener
+import com.google.android.material.snackbar.Snackbar
 
 class WebAppListFragment : Fragment(R.layout.fragment_web_app_list) {
     private lateinit var adapter: WebAppListAdapter
@@ -26,16 +35,47 @@ class WebAppListFragment : Fragment(R.layout.fragment_web_app_list) {
         list.adapter = adapter
         list.orientation = DragDropSwipeRecyclerView.ListOrientation.VERTICAL_LIST_WITH_VERTICAL_DRAGGING
         list.dragListener = onItemDragListener
-        list.disableSwipeDirection(DragDropSwipeRecyclerView.ListOrientation.DirectionFlag.RIGHT)
-        list.disableSwipeDirection(DragDropSwipeRecyclerView.ListOrientation.DirectionFlag.LEFT)
+        list.swipeListener = onItemSwipeListener
     }
 
-    public fun updateWebAppList() {
+    fun updateWebAppList() {
         adapter.updateWebAppList()
     }
 
     private fun requiredActivity(): FragmentActivity {
         return requireNotNull(activity) { "WebAppListFragment is not attached to an activity." }
+    }
+
+    private val onItemSwipeListener = object : OnItemSwipeListener<WebApp> {
+        override fun onItemSwiped(
+            position: Int,
+            direction: OnItemSwipeListener.SwipeDirection,
+            item: WebApp
+        ): Boolean {
+            if(direction == OnItemSwipeListener.SwipeDirection.RIGHT_TO_LEFT) {
+                item.markInactive()
+                DataManager.getInstance().saveWebAppData()
+
+                val itemSwipedSnackBar =
+                    view?.let { Snackbar.make(it, getString(R.string.x_was_removed, item.title), Snackbar.LENGTH_SHORT) }
+                itemSwipedSnackBar?.setAction(getString(R.string.undo)) {
+                    item.isActiveEntry = true
+                    DataManager.getInstance().saveWebAppData()
+                    updateWebAppList()
+                }
+                itemSwipedSnackBar?.show()
+            }
+            if(direction == OnItemSwipeListener.SwipeDirection.LEFT_TO_RIGHT) {
+                val intent = Intent(
+                    activity,
+                    WebAppSettingsActivity::class.java
+                )
+                intent.putExtra(Const.INTENT_WEBAPPID, item.ID)
+                intent.setAction(Intent.ACTION_VIEW)
+                context?.let { ContextCompat.startActivity(it, intent, null) }
+            }
+            return false
+        }
     }
 
     private val onItemDragListener = object : OnItemDragListener<WebApp> {
@@ -52,5 +92,8 @@ class WebAppListFragment : Fragment(R.layout.fragment_web_app_list) {
 
         override fun onItemDragged(previousPosition: Int, newPosition: Int, item: WebApp) {
         }
+    }
+    companion object {
+        fun newInstance() = WebAppListFragment()
     }
 }

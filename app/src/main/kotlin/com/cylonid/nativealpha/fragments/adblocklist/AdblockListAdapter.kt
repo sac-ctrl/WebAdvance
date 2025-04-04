@@ -10,7 +10,7 @@ import com.cylonid.nativealpha.model.AdblockConfig
 import com.cylonid.nativealpha.model.DataManager
 import com.ernestoyaquello.dragdropswiperecyclerview.DragDropSwipeAdapter
 
-class AdblockListAdapter(dataSet: List<AdblockConfig> = emptyList(), private val activityOfFragment: Activity)
+class AdblockListAdapter(dataSet: List<AdblockConfig>)
     : DragDropSwipeAdapter<AdblockConfig, AdblockListAdapter.ViewHolder>(dataSet) {
 
     class ViewHolder(webAppLayout: View) : DragDropSwipeAdapter.ViewHolder(webAppLayout) {
@@ -26,13 +26,12 @@ class AdblockListAdapter(dataSet: List<AdblockConfig> = emptyList(), private val
 
     }
 
-    fun updateAdblockList() {
-        dataSet = DataManager.getInstance().settings.globalWebApp.adBlockSettings
+    override fun canBeDragged(item: AdblockConfig, viewHolder: ViewHolder, position: Int): Boolean {
+        return false
     }
 
-    private fun getString(@StringRes resId: Int): String {
-      return activityOfFragment.getString(resId)
-
+    fun updateAdblockList() {
+        dataSet = DataManager.getInstance().settings.globalWebApp.adBlockSettings
     }
 
     override fun getViewToTouchToStartDraggingItem(item: AdblockConfig, viewHolder: ViewHolder, position: Int) = viewHolder.titleView

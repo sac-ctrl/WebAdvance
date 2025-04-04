@@ -13,6 +13,7 @@ import com.cylonid.nativealpha.model.AdblockConfig
 import com.cylonid.nativealpha.model.DataManager
 import com.ernestoyaquello.dragdropswiperecyclerview.DragDropSwipeRecyclerView
 import com.ernestoyaquello.dragdropswiperecyclerview.listener.OnItemSwipeListener
+import com.google.android.material.snackbar.Snackbar
 
 class AdblockListFragment : Fragment(R.layout.fragment_adblock_list) {
     private lateinit var adapter: AdblockListAdapter
@@ -22,7 +23,7 @@ class AdblockListFragment : Fragment(R.layout.fragment_adblock_list) {
         super.onViewCreated(view, savedInstanceState)
 
         val globalWebApp = DataManager.getInstance().settings.globalWebApp
-        adapter = AdblockListAdapter(globalWebApp.adBlockSettings, requiredActivity())
+        adapter = AdblockListAdapter(globalWebApp.adBlockSettings)
 
         list = view.findViewById(R.id.adblock_list)
         list.layoutManager = LinearLayoutManager(requiredActivity())
@@ -30,17 +31,14 @@ class AdblockListFragment : Fragment(R.layout.fragment_adblock_list) {
         list.swipeListener = onItemSwipeListener
         list.orientation =
             DragDropSwipeRecyclerView.ListOrientation.VERTICAL_LIST_WITH_VERTICAL_DRAGGING
-        list.disableDragDirection(DragDropSwipeRecyclerView.ListOrientation.DirectionFlag.UP)
-        list.disableDragDirection(DragDropSwipeRecyclerView.ListOrientation.DirectionFlag.DOWN)
         list.disableSwipeDirection(DragDropSwipeRecyclerView.ListOrientation.DirectionFlag.RIGHT)
 
     }
 
 
-    public fun updateAdblockList() {
+    fun updateAdblockList() {
         adapter.updateAdblockList()
     }
-
 
     private fun requiredActivity(): FragmentActivity {
         return requireNotNull(activity) { "AdblockListFragment is not attached to an activity." }
@@ -53,23 +51,28 @@ class AdblockListFragment : Fragment(R.layout.fragment_adblock_list) {
             direction: OnItemSwipeListener.SwipeDirection,
             item: AdblockConfig
         ): Boolean {
-            AlertDialog.Builder(requireContext())
-                .setTitle(getString(R.string.question_delete_item))
-                .setPositiveButton(R.string.ok) { _: DialogInterface, _: Int ->
-                    DataManager.getInstance().apply {
-                        val list = settings.globalWebApp.adBlockSettings.toMutableList()
-                        list.removeAt(position)
-                        settings.globalWebApp.adBlockSettings = list
-                        saveGlobalSettings()
-                    }
-                    updateAdblockList()
+
+            DataManager.getInstance().apply {
+                val list = settings.globalWebApp.adBlockSettings.toMutableList()
+                list.removeAt(position)
+                settings.globalWebApp.adBlockSettings = list
+                saveGlobalSettings()
+            }
+
+            val itemSwipedSnackBar =
+                view?.let { Snackbar.make(it, getString(R.string.x_was_removed, item.label), Snackbar.LENGTH_SHORT) }
+            itemSwipedSnackBar?.setAction(getString(R.string.undo)) {
+                DataManager.getInstance().apply {
+                    val list = settings.globalWebApp.adBlockSettings.toMutableList()
+                    list.add(position, item)
+                    settings.globalWebApp.adBlockSettings = list
+                    saveGlobalSettings()
                 }
-                .setNegativeButton(R.string.cancel) { _: DialogInterface, _: Int ->
-                    updateAdblockList()
-                }
-                .create()
-                .show()
-            return true
+                updateAdblockList()
+            }
+            itemSwipedSnackBar?.show()
+
+            return false
         }
     }
 

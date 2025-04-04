@@ -24,14 +24,14 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity() {
-    private var webAppListFragment: WebAppListFragment? = null
+    private lateinit var webAppListFragment: WebAppListFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme_NoActionBar)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         webAppListFragment =
-            supportFragmentManager.findFragmentById(R.id.fragment_container_view) as WebAppListFragment?
+            supportFragmentManager.findFragmentById(R.id.fragment_container_view) as WebAppListFragment
         entryPointReached(this)
 
         if (DataManager.getInstance().websites.size == 0) {
@@ -41,6 +41,11 @@ class MainActivity : AppCompatActivity() {
         val fab = findViewById<FloatingActionButton>(R.id.fab)
         fab.setOnClickListener { buildAddWebsiteDialog(getString(R.string.add_webapp)) }
         personalizeToolbar()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateWebAppList()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -60,7 +65,7 @@ class MainActivity : AppCompatActivity() {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun updateWebAppList() {
-        webAppListFragment!!.updateWebAppList()
+        webAppListFragment.updateWebAppList()
     }
 
     private fun personalizeToolbar() {
@@ -142,6 +147,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        super.onBackPressed()
         moveTaskToBack(true)
     }
 

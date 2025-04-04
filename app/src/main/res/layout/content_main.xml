@@ -6,18 +6,11 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
-
-        tools:ignore="MissingConstraints">
-
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/fragment_container_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:name="com.cylonid.nativealpha.fragments.webapplist.WebAppListFragment" />
 
-    </ScrollView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
