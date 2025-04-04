@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
 
+import com.cylonid.nativealpha.activities.AdblockConfigActivity;
 import com.cylonid.nativealpha.databinding.GlobalSettingsBinding;
 import com.cylonid.nativealpha.model.DataManager;
 import com.cylonid.nativealpha.model.GlobalSettings;
@@ -28,7 +29,6 @@ import static com.cylonid.nativealpha.util.Const.CODE_WRITE_FILE;
 
 
 public class SettingsActivity extends AppCompatActivity {
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -77,6 +77,13 @@ public class SettingsActivity extends AppCompatActivity {
         Button btnExport = findViewById(R.id.btnExportSettings);
         Button btnImport = findViewById(R.id.btnImportSettings);
         Button btnGlobalWebApp = findViewById(R.id.btnGlobalWebApp);
+        Button btnAdblockConfig = findViewById(R.id.btnAdblockConfig);
+
+        btnAdblockConfig.setOnClickListener(v -> {
+            Intent intent = new Intent(SettingsActivity.this, AdblockConfigActivity.class);
+            intent.setAction(Intent.ACTION_VIEW);
+            startActivity(intent);
+        });
 
         btnGlobalWebApp.setOnClickListener(v -> {
             Intent intent = new Intent(SettingsActivity.this, WebAppSettingsActivity.class);

@@ -10,6 +10,8 @@ import com.cylonid.nativealpha.util.Const
 import com.cylonid.nativealpha.util.Utility
 import java.util.*
 
+data class AdblockConfig(val label: String, val value: String)
+
 class WebApp {
     val ID: Int
     var baseUrl: String
@@ -53,6 +55,7 @@ class WebApp {
     var isAllowMediaPlaybackInBackground = false
     var order = 0
     var alwaysUseFallbackContextMenu = false
+    var adBlockSettings = listOf<AdblockConfig>()
 
     constructor(url: String, id: Int, order: Int) {
         title = url.replace("http://", "").replace("https://", "").replace("www.", "")
@@ -117,6 +120,7 @@ class WebApp {
         isAllowMediaPlaybackInBackground = other.isAllowMediaPlaybackInBackground
         order = other.order
         alwaysUseFallbackContextMenu = other.alwaysUseFallbackContextMenu
+        adBlockSettings = other.adBlockSettings
     }
 
     private fun initDefaultSettings() {
