@@ -43,7 +43,7 @@ class AdblockConfigActivity : AppCompatActivity() {
         val localBinding = AddAdblockConfigDialogBinding.inflate(layoutInflater)
         val dialog = AlertDialog.Builder(this)
             .setView(localBinding.root)
-            .setTitle(getString(R.string.adblock_description))
+            .setTitle(getString(R.string.add_a_new_adblock_provider))
             .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
                 val url = localBinding.addAdblockUrl.text.toString().trim()
                 val formattedUrl =

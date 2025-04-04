@@ -166,4 +166,5 @@
     <string name="adblock_config">Configurazione Adblock</string>
     <string name="adblock_description">Le voci create qui fungono da fonti per il blocco degli annunci. Le regole di blocco vengono scaricate dall\'URL specificato e aggiornate regolarmente. Si prega di notare che l\'aggiunta di troppe fonti potrebbe influire negativamente sulle prestazioni.</string>
     <string name="add_a_new_adblock_provider">Aggiungi un nuovo provider Adblock</string>
+    <string name="question_delete_item">Sei sicuro di voler eliminare questo elemento?</string>
 </resources>

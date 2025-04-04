@@ -165,4 +165,5 @@
     <string name="adblock_config">Adblocker-Einstellungen</string>
     <string name="adblock_description">Die hier angelegten Einträge dienen als Quellen für den Werbeblocker. Die Blockregeln werden von der angegebenen URL heruntergeladen und regelmäßig aktualisiert. Bitte beachten Sie, dass zu viele hinzugefügte Quellen sich negativ auf die Performance auswirken können.</string>
     <string name="add_a_new_adblock_provider">Neuen Adblock-Anbieter hinzufügen</string>
+    <string name="question_delete_item">Sind Sie sicher, dass Sie diesen Eintrag entfernen möchten?</string>
 </resources>
