@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webAppListFragment: WebAppListFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(R.style.AppTheme_NoActionBar)
+        setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         webAppListFragment =
@@ -70,7 +70,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun personalizeToolbar() {
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        toolbar.setLogo(R.mipmap.native_alpha_white)
         @StringRes val appName =
             if (BuildConfig.FLAVOR != "extended") R.string.app_name else R.string.app_name_plus
         toolbar.setTitle(appName)

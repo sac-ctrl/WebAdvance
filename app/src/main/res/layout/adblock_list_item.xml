@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@color/listItemBackground"
+    android:background="?attr/colorSurface"
     android:foreground="?android:attr/selectableItemBackground"
     android:padding="16dp">
 
@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:text=""
         android:textSize="16sp"
-        android:textColor="@color/secondary_text_color"/>
+        android:textColor="?attr/colorOnSurface"/>
 
 </LinearLayout>
 
