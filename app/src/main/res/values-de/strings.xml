@@ -168,4 +168,5 @@
     <string name="question_delete_item">Sind Sie sicher, dass Sie diesen Eintrag entfernen möchten?</string>
     <string name="undo">Rückgängig</string>
     <string name="x_was_removed">%1$s wurde entfernt.</string>
+    <string name="restore_standard_setting">Standard wiederherstellen</string>
 </resources>

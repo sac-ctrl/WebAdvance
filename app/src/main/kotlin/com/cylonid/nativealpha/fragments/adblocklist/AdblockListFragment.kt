@@ -1,10 +1,7 @@
 package com.cylonid.nativealpha.fragments.adblocklist
 
-import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.LinearLayoutManager

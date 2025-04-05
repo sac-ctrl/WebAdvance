@@ -62,6 +62,7 @@ import androidx.webkit.WebViewFeature;
 
 import com.cylonid.nativealpha.helper.BiometricPromptHelper;
 import com.cylonid.nativealpha.helper.IconPopupMenuHelper;
+import com.cylonid.nativealpha.model.AdblockConfig;
 import com.cylonid.nativealpha.model.DataManager;
 import com.cylonid.nativealpha.model.SandboxManager;
 import com.cylonid.nativealpha.model.WebApp;
@@ -171,13 +172,15 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
         wv = findViewById(R.id.webview);
         progressBar = findViewById(R.id.progressBar);
 
-        adFilter.setupWebView(wv);
-        if(!adFilter.getHasInstallation()) {
-            Filter filter = adFilter.getViewModel().addFilter("EasyList", "https://easylist.to/easylist/easylist.txt");
-            adFilter.getViewModel().download(filter.getId());
+        if(webapp.isUseAdblock()) {
+            adFilter.setupWebView(wv);
+            for(AdblockConfig config : DataManager.getInstance().getSettings().getGlobalWebApp().getAdBlockSettings())
+            {
+                Filter filter = adFilter.getViewModel().addFilter(config.getLabel(), config.getValue());
+                adFilter.getViewModel().download(filter.getId());
+            }
+            adFilter.getViewModel().getOnDirty().observe(this, none -> wv.clearCache(false));
         }
-
-        adFilter.getViewModel().getOnDirty().observe(this, none -> wv.clearCache(false));
 
         String fieldName = Stream.of(WebViewActivity.class.getDeclaredFields()).filter(f -> f.getType() == WebView.class).findFirst().orElseThrow(null).getName();
         String uaString = wv.getSettings().getUserAgentString().replace("; " + fieldName, "");

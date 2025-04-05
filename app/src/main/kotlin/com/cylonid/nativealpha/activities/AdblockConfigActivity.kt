@@ -25,6 +25,14 @@ class AdblockConfigActivity : AppCompatActivity() {
         setContentView(view)
         binding.adblockFab.setOnClickListener { showAddAdblockDialog() }
         binding.btnBack.setOnClickListener { finish() }
+        binding.btnRestoreDefault.setOnClickListener {
+            DataManager.getInstance().apply {
+                settings.globalWebApp.adBlockSettings =
+                    listOf(AdblockConfig("EasyList", "https://easylist.to/easylist/easylist.txt"))
+                saveGlobalSettings()
+            }
+            updateAdblockList()
+        }
 
         adblockListFragment =
             supportFragmentManager.findFragmentById(R.id.adblock_fragment_container_view) as AdblockListFragment

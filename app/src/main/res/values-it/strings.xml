@@ -169,4 +169,5 @@
     <string name="question_delete_item">Sei sicuro di voler eliminare questo elemento?</string>
     <string name="undo">Annulla</string>
     <string name="x_was_removed">%1$s è stato rimosso.</string>
+    <string name="restore_standard_setting">Ripristina impostazioni predefinite</string>
 </resources>

@@ -32,6 +32,8 @@
                     <LinearLayout
                         android:layout_margin="@dimen/margin_activity"
                         android:orientation="vertical"
+                        android:divider="@drawable/empty_10dp_vertical"
+                        android:showDividers="middle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
                         <TextView
@@ -46,13 +48,21 @@
                             android:layout_height="wrap_content"
                             android:text="@string/adblock_description"
                             android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                        <Button
+                            android:id="@+id/btnRestoreDefault"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/restore_standard_setting" />
                     </LinearLayout>
+
 
                     <androidx.fragment.app.FragmentContainerView
                         android:id="@+id/adblock_fragment_container_view"
                         android:name="com.cylonid.nativealpha.fragments.adblocklist.AdblockListFragment"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent" />
+
                 </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
