@@ -70,6 +70,7 @@ import com.cylonid.nativealpha.util.EntryPointUtils;
 import com.cylonid.nativealpha.util.LocaleUtils;
 import com.cylonid.nativealpha.util.Utility;
 import com.cylonid.nativealpha.util.WebViewLauncher;
+import com.google.android.material.color.MaterialColors;
 import com.google.android.material.snackbar.Snackbar;
 import com.jakewharton.processphoenix.ProcessPhoenix;
 
@@ -121,7 +122,6 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
         super.onCreate(savedInstanceState);
         webappID = getIntent().getIntExtra(Const.INTENT_WEBAPPID, -1);
         EntryPointUtils.entryPointReached(this);
-
         webapp = DataManager.getInstance().getWebApp(webappID);
         if (webapp == null) {
             // Toast is shown in getWebApp method
@@ -240,6 +240,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
             showWebViewPopupMenu();
             return true;
         });
+
 
         wv.setDownloadListener((dl_url, userAgent, contentDisposition, mimeType, contentLength) -> {
 
@@ -421,7 +422,11 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
         String currentUrl = wv.getUrl();
         String title = currentUrl.length() < 32 ? currentUrl : currentUrl.substring(0, 32) + "…";
         SpannableString spanString = new SpannableString(title);
-        spanString.setSpan(new ForegroundColorSpan(Color.BLACK), 0,     spanString.length(), 0); //fix the color to white
+
+        // The item is disabled because it has no click action, but we want to override the disabled style (text color)
+        int colorOnSurface = MaterialColors.getColor(center, R.attr.colorOnSurface, Color.BLACK);
+        spanString.setSpan(new ForegroundColorSpan(colorOnSurface), 0,     spanString.length(), 0);
+
         spanString.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, spanString.length(), 0);
         mPopupMenu.getMenu().getItem(0).setTitle(spanString);
         if(wv.canGoForward()) mPopupMenu.getMenu().getItem(2).setVisible(true);
