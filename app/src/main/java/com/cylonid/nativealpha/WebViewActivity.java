@@ -370,11 +370,6 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
         if (!BuildConfig.FLAVOR.equals("extended")) {
             return;
         }
-        if (Utility.isNightMode(this)) {
-            wv.setBackgroundColor(Color.BLACK);
-        } else {
-            wv.setBackgroundColor(Color.WHITE);
-        }
 
         boolean needsForcedDarkMode = webapp.isUseTimespanDarkMode() &&
                 Utility.isInInterval(Utility.convertStringToCalendar(webapp.getTimespanDarkModeBegin()), Calendar.getInstance(), Utility.convertStringToCalendar(webapp.getTimespanDarkModeEnd()))
@@ -386,6 +381,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
             boolean isAlgorithmicDarkeningSupported = WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING);
 
             if (needsForcedDarkMode) {
+                wv.setBackgroundColor(Color.BLACK);
                 wv.setForceDarkAllowed(true);
                 getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                 if (isForceDarkSupported) {
@@ -398,7 +394,8 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                     WebSettingsCompat.setAlgorithmicDarkeningAllowed(wv.getSettings(), true);
                 }
             } else {
-                getDelegate().setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                wv.setBackgroundColor(Color.WHITE);
 
                 if (isForceDarkSupported) {
                     WebSettingsCompat.setForceDark(wv.getSettings(), WebSettingsCompat.FORCE_DARK_OFF);
