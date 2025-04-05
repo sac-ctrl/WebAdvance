@@ -22,18 +22,12 @@
             android:orientation="vertical"
             app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-            <ScrollView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:fillViewport="true"
-
-                tools:ignore="MissingConstraints">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:visibility="visible">
+                    android:visibility="visible"
+                    tools:ignore="MissingConstraints">
 
                     <LinearLayout
                         android:layout_margin="@dimen/margin_activity"
@@ -61,9 +55,22 @@
                         android:layout_height="match_parent" />
                 </LinearLayout>
 
-            </ScrollView>
         </androidx.constraintlayout.widget.ConstraintLayout>
+        <LinearLayout
+            style="?android:attr/buttonBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|bottom"
+            android:orientation="horizontal">
 
+            <Button
+                android:id="@+id/btnBack"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/back" />
+
+        </LinearLayout>
         <com.google.android.material.floatingactionbutton.FloatingActionButton
 
             android:id="@+id/adblock_fab"

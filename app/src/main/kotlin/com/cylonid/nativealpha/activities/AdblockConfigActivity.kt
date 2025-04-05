@@ -24,6 +24,7 @@ class AdblockConfigActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
         binding.adblockFab.setOnClickListener { showAddAdblockDialog() }
+        binding.btnBack.setOnClickListener { finish() }
 
         adblockListFragment =
             supportFragmentManager.findFragmentById(R.id.adblock_fragment_container_view) as AdblockListFragment
@@ -35,8 +36,8 @@ class AdblockConfigActivity : AppCompatActivity() {
 
 
     override fun onBackPressed() {
-        moveTaskToBack(true)
         super.onBackPressed()
+        finish()
     }
 
     private fun showAddAdblockDialog() {
@@ -67,6 +68,7 @@ class AdblockConfigActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {
                 okButton.isEnabled = !s.isNullOrBlank()
             }
+
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
