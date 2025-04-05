@@ -110,42 +110,42 @@
 
                         </LinearLayout>
 
-                        <Switch
+                        <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/switchGlobalCache"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:checked="@={settings.clearCache}"
                             android:text="@string/clear_cache_after_usage" />
 
-                        <Switch
+                        <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/switchGlobalMultiTouchReload"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:checked="@={settings.multitouchReload}"
                             android:text="@string/global_settings_multitouch_reload" />
 
-                        <Switch
+                        <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/switchGlobalMultiTouch"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:checked="@={settings.twoFingerMultitouch}"
                             android:text="@string/use_two_finger_swipes_for_browser_forward_and_backward_navigation" />
 
-                        <Switch
+                        <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/switchGlobalMultiTouch3Fingers"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:checked="@={settings.threeFingerMultitouch}"
                             android:text="@string/use_three_finger_swipes_to_switch_between_web_apps_experimental" />
 
-                        <Switch
+                        <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/switchShowProgressbar"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:checked="@={settings.showProgressbar}"
                             android:text="@string/show_progress_bar_during_page_load" />
 
-                        <Switch
+                        <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/switchAlwaysShowSoftwareButtons"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -189,6 +189,7 @@
             </ScrollView>
 
             <LinearLayout
+                style="?android:attr/buttonBarStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
@@ -197,12 +198,14 @@
 
                 <Button
                     android:id="@+id/btnCancel"
+                    style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/cancel" />
 
                 <Button
                     android:id="@+id/btnSave"
+                    style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/save" />

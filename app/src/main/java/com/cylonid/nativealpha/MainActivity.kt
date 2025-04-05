@@ -8,11 +8,11 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.EditText
-import android.widget.Switch
 import androidx.annotation.StringRes
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
 import androidx.appcompat.widget.Toolbar
 import com.cylonid.nativealpha.fragments.webapplist.WebAppListFragment
 import com.cylonid.nativealpha.model.DataManager
@@ -154,7 +154,7 @@ class MainActivity : AppCompatActivity() {
     private fun buildAddWebsiteDialog(title: String) {
         val inflated_view = layoutInflater.inflate(R.layout.add_website_dialogue, null)
         val url = inflated_view.findViewById<EditText>(R.id.websiteUrl)
-        val create_shortcut = inflated_view.findViewById<Switch>(R.id.switchCreateShortcut)
+        val create_shortcut = inflated_view.findViewById<SwitchCompat>(R.id.switchCreateShortcut)
 
         val dialog = AlertDialog.Builder(this@MainActivity)
             .setView(inflated_view)

@@ -1,32 +1,28 @@
 <resources>
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+    <style name="AppTheme" parent="Theme.Material3.Light">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="LegacyTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="LegacyTheme.Webapp">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
         <item name="android:timePickerDialogTheme">@style/CustomDatePickerDialog</item>
     </style>
 
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:timePickerDialogTheme">@style/CustomDatePickerDialog</item>
     </style>
 
-    <style name="AppTheme.NoActionBar.Webapp">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDarkGrey</item>
-        <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:timePickerDialogTheme">@style/CustomDatePickerDialog</item>
-
-    </style>
     <style name="CustomDatePickerDialog" parent="Theme.AppCompat.Light.Dialog">
         <item name="android:textColorPrimary">#818181</item>
         <item name="android:textColorSecondary">@color/colorPrimary</item>

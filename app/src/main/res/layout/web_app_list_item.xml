@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/ll_row"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="@dimen/line_height"
     android:background="@color/listItemBackground"
     android:foreground="?android:attr/selectableItemBackground"
     android:clickable="true"
@@ -11,23 +12,23 @@
     android:orientation="horizontal">
 
     <ImageView
+        android:background="?attr/colorSurface"
         android:id="@+id/dragAnchor"
         android:layout_weight="0.5"
         android:layout_width="wrap_content"
-        android:background="@color/transparent"
         android:layout_height="match_parent"
-        android:src="@drawable/baseline_drag_indicator_24"/>
+        android:src="@drawable/baseline_drag_indicator_24"
+        app:tint="?attr/colorOnSurface" />
 
-    <Button
+    <TextView
+        android:background="?attr/colorSurface"
         android:id="@+id/btn_title"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="4"
-        android:background="@color/transparent"
         android:maxLines="1"
         android:gravity="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
         android:ellipsize="end" />
-
-
 
 </LinearLayout>

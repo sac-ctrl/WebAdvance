@@ -104,6 +104,7 @@ android {
 
 }
 repositories {
+    google()
     mavenCentral()
 }
 
@@ -141,6 +142,7 @@ dependencies {
     }
     implementation 'androidx.work:work-runtime:2.10.0'
     kapt "com.android.databinding:compiler:3.1.4"
+    implementation 'com.google.android.material:material:1.12.0'
 
 
 }
@@ -165,7 +167,7 @@ def generateWebViewActivities = tasks.register( "extendAndroidManifest", Copy ) 
                 "            android:parentActivityName=\".MainActivity\"\n" +
                 "            android:icon=\"@mipmap/native_alpha\"\n" +
                 "            android:roundIcon=\"@mipmap/native_alpha\"\n" +
-                "            android:theme=\"@style/AppTheme.NoActionBar.Webapp\"\n" +
+                "            android:theme=\"@style/LegacyTheme.Webapp\"\n" +
                 "            android:configChanges=\"orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation\"\n" +
                 "            android:launchMode=\"standard\"\n" +
                 "            android:process=\":web_sandbox_" + String.valueOf(i) + "\"\n" +

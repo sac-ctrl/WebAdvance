@@ -44,7 +44,7 @@
             android:parentActivityName=".MainActivity"
             android:icon="@mipmap/native_alpha"
             android:roundIcon="@mipmap/native_alpha"
-            android:theme="@style/AppTheme.NoActionBar.Webapp"
+            android:theme="@style/LegacyTheme.Webapp"
             android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
             android:launchMode="standard"
             android:documentLaunchMode="intoExisting"

@@ -7,4 +7,5 @@
     <dimen name="settings_bottom_innersection">10dp</dimen>
     <dimen name="remove_divider">-10dp</dimen>
     <dimen name="margin_swipe_icon">20dp</dimen>
+    <dimen name="material_button_gap_space">10dp</dimen>
 </resources>
