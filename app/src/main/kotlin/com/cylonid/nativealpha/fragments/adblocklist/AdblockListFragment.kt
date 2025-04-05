@@ -61,7 +61,7 @@ class AdblockListFragment : Fragment(R.layout.fragment_adblock_list) {
 
             val itemSwipedSnackBar =
                 view?.let { Snackbar.make(it, getString(R.string.x_was_removed, item.label), Snackbar.LENGTH_SHORT) }
-            itemSwipedSnackBar?.setAction(getString(R.string.undo)) {
+            itemSwipedSnackBar?.setAction(getString(R.string.undo).uppercase()) {
                 DataManager.getInstance().apply {
                     val list = settings.globalWebApp.adBlockSettings.toMutableList()
                     list.add(position, item)

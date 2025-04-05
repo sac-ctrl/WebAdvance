@@ -58,7 +58,7 @@ class WebAppListFragment : Fragment(R.layout.fragment_web_app_list) {
 
                 val itemSwipedSnackBar =
                     view?.let { Snackbar.make(it, getString(R.string.x_was_removed, item.title), Snackbar.LENGTH_SHORT) }
-                itemSwipedSnackBar?.setAction(getString(R.string.undo)) {
+                itemSwipedSnackBar?.setAction(getString(R.string.undo).uppercase()) {
                     item.isActiveEntry = true
                     DataManager.getInstance().saveWebAppData()
                     updateWebAppList()
@@ -73,6 +73,7 @@ class WebAppListFragment : Fragment(R.layout.fragment_web_app_list) {
                 intent.putExtra(Const.INTENT_WEBAPPID, item.ID)
                 intent.setAction(Intent.ACTION_VIEW)
                 context?.let { ContextCompat.startActivity(it, intent, null) }
+                return true
             }
             return false
         }
