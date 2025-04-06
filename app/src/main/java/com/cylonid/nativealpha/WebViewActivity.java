@@ -559,6 +559,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
     private Map<String, String> initCustomHeaders(boolean save_data) {
         Map<String, String> extraHeaders = new HashMap<>();
         extraHeaders.put("DNT", "1");
+        extraHeaders.put("X-REQUESTED-WITH", "");
         if (save_data)
             extraHeaders.put("Save-Data", "on");
         return Collections.unmodifiableMap(extraHeaders);
