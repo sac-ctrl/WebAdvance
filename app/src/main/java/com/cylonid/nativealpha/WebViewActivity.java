@@ -173,11 +173,16 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
         progressBar = findViewById(R.id.progressBar);
 
         if(webapp.isUseAdblock()) {
+            wv.setVisibility(View.GONE);
+            wv = findViewById(R.id.adblockwebview);
+            wv.setVisibility(View.VISIBLE);
             adFilter.setupWebView(wv);
             for(AdblockConfig config : DataManager.getInstance().getSettings().getGlobalWebApp().getAdBlockSettings())
             {
                 Filter filter = adFilter.getViewModel().addFilter(config.getLabel(), config.getValue());
-                adFilter.getViewModel().download(filter.getId());
+                if(!filter.hasDownloaded()) {
+                    adFilter.getViewModel().download(filter.getUrl());
+                }
             }
             adFilter.getViewModel().getOnDirty().observe(this, none -> wv.clearCache(false));
         }
