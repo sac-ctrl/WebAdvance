@@ -174,4 +174,8 @@
     <string name="undo">Deshacer</string>
     <string name="x_was_removed">Se ha eliminado %1$s.</string>
     <string name="restore_standard_setting">Restaurar configuración predeterminada</string>
+    <string name="http_auth_title">Iniciar sesión (HTTP Auth)</string>
+    <string name="username">Nombre de usuario</string>
+    <string name="password">Contraseña</string>
+    <string name="enter_http_auth_credentials">Introduce las credenciales para %1$s en %2$s:</string>
 </resources>

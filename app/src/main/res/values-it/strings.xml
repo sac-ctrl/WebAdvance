@@ -170,4 +170,8 @@
     <string name="undo">Annulla</string>
     <string name="x_was_removed">%1$s è stato rimosso.</string>
     <string name="restore_standard_setting">Ripristina impostazioni predefinite</string>
+    <string name="http_auth_title">Accedi (HTTP Auth)</string>
+    <string name="username">Nome utente</string>
+    <string name="password">Password</string>
+    <string name="enter_http_auth_credentials">Insericsci le credenziali per %1$s su %2$s:</string>
 </resources>

@@ -169,4 +169,8 @@
     <string name="undo">Rückgängig</string>
     <string name="x_was_removed">%1$s wurde entfernt.</string>
     <string name="restore_standard_setting">Standard wiederherstellen</string>
+    <string name="http_auth_title">Anmelden (HTTP Auth)</string>
+    <string name="username">Benutzername</string>
+    <string name="password">Passwort</string>
+    <string name="enter_http_auth_credentials">Geben Sie die Zugangsdaten für %1$s bei %2$s ein:</string>
 </resources>

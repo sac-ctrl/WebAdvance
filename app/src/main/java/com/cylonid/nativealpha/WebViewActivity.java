@@ -24,6 +24,7 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -33,6 +34,7 @@ import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
+import android.webkit.HttpAuthHandler;
 import android.webkit.PermissionRequest;
 import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
@@ -60,6 +62,7 @@ import androidx.lifecycle.Observer;
 import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewFeature;
 
+import com.cylonid.nativealpha.databinding.DialogHttpAuthBinding;
 import com.cylonid.nativealpha.helper.BiometricPromptHelper;
 import com.cylonid.nativealpha.helper.IconPopupMenuHelper;
 import com.cylonid.nativealpha.model.AdblockConfig;
@@ -836,9 +839,31 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
         }
     }
 
+    private void showHttpAuthDialog(final HttpAuthHandler handler, String host, String realm) {
+        DialogHttpAuthBinding localBinding = DialogHttpAuthBinding.inflate(LayoutInflater.from(this));
+        new AlertDialog.Builder(this)
+                .setView(localBinding.getRoot())
+                .setTitle(getString(R.string.http_auth_title))
+                .setMessage(getString(R.string.enter_http_auth_credentials, realm, host))
+                .setPositiveButton(getString(R.string.ok), (dialog, whichButton) -> {
+                    String username = localBinding.username.getText().toString();
+                    String password = localBinding.password.getText().toString();
+
+                    handler.proceed(username, password);
+
+                })
+                .setNegativeButton(getString(R.string.cancel), (dialog, whichButton) -> handler.cancel())
+                .show();
+    }
+
     private class CustomBrowser extends WebViewClient {
 
         private AdFilter adFilter = AdFilter.Companion.get();
+
+        @Override
+        public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
+            showHttpAuthDialog(handler, host, realm);
+        }
 
         @Override
         public void onPageFinished(WebView view, String url) {
