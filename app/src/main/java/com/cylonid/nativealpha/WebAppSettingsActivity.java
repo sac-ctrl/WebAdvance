@@ -22,6 +22,7 @@ import com.cylonid.nativealpha.model.DataManager;
 import com.cylonid.nativealpha.model.WebApp;
 import com.cylonid.nativealpha.util.App;
 import com.cylonid.nativealpha.util.Const;
+import com.cylonid.nativealpha.util.ProcessUtils;
 import com.cylonid.nativealpha.util.Utility;
 
 import java.util.Calendar;
@@ -74,20 +75,11 @@ public class WebAppSettingsActivity extends AppCompatActivity {
 
             btnSave.setOnClickListener(v -> {
                 ActivityManager activityManager =
-                        (ActivityManager) App.getAppContext().getSystemService(Context.ACTIVITY_SERVICE);
+                        (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
 
                 //Global web app => close all webview activities, save to global settings
                 if (isGlobalWebApp) {
-                    for (ActivityManager.AppTask task : activityManager.getAppTasks()) {
-                        int id = task.getTaskInfo().baseIntent.getIntExtra(Const.INTENT_WEBAPPID, -1);
-                        if (id != -1)
-                            task.finishAndRemoveTask();
-                    }
-                    for (ActivityManager.RunningAppProcessInfo processInfo : activityManager.getRunningAppProcesses()) {
-                        if (processInfo.processName.contains("web_sandbox")) {
-                            android.os.Process.killProcess(processInfo.pid);
-                        }
-                    }
+                    ProcessUtils.closeAllWebAppsAndProcesses(activityManager);
                     DataManager.getInstance().getSettings().setGlobalWebApp(modified_webapp);
                     DataManager.getInstance().saveGlobalSettings();
                 }

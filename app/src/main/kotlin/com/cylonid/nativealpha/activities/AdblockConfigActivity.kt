@@ -1,5 +1,7 @@
 package com.cylonid.nativealpha.activities
 
+import android.app.ActivityManager
+import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.text.Editable
@@ -12,6 +14,7 @@ import com.cylonid.nativealpha.databinding.AddAdblockConfigDialogBinding
 import com.cylonid.nativealpha.fragments.adblocklist.AdblockListFragment
 import com.cylonid.nativealpha.model.AdblockConfig
 import com.cylonid.nativealpha.model.DataManager
+import com.cylonid.nativealpha.util.ProcessUtils
 
 
 class AdblockConfigActivity : AppCompatActivity() {
@@ -31,6 +34,7 @@ class AdblockConfigActivity : AppCompatActivity() {
                     listOf(AdblockConfig("EasyList", "https://easylist.to/easylist/easylist.txt"))
                 saveGlobalSettings()
             }
+            ProcessUtils.closeAllWebAppsAndProcesses(getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager)
             updateAdblockList()
         }
 
