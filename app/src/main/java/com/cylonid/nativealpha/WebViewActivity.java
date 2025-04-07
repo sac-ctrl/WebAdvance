@@ -395,7 +395,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
             if (needsForcedDarkMode) {
                 wv.setBackgroundColor(Color.BLACK);
                 wv.setForceDarkAllowed(true);
-                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+//                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                 if (isForceDarkSupported) {
                     WebSettingsCompat.setForceDark(wv.getSettings(), WebSettingsCompat.FORCE_DARK_ON);
                 }
@@ -406,7 +406,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                     WebSettingsCompat.setAlgorithmicDarkeningAllowed(wv.getSettings(), true);
                 }
             } else {
-                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+//                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
                 wv.setBackgroundColor(Color.WHITE);
 
                 if (isForceDarkSupported) {
