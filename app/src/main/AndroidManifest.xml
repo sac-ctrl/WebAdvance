@@ -42,6 +42,7 @@
         <activity
             android:name=".WebViewActivity"
             android:parentActivityName=".MainActivity"
+            android:windowSoftInputMode="adjustResize"
             android:icon="@mipmap/native_alpha"
             android:roundIcon="@mipmap/native_alpha"
             android:theme="@style/AppTheme"
