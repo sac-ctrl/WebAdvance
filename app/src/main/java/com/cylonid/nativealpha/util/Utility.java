@@ -52,7 +52,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class Utility {
-    private static final String TAG = "XXX";
 
     public static void deleteShortcuts(List<Integer> removableWebAppIds) {
         ShortcutManager manager = App.getAppContext().getSystemService(ShortcutManager.class);
@@ -106,8 +105,6 @@ public final class Utility {
     public static SimpleDateFormat getDayHourMinuteSecondsFormat() {
         return new SimpleDateFormat(    "EEE, d MMM yyyy HH:mm:ss Z");
     }
-
-
 
     public static Calendar convertStringToCalendar(String str) {
         Calendar c = Calendar.getInstance();
@@ -217,7 +214,7 @@ public final class Utility {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             snackBarView.setForceDarkAllowed(false);
 
-        TextView tv = snackBarView.findViewById(com.google.android.material.R.id.snackbar_text);
+        TextView tv = snackBarView.findViewById(R.id.snackbar_text);
         tv.setMaxLines(10);
         snackbar.setBackgroundTint(ResourcesCompat.getColor(App.getAppContext().getResources(), R.color.snackbar_background, null));
         snackbar.setTextColor(Color.BLACK);
