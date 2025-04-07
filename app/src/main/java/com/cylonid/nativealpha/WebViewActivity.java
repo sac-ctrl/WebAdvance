@@ -88,6 +88,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import io.github.edsuns.adfilter.AdFilter;
@@ -438,7 +439,9 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
         spanString.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, spanString.length(), 0);
         mPopupMenu.getMenu().getItem(0).setTitle(spanString);
         if(wv.canGoForward()) mPopupMenu.getMenu().getItem(2).setVisible(true);
-
+        if(BuildConfig.DEBUG) {
+            mPopupMenu.getMenu().getItem(6).setVisible(true);
+        }
         mPopupMenu.setOnMenuItemClickListener(menuItem -> {
             switch(menuItem.getItemId()) {
                 case R.id.cmItemForward:
@@ -471,6 +474,14 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                 case R.id.cmMainMenu:
                     Intent intent = new Intent(this, MainActivity.class);
                     startActivity(intent);
+                    return true;
+                case R.id.cmShowAdblockProviders:
+                    StringBuilder message = new StringBuilder();
+                    for(Map.Entry<String, Filter> entry :  Objects.requireNonNull(AdFilter.Companion.get().getViewModel().getFilters().getValue()).entrySet()) {
+                        Filter filter = entry.getValue();
+                        message.append(filter.getUrl()).append(" has downloaded: ").append(filter.hasDownloaded()).append("\n\n");
+                }
+                    Utility.showToast(this, message.toString());
                     return true;
 
             }
