@@ -58,7 +58,7 @@ class WebApp {
     var isAllowMediaPlaybackInBackground = false
     var order = 0
     var alwaysUseFallbackContextMenu = false
-    var adBlockSettings = listOf<AdblockConfig>()
+    var adBlockSettings = mutableListOf<AdblockConfig>()
 
     constructor(url: String, id: Int, order: Int) {
         title = url.replace("http://", "").replace("https://", "").replace("www.", "")
@@ -84,6 +84,10 @@ class WebApp {
         containerId = other.containerId
         isUseContainer = other.isUseContainer
         copySettings(other)
+    }
+
+    fun initDefaultAdblockConfig() {
+        adBlockSettings = mutableListOf(AdblockConfig(label = "EasyList", value = "https://easylist.to/easylist/easylist.txt"))
     }
 
     //This part of the copy ctor should be callable independently from actual object construction to copy values of the global web app template

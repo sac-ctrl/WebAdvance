@@ -30,8 +30,7 @@ class AdblockConfigActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener { finish() }
         binding.btnRestoreDefault.setOnClickListener {
             DataManager.getInstance().apply {
-                settings.globalWebApp.adBlockSettings =
-                    listOf(AdblockConfig("EasyList", "https://easylist.to/easylist/easylist.txt"))
+                settings.globalWebApp.initDefaultAdblockConfig()
                 saveGlobalSettings()
             }
             ProcessUtils.closeAllWebAppsAndProcesses(getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager)

@@ -32,6 +32,7 @@ class GlobalSettings {
         themeId = 0
         isShowProgressbar = false
         globalWebApp = WebApp("about:blank", Int.MAX_VALUE)
+        globalWebApp.initDefaultAdblockConfig()
         alwaysShowSoftwareButtons = false
     }
 

@@ -165,23 +165,22 @@ public class DataManager {
         max_assigned_ID = appdata.getInt(shared_pref_max_id, max_assigned_ID);
         if (SandboxManager.getInstance() != null) SandboxManager.getInstance().setNextContainer(appdata.getInt(shared_pref_next_container, 0));
 
-        //Check legacy global settings
         if (appdata.getBoolean(shared_pref_global_settings_json, false)) {
-            //Global settings
-            if (appdata.contains(shared_pref_globalsettings)) {
-                GsonBuilder gsonBuilder = new GsonBuilder();
-                gsonBuilder.registerTypeAdapter(GlobalSettings.class, new GlobalSettingsInstanceCreator());
-                Gson gson = gsonBuilder.create();
-                String json = appdata.getString(shared_pref_globalsettings, "");
-                int oldDataFormat = DataVersionConverter.getDataFormat(json);
-                String currentDataFormattedJson = this.checkDataFormat(oldDataFormat, json);
-                settings = gson.fromJson(currentDataFormattedJson, new TypeToken<GlobalSettings>() {}.getType());
-                assertGlobalWebappData();
-                if(oldDataFormat != DataVersionConverter.getDataFormat(currentDataFormattedJson)) this.saveGlobalSettings();
-            }
-        }
-        else
             loadGlobalSettingsLegacy();
+        }
+        //Global settings
+        if (appdata.contains(shared_pref_globalsettings)) {
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter(GlobalSettings.class, new GlobalSettingsInstanceCreator());
+            Gson gson = gsonBuilder.create();
+            String json = appdata.getString(shared_pref_globalsettings, "");
+            int oldDataFormat = DataVersionConverter.getDataFormat(json);
+            String currentDataFormattedJson = this.checkDataFormat(oldDataFormat, json);
+            settings = gson.fromJson(currentDataFormattedJson, new TypeToken<GlobalSettings>() {}.getType());
+            assertGlobalWebappData();
+            if(oldDataFormat != DataVersionConverter.getDataFormat(currentDataFormattedJson)) this.saveGlobalSettings();
+        }
+
     }
 
     public void loadGlobalSettingsLegacy() {

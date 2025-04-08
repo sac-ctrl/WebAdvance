@@ -50,9 +50,7 @@ class AdblockListFragment : Fragment(R.layout.fragment_adblock_list) {
         ): Boolean {
 
             DataManager.getInstance().apply {
-                val list = settings.globalWebApp.adBlockSettings.toMutableList()
-                list.removeAt(position)
-                settings.globalWebApp.adBlockSettings = list
+                settings.globalWebApp.adBlockSettings.removeAt(position)
                 saveGlobalSettings()
             }
 
@@ -60,9 +58,7 @@ class AdblockListFragment : Fragment(R.layout.fragment_adblock_list) {
                 view?.let { Snackbar.make(it, getString(R.string.x_was_removed, item.label), Snackbar.LENGTH_SHORT) }
             itemSwipedSnackBar?.setAction(getString(R.string.undo).uppercase()) {
                 DataManager.getInstance().apply {
-                    val list = settings.globalWebApp.adBlockSettings.toMutableList()
-                    list.add(position, item)
-                    settings.globalWebApp.adBlockSettings = list
+                    settings.globalWebApp.adBlockSettings.add(position, item)
                     saveGlobalSettings()
                 }
                 updateAdblockList()
