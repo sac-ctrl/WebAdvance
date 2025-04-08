@@ -28,7 +28,7 @@ public class UtilUnitTests {
 
     @Test
     public void faviconFromWebManifest() {
-        testShortcutHelper("https://xda-developers.com", "https://www.xda-developers.com/android-chrome-512x512.png", Const.RESULT_IDX_FAVICON);
+        testShortcutHelper("https://xda-developers.com", "https://static0.xdaimages.com/assets/images/favicon-240x240.43161a66.png", Const.RESULT_IDX_FAVICON);
     }
 
     @Test
@@ -49,7 +49,7 @@ public class UtilUnitTests {
 
     @Test
     public void getStartUrlFromWebManifest() {
-        testShortcutHelper("https://online.tugraz.at", "https://online.tugraz.at/tug_online/ee/ui/ca2/app/desktop/#/login", Const.RESULT_IDX_NEW_BASEURL);
+        testShortcutHelper("https://online.tugraz.at", "https://online.tugraz.at/tug_online/ee/ui/ca2/app/desktop/#/login?pwa=1", Const.RESULT_IDX_NEW_BASEURL);
     }
 
     @Test
