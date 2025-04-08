@@ -63,16 +63,6 @@ public final class Utility {
         }
     }
 
-    public static void showToast(Activity a, String text) {
-        showToast(a, text, Toast.LENGTH_LONG);
-    }
-
-    public static void showToast(Activity a, String text, int toastDisplayDuration) {
-        Toast toast = Toast.makeText(a, text, toastDisplayDuration);
-        toast.setGravity(Gravity.TOP, 0, 100);
-        toast.show();
-    }
-
     public static void setViewAndChildrenEnabled(View view, boolean enabled) {
 
         view.setClickable(enabled);
@@ -110,32 +100,6 @@ public final class Utility {
         String width = size_string.substring(0, x_index);
 
         return Integer.parseInt(width);
-    }
-
-    public static void showInfoSnackbar(AppCompatActivity activity, String msg, int duration) {
-
-        Snackbar snackbar = Snackbar.make(activity.findViewById(android.R.id.content), msg, duration);
-
-        snackbar.setAction(App.getAppContext().getString(android.R.string.ok), v -> snackbar.dismiss());
-
-        View snackBarView = snackbar.getView();
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT);
-
-        params.setMargins(0, 30, 0, 20);
-
-
-        snackBarView.setLayoutParams(params);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            snackBarView.setForceDarkAllowed(false);
-
-        TextView tv = snackBarView.findViewById(R.id.snackbar_text);
-        tv.setMaxLines(10);
-        snackbar.setBackgroundTint(ResourcesCompat.getColor(App.getAppContext().getResources(), R.color.snackbar_background, null));
-        snackbar.setTextColor(Color.BLACK);
-        snackbar.show();
-
     }
 
     public static String getFileNameFromDownload(String url, String content_disposition, String mime_type) {

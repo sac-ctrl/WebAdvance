@@ -73,6 +73,7 @@ import com.cylonid.nativealpha.util.Const;
 import com.cylonid.nativealpha.util.DateUtils;
 import com.cylonid.nativealpha.util.EntryPointUtils;
 import com.cylonid.nativealpha.util.LocaleUtils;
+import com.cylonid.nativealpha.util.NotificationUtils;
 import com.cylonid.nativealpha.util.Utility;
 import com.cylonid.nativealpha.util.WebViewLauncher;
 import com.google.android.material.color.MaterialColors;
@@ -277,7 +278,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                                 Uri.parse(dl_url));
                     }
                     catch(Exception e) {
-                        Utility.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
+                        NotificationUtils.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
                     }
                   String file_name = Utility.getFileNameFromDownload(dl_url, contentDisposition, mimeType);
 
@@ -300,7 +301,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                       } else {
                           if (dm != null) {
                               dm.enqueue(request);
-                              Utility.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
+                              NotificationUtils.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
                           }
                       }
                   }
@@ -308,7 +309,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                       if (dm != null) {
                           dm.enqueue(request);
-                          Utility.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
+                          NotificationUtils.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
                       }
                   }
                 }
@@ -482,7 +483,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                         Filter filter = entry.getValue();
                         message.append(filter.getUrl()).append(" has downloaded: ").append(filter.hasDownloaded()).append("\n\n");
                 }
-                    Utility.showToast(this, message.toString());
+                    NotificationUtils.showToast(this, message.toString());
                     return true;
 
             }
@@ -680,7 +681,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                 DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
                 if (dm != null) {
                     dm.enqueue(dl_request);
-                    Utility.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
+                    NotificationUtils.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
                 }
                 dl_request = null;
 
@@ -765,7 +766,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                 Intent intent = fileChooserParams.createIntent();
                 startActivityForResult(intent, CODE_OPEN_FILE);
             } catch (Exception e) {
-                Utility.showInfoSnackbar(WebViewActivity.this, getString(R.string.no_filemanager), Snackbar.LENGTH_LONG);
+                NotificationUtils.showInfoSnackbar(WebViewActivity.this, getString(R.string.no_filemanager), Snackbar.LENGTH_LONG);
                 e.printStackTrace();
             }
             return true;

@@ -13,6 +13,7 @@ import com.cylonid.nativealpha.databinding.GlobalSettingsBinding
 import com.cylonid.nativealpha.model.DataManager
 import com.cylonid.nativealpha.model.GlobalSettings
 import com.cylonid.nativealpha.util.Const
+import com.cylonid.nativealpha.util.NotificationUtils
 import com.cylonid.nativealpha.util.Utility
 import com.google.android.material.snackbar.Snackbar
 import java.text.SimpleDateFormat
@@ -63,7 +64,7 @@ class SettingsActivity : AppCompatActivity() {
             try {
                 startActivityForResult(intent, Const.CODE_WRITE_FILE)
             } catch (e: ActivityNotFoundException) {
-                Utility.showInfoSnackbar(
+                NotificationUtils.showInfoSnackbar(
                     this@SettingsActivity,
                     getString(R.string.no_filemanager),
                     Snackbar.LENGTH_LONG
@@ -80,7 +81,7 @@ class SettingsActivity : AppCompatActivity() {
                     Const.CODE_OPEN_FILE
                 )
             } catch (e: ActivityNotFoundException) {
-                Utility.showInfoSnackbar(
+                NotificationUtils.showInfoSnackbar(
                     this@SettingsActivity,
                     getString(R.string.no_filemanager),
                     Snackbar.LENGTH_LONG
@@ -109,13 +110,13 @@ class SettingsActivity : AppCompatActivity() {
                 .saveGlobalSettings() //Needed to write legacy settings to new XML
 
             if (!DataManager.getInstance().saveSharedPreferencesToFile(uri)) {
-                Utility.showInfoSnackbar(
+                NotificationUtils.showInfoSnackbar(
                     this,
                     getString(R.string.export_failed),
                     Snackbar.LENGTH_LONG
                 )
             } else {
-                Utility.showInfoSnackbar(
+                NotificationUtils.showInfoSnackbar(
                     this,
                     getString(R.string.export_success),
                     Snackbar.LENGTH_SHORT
@@ -126,7 +127,7 @@ class SettingsActivity : AppCompatActivity() {
             val uri = data?.data
 
             if (!DataManager.getInstance().loadSharedPreferencesFromFile(uri)) {
-                Utility.showInfoSnackbar(
+                NotificationUtils.showInfoSnackbar(
                     this,
                     getString(R.string.import_failed),
                     Snackbar.LENGTH_LONG

@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.core.content.ContextCompat
 import androidx.biometric.BiometricPrompt.PromptInfo
 import com.cylonid.nativealpha.R
+import com.cylonid.nativealpha.util.NotificationUtils
 import com.cylonid.nativealpha.util.Utility
 import com.google.android.material.snackbar.Snackbar
 
@@ -49,10 +50,10 @@ internal class BiometricPromptHelper(private val activity: FragmentActivity) {
                 isSupported = true
             }
             BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> {
-                Utility.showInfoSnackbar(activity as AppCompatActivity?, activity.getString(R.string.no_biometric_keys_enrolled), Snackbar.LENGTH_LONG);
+                NotificationUtils.showInfoSnackbar(activity, activity.getString(R.string.no_biometric_keys_enrolled), Snackbar.LENGTH_LONG);
             }
             else -> {
-                Utility.showInfoSnackbar(activity as AppCompatActivity?, activity.getString(R.string.no_biometric_devices), Snackbar.LENGTH_LONG);
+                NotificationUtils.showInfoSnackbar(activity, activity.getString(R.string.no_biometric_devices), Snackbar.LENGTH_LONG);
             }
         }
         return isSupported

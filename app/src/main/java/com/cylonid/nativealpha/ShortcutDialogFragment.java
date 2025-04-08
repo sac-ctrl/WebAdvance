@@ -29,6 +29,7 @@ import com.cylonid.nativealpha.model.DataManager;
 import com.cylonid.nativealpha.model.WebApp;
 import com.cylonid.nativealpha.util.App;
 import com.cylonid.nativealpha.util.Const;
+import com.cylonid.nativealpha.util.NotificationUtils;
 import com.cylonid.nativealpha.util.Utility;
 import com.cylonid.nativealpha.util.WebViewLauncher;
 import com.google.android.material.snackbar.Snackbar;
@@ -98,7 +99,7 @@ public class ShortcutDialogFragment extends DialogFragment  {
 
             }
             catch(IOException e) {
-                Utility.showToast(requireActivity(), getString(R.string.icon_not_found), Toast.LENGTH_SHORT);
+                NotificationUtils.showToast(requireActivity(), getString(R.string.icon_not_found), Toast.LENGTH_SHORT);
                 e.printStackTrace();
             }
         }
@@ -140,7 +141,7 @@ public class ShortcutDialogFragment extends DialogFragment  {
             try {
                 startActivityForResult(Intent.createChooser(intent, "Select an icon"), CODE_OPEN_FILE);
             } catch (android.content.ActivityNotFoundException e) {
-                Utility.showInfoSnackbar((AppCompatActivity) requireActivity(), getString(R.string.no_filemanager), Snackbar.LENGTH_LONG);
+                NotificationUtils.showInfoSnackbar(requireActivity(), getString(R.string.no_filemanager), Snackbar.LENGTH_LONG);
                 e.printStackTrace();
             }
         });
@@ -358,7 +359,7 @@ public class ShortcutDialogFragment extends DialogFragment  {
             if(!scManager.getPinnedShortcuts().stream().anyMatch(s -> s.getId().equals(newScId))) {
                 ShortcutManagerCompat.requestPinShortcut(requireActivity(), pinShortcutInfo, null);
             } else {
-                Utility.showToast(requireActivity(), getString(R.string.shortcut_already_exists));
+                NotificationUtils.showToast(requireActivity(), getString(R.string.shortcut_already_exists));
             }
         }
 
@@ -376,7 +377,7 @@ public class ShortcutDialogFragment extends DialogFragment  {
         uiFavicon.setVisibility(View.VISIBLE);
     }
     private void showFailedMessage() {
-        Utility.showToast(requireActivity(), getString(R.string.icon_fetch_failed_line1, webapp.getTitle()) + getString(R.string.icon_fetch_failed_line2) + getString(R.string.icon_fetch_failed_line3));
+        NotificationUtils.showToast(requireActivity(), getString(R.string.icon_fetch_failed_line1, webapp.getTitle()) + getString(R.string.icon_fetch_failed_line2) + getString(R.string.icon_fetch_failed_line3));
     }
 
     private void setShortcutTitle(String shortcut_title) {

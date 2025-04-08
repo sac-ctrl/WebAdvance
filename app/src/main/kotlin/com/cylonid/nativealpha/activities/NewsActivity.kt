@@ -21,6 +21,7 @@ import com.cylonid.nativealpha.R
 import com.cylonid.nativealpha.databinding.NewsActivityBinding
 import com.cylonid.nativealpha.model.DataManager
 import com.cylonid.nativealpha.util.LocaleUtils
+import com.cylonid.nativealpha.util.NotificationUtils
 import com.cylonid.nativealpha.util.Utility
 import kotlin.properties.Delegates
 
@@ -65,7 +66,7 @@ class NewsActivity : AppCompatActivity(), View.OnTouchListener, ViewTreeObserver
             )
         )
         binding.btnNewsConfirm.setOnClickListener {
-            Utility.showToast(
+            NotificationUtils.showToast(
                 this,
                 getString(R.string.scroll_to_bottom),
                 Toast.LENGTH_SHORT
