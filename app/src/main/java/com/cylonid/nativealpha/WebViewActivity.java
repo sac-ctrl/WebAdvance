@@ -70,6 +70,7 @@ import com.cylonid.nativealpha.model.DataManager;
 import com.cylonid.nativealpha.model.SandboxManager;
 import com.cylonid.nativealpha.model.WebApp;
 import com.cylonid.nativealpha.util.Const;
+import com.cylonid.nativealpha.util.DateUtils;
 import com.cylonid.nativealpha.util.EntryPointUtils;
 import com.cylonid.nativealpha.util.LocaleUtils;
 import com.cylonid.nativealpha.util.Utility;
@@ -384,7 +385,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
         }
 
         boolean needsForcedDarkMode = webapp.isUseTimespanDarkMode() &&
-                Utility.isInInterval(Utility.convertStringToCalendar(webapp.getTimespanDarkModeBegin()), Calendar.getInstance(), Utility.convertStringToCalendar(webapp.getTimespanDarkModeEnd()))
+                DateUtils.isInInterval(DateUtils.convertStringToCalendar(webapp.getTimespanDarkModeBegin()), Calendar.getInstance(), DateUtils.convertStringToCalendar(webapp.getTimespanDarkModeEnd()))
                 || (!webapp.isUseTimespanDarkMode() && webapp.isForceDarkMode());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

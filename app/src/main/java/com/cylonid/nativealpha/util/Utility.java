@@ -92,54 +92,6 @@ public final class Utility {
         }
     }
 
-    public static Long getTimeInSeconds()
-    {
-        return System.currentTimeMillis() / 1000;
-    }
-
-    @SuppressLint("SimpleDateFormat")
-    public static SimpleDateFormat getHourMinFormat() {
-        return new SimpleDateFormat("HH:mm");
-    }
-    @SuppressLint("SimpleDateFormat")
-    public static SimpleDateFormat getDayHourMinuteSecondsFormat() {
-        return new SimpleDateFormat(    "EEE, d MMM yyyy HH:mm:ss Z");
-    }
-
-    public static Calendar convertStringToCalendar(String str) {
-        Calendar c = Calendar.getInstance();
-        try {
-            c.setTime(Objects.requireNonNull(getHourMinFormat().parse(str)));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return c;
-    }
-
-    public static boolean isInInterval(Calendar low, Calendar time, Calendar high) {
-        //Bring timestamp with day_current + HH:mm => day_unixZero + HH:mm by parsing it again...
-        Calendar middle = Calendar.getInstance();
-        try {
-            middle.setTime(Objects.requireNonNull(getHourMinFormat().parse(Utility.getHourMinFormat().format(time.getTime()))));
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-        //CASE: If the end of our timespan is after midnight, add one day to the end date to get a proper span.
-        if (high.before(low)) {
-            high.add(Calendar.DATE, 1);
-            if (middle.before(low)) {
-                middle.add(Calendar.DATE, 1);
-            }
-        }
-        return middle.after(low) && middle.before(high);
-    }
-//        System.out.println("Low: " + Utility.getDayHourMinuteSecondsFormat().format(low.getTime()));
-//        System.out.println("Middle: " + Utility.getDayHourMinuteSecondsFormat().format(middle.getTime()));
-//        System.out.println("High: " + Utility.getDayHourMinuteSecondsFormat().format(high.getTime()));
-//        System.out.println("Is Before high: " + (middle.before(high)));
-//        System.out.println("Is after low: " + (middle.after(low)));
-
 
 
     public static void Assert(boolean condition, String message) {
