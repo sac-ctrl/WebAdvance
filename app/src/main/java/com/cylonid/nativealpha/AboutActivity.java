@@ -2,12 +2,19 @@ package com.cylonid.nativealpha;
 
 
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.View;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.ColorRes;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.cylonid.nativealpha.util.ColorUtils;
+import com.google.android.material.color.MaterialColors;
 import com.mikepenz.aboutlibraries.LibsBuilder;
 
 import java.time.Year;
@@ -25,7 +32,7 @@ public class AboutActivity extends AppCompatActivity {
                 .setDescription("Native Alpha for Android\nby cylonid © " + Year.now().getValue())
                 .setImage(R.drawable.native_alpha_foreground)
                 .addItem(new Element().setTitle("Version " + BuildConfig.VERSION_NAME))
-                .addGitHub("cylonid", "GitHub")
+                .addItem(addGitHubCustom("cylonid", "GitHub"))
                 .addPlayStore("com.cylonid.nativealpha.pro", "Play Store")
                 .addWebsite("https://github.com/cylonid/NativeAlphaForAndroid/blob/110releasePreparations/privacy_policy.md", getString(R.string.privacy_policy))
                 .addGroup(getString(R.string.eula_title))
@@ -36,6 +43,24 @@ public class AboutActivity extends AppCompatActivity {
                 .create();
 
         setContentView(aboutPage);
+    }
+
+    private Element addGitHubCustom(String id, String title) {
+        Element gitHubElement = new Element();
+        gitHubElement.setTitle(title);
+        gitHubElement.setIconDrawable(R.drawable.about_icon_github);
+        gitHubElement.setIconTint(ColorUtils.getColorResFromThemeAttr(this, com.google.android.material.R.attr.colorOnSurface, R.color.about_github_color));
+        gitHubElement.setIconNightTint(R.color.about_item_dark_text_color);
+        gitHubElement.setValue(id);
+
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.addCategory(Intent.CATEGORY_BROWSABLE);
+        intent.setData(Uri.parse(String.format("https://github.com/%s", id)));
+
+        gitHubElement.setIntent(intent);
+
+        return gitHubElement;
     }
 
     Element showEULA() {
