@@ -26,7 +26,7 @@ class WebAppListAdapter(dataSet: List<WebApp> = emptyList(), private val activit
 
     class ViewHolder(webAppLayout: View) : DragDropSwipeAdapter.ViewHolder(webAppLayout) {
         val dragAnchor : ImageView = itemView.findViewById(R.id.dragAnchor)
-        val titleView: TextView = itemView.findViewById(R.id.btn_title)
+        val titleView: TextView = itemView.findViewById(R.id.btnWebAppTitle)
 
     }
 
