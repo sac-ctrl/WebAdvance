@@ -53,7 +53,7 @@ class WebAppListFragment : Fragment(R.layout.fragment_web_app_list) {
             item: WebApp
         ): Boolean {
             if(direction == OnItemSwipeListener.SwipeDirection.RIGHT_TO_LEFT) {
-                item.markInactive()
+                item.markInactive(requiredActivity())
                 DataManager.getInstance().saveWebAppData()
 
                 val itemSwipedSnackBar =

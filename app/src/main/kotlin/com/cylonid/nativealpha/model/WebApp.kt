@@ -1,5 +1,6 @@
 package com.cylonid.nativealpha.model
 
+import android.app.Activity
 import android.view.View
 import android.widget.*
 import androidx.appcompat.widget.SwitchCompat
@@ -8,6 +9,7 @@ import com.cylonid.nativealpha.R
 import com.cylonid.nativealpha.WebAppSettingsActivity
 import com.cylonid.nativealpha.helper.BiometricPromptHelper
 import com.cylonid.nativealpha.util.Const
+import com.cylonid.nativealpha.util.ShortcutIconUtils
 import com.cylonid.nativealpha.util.Utility
 import java.util.*
 
@@ -139,9 +141,12 @@ class WebApp {
         isOverrideGlobalSettings = false
     }
 
-    fun markInactive() {
+    fun markInactive(activity: Activity) {
         isActiveEntry = false
-        Utility.deleteShortcuts(Arrays.asList(ID))
+        ShortcutIconUtils.deleteShortcuts(
+            listOf(ID),
+            activity
+        )
     }
 
 

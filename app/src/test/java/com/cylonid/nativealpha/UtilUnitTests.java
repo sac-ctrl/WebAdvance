@@ -2,6 +2,7 @@ package com.cylonid.nativealpha;
 
 import com.cylonid.nativealpha.model.WebApp;
 import com.cylonid.nativealpha.util.Const;
+import com.cylonid.nativealpha.util.ShortcutIconUtils;
 import com.cylonid.nativealpha.util.Utility;
 
 import org.junit.Test;
@@ -17,7 +18,7 @@ public class UtilUnitTests {
 
     @Test
     public void getWidthFromHTMLElementString() {
-        assertEquals((Integer)192, Utility.getWidthFromIcon("192x192"));
+        assertEquals(192, ShortcutIconUtils.getWidthFromIcon("192x192"));
     }
     public void testShortcutHelper(String base_url, final String expected, final int result_index) {
         WebApp webapp = new WebApp(base_url, Integer.MAX_VALUE);

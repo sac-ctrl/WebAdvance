@@ -30,6 +30,7 @@ import com.cylonid.nativealpha.model.WebApp;
 import com.cylonid.nativealpha.util.App;
 import com.cylonid.nativealpha.util.Const;
 import com.cylonid.nativealpha.util.NotificationUtils;
+import com.cylonid.nativealpha.util.ShortcutIconUtils;
 import com.cylonid.nativealpha.util.Utility;
 import com.cylonid.nativealpha.util.WebViewLauncher;
 import com.google.android.material.snackbar.Snackbar;
@@ -250,7 +251,7 @@ public class ShortcutDialogFragment extends DialogFragment  {
                     for (int i = 0; i < manifest_icons.length(); i++) {
                         String icon_href = manifest_icons.getJSONObject(i).getString("src");
                         String sizes = manifest_icons.getJSONObject(i).getString("sizes");
-                        Integer width = Utility.getWidthFromIcon(sizes);
+                        Integer width = ShortcutIconUtils.getWidthFromIcon(sizes);
                         URL base_url = new URL(mf.absUrl("href"));
                         URL full_url = new URL(base_url, icon_href);
                         found_icons.put(width, full_url.toString());
@@ -280,7 +281,7 @@ public class ShortcutDialogFragment extends DialogFragment  {
                     String icon_href = icon.absUrl("href");
                     String sizes = icon.attr("sizes");
                     if (!sizes.equals("")) {
-                        Integer width = Utility.getWidthFromIcon(sizes);
+                        Integer width = ShortcutIconUtils.getWidthFromIcon(sizes);
                         found_icons.put(width, icon_href);
                     } else
                         found_icons.put(1, icon_href);
