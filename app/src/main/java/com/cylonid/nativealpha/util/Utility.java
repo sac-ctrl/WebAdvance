@@ -112,42 +112,6 @@ public final class Utility {
         return Integer.parseInt(width);
     }
 
-
-    public static void applyUITheme() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            int id = DataManager.getInstance().getSettings().getThemeId();
-            switch (id) {
-                case 0:
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-                    break;
-                case 1:
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-                    break;
-                case 2:
-                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-                    break;
-            }
-        }
-    }
-
-    public static boolean isNightMode(Context context) {
-        int nightModeFlags = context.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
-    }
-
-    public static void writeFileOnInternalStorage(Context mcoContext, String sFileName, String sBody){
-
-        try {
-            File gpxfile = new File(mcoContext.getExternalFilesDir(null), sFileName);
-            FileWriter writer = new FileWriter(gpxfile);
-            writer.append(sBody);
-            writer.flush();
-            writer.close();
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
     public static void showInfoSnackbar(AppCompatActivity activity, String msg, int duration) {
 
         Snackbar snackbar = Snackbar.make(activity.findViewById(android.R.id.content), msg, duration);
@@ -174,14 +138,6 @@ public final class Utility {
 
     }
 
-    public static boolean URLEqual(String left, String right) {
-        if (left == null || right == null)
-            return false;
-        String stripped_left = left.replace("/", "").replace("www.", "");
-        String stripped_right = right.replace("/", "").replace("www.", "");
-        return stripped_left.equals(stripped_right);
-    }
-
     public static String getFileNameFromDownload(String url, String content_disposition, String mime_type) {
         String file_name = null;
         if (content_disposition != null && !content_disposition.equals("")) {
@@ -194,18 +150,6 @@ public final class Utility {
         }
 
         return file_name;
-    }
-
-    @ColorInt
-    public static int getThemeColor
-            (
-                    @NonNull final Context context,
-                    @AttrRes final int attributeColor
-            )
-    {
-        final TypedValue value = new TypedValue();
-        context.getTheme ().resolveAttribute (attributeColor, value, true);
-        return value.data;
     }
 
 }
