@@ -13,7 +13,6 @@ import com.cylonid.nativealpha.util.App;
 import com.cylonid.nativealpha.util.Const;
 import com.cylonid.nativealpha.util.InvalidChecksumException;
 import com.cylonid.nativealpha.util.ShortcutIconUtils;
-import com.cylonid.nativealpha.util.ShortcutUtils;
 import com.cylonid.nativealpha.util.Utility;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

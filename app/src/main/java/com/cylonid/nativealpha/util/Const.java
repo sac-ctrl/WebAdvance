@@ -10,10 +10,6 @@ public class Const {
 
     public static final int NO_CONTAINER = -1;
 
-    public static final int RESULT_IDX_FAVICON = 0;
-    public static final int RESULT_IDX_TITLE = 1;
-    public static final int RESULT_IDX_NEW_BASEURL = 2;
-
     public static final int PERMISSION_RC_LOCATION = 123;
     public static final int PERMISSION_RC_STORAGE = 132;
     public static final int PERMISSION_CAMERA = 100;

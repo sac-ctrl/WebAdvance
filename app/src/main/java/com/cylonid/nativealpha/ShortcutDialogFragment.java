@@ -19,7 +19,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.pm.ShortcutInfoCompat;
 import androidx.core.content.pm.ShortcutManagerCompat;
 import androidx.core.graphics.drawable.IconCompat;
@@ -31,7 +30,6 @@ import com.cylonid.nativealpha.util.App;
 import com.cylonid.nativealpha.util.Const;
 import com.cylonid.nativealpha.util.NotificationUtils;
 import com.cylonid.nativealpha.util.ShortcutIconUtils;
-import com.cylonid.nativealpha.util.Utility;
 import com.cylonid.nativealpha.util.WebViewLauncher;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikhaellopez.circularprogressbar.CircularProgressBar;
@@ -56,6 +54,17 @@ import java.util.regex.Pattern;
 import static androidx.appcompat.app.AppCompatActivity.RESULT_OK;
 import static com.cylonid.nativealpha.util.Const.CODE_OPEN_FILE;
 
+enum IconFetchResult {
+    FAVICON(0),
+    TITLE(1),
+    NEW_BASEURL(2);
+
+    public final int index;
+    IconFetchResult(int index) {
+        this.index = index;
+    }
+
+}
 
 public class ShortcutDialogFragment extends DialogFragment  {
 
@@ -235,12 +244,12 @@ public class ShortcutDialogFragment extends DialogFragment  {
                 JSONObject json = new JSONObject(data);
 
                 try {
-                    result[Const.RESULT_IDX_TITLE] = json.getString("name");
+                    result[IconFetchResult.TITLE.index] = json.getString("name");
                     String start_url = json.getString("start_url");
                     if (!start_url.isEmpty()) {
                         URL base_url = new URL(mf.absUrl("href"));
                         URL fl_url = new URL(base_url, start_url);
-                        result[Const.RESULT_IDX_NEW_BASEURL] = fl_url.toString();
+                        result[IconFetchResult.NEW_BASEURL.index] = fl_url.toString();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -265,7 +274,7 @@ public class ShortcutDialogFragment extends DialogFragment  {
 
                 Elements html_title = doc.select("title");
                 if (!html_title.isEmpty())
-                    result[Const.RESULT_IDX_TITLE] = html_title.first().text();
+                    result[IconFetchResult.TITLE.index] = html_title.first().text();
 
                 Elements icons = doc.select("link[rel=icon]");
                 icons.addAll(doc.select("link[rel=shortcut icon]"));
@@ -295,7 +304,7 @@ public class ShortcutDialogFragment extends DialogFragment  {
 
         if (!found_icons.isEmpty()) {
             Map.Entry<Integer, String> best_fit = found_icons.lastEntry();
-            result[Const.RESULT_IDX_FAVICON] = best_fit.getValue();
+            result[IconFetchResult.FAVICON.index] = best_fit.getValue();
 
         }
 
@@ -306,13 +315,13 @@ public class ShortcutDialogFragment extends DialogFragment  {
 
         faviconFetcherThread = new Thread(() -> {
             String[] webappdata = fetchWebappData();
-            bitmap = loadBitmap(webappdata[Const.RESULT_IDX_FAVICON]);
+            bitmap = loadBitmap(webappdata[IconFetchResult.FAVICON.index]);
             if (isAdded()) {
                 requireActivity().runOnUiThread(() -> {
 
                     applyNewBitmapToDialog();
-                    setShortcutTitle(webappdata[Const.RESULT_IDX_TITLE]);
-                    applyNewBaseUrl(webappdata[Const.RESULT_IDX_NEW_BASEURL]);
+                    setShortcutTitle(webappdata[IconFetchResult.TITLE.index]);
+                    applyNewBaseUrl(webappdata[IconFetchResult.NEW_BASEURL.index]);
 
                 });
             }
