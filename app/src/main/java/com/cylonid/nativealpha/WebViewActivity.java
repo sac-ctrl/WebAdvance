@@ -549,7 +549,6 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
     @Override
     protected void onPause() {
         super.onPause();
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
 
         wv.evaluateJavascript("document.querySelectorAll('audio').forEach(x => x.pause());document.querySelectorAll('video').forEach(x => x.pause());", null);
         wv.onPause();
