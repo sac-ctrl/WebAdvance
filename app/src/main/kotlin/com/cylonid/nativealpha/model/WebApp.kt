@@ -15,9 +15,7 @@ import java.util.*
 
 data class AdblockConfig(val label: String, val value: String)
 
-class WebApp {
-    val ID: Int
-    var baseUrl: String
+data class WebApp(var baseUrl: String, val ID: Int) {
     var title: String
     var isActiveEntry = true
     var isOverrideGlobalSettings = true
@@ -60,35 +58,28 @@ class WebApp {
     var alwaysUseFallbackContextMenu = false
     var adBlockSettings = mutableListOf<AdblockConfig>()
 
-    constructor(url: String, id: Int, order: Int) {
-        title = url.replace("http://", "").replace("https://", "").replace("www.", "")
-        baseUrl = url
-        this.ID = id
+    init {
+        title = baseUrl.replace("http://", "").replace("https://", "").replace("www.", "")
+        initDefaultSettings()
+    }
+
+    constructor(baseUrl: String, ID: Int, order: Int): this(baseUrl, ID) {
         this.order = order
-        initDefaultSettings()
     }
 
-    constructor(url: String, id: Int) {
-        title = url.replace("http://", "").replace("https://", "").replace("www.", "")
-        baseUrl = url
-        this.ID = id
-        this.order = 0
-        initDefaultSettings()
+    constructor(baseUrl: String, ID: Int, adBlockSettings: MutableList<AdblockConfig>): this(baseUrl, ID) {
+        this.adBlockSettings = adBlockSettings
     }
 
-    constructor(other: WebApp) {
+    constructor(other: WebApp) : this(other.baseUrl, other.ID) {
         title = other.title
-        ID = other.ID
-        baseUrl = other.baseUrl
         isOverrideGlobalSettings = other.isOverrideGlobalSettings
         containerId = other.containerId
         isUseContainer = other.isUseContainer
         copySettings(other)
     }
 
-    fun initDefaultAdblockConfig() {
-        adBlockSettings = mutableListOf(AdblockConfig(label = "EasyList", value = "https://easylist.to/easylist/easylist.txt"))
-    }
+
 
     //This part of the copy ctor should be callable independently from actual object construction to copy values of the global web app template
     fun copySettings(other: WebApp) {

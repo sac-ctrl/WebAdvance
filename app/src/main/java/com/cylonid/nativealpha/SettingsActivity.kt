@@ -28,7 +28,7 @@ class SettingsActivity : AppCompatActivity() {
             this, R.layout.global_settings
         )
         val settings = DataManager.getInstance().settings
-        val modified_settings = GlobalSettings(settings)
+        val modified_settings = settings.copy()
         binding.settings = modified_settings
         binding.btnAdblockConfig.setOnClickListener { v: View? ->
             val intent = Intent(

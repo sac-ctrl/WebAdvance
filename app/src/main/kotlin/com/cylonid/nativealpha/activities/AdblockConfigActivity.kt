@@ -14,6 +14,7 @@ import com.cylonid.nativealpha.databinding.AddAdblockConfigDialogBinding
 import com.cylonid.nativealpha.fragments.adblocklist.AdblockListFragment
 import com.cylonid.nativealpha.model.AdblockConfig
 import com.cylonid.nativealpha.model.DataManager
+import com.cylonid.nativealpha.util.Const
 import com.cylonid.nativealpha.util.ProcessUtils
 
 
@@ -30,7 +31,7 @@ class AdblockConfigActivity : AppCompatActivity() {
         binding.btnBack.setOnClickListener { finish() }
         binding.btnRestoreDefault.setOnClickListener {
             DataManager.getInstance().apply {
-                settings.globalWebApp.initDefaultAdblockConfig()
+                settings.globalWebApp.adBlockSettings = Const.getDefaultAdBlockConfig()
                 saveGlobalSettings()
             }
             ProcessUtils.closeAllWebAppsAndProcesses(getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager)
