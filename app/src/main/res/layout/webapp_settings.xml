@@ -55,6 +55,7 @@
                         android:id="@+id/btnRecreateShortcut"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/settings_bottom"
                         android:text="@string/re_create_shortcut" />
 
                     <TextView
