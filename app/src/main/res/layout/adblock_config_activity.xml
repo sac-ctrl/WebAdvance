@@ -36,12 +36,6 @@
                         android:showDividers="middle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
-                        <TextView
-                            android:id="@+id/labelPageTitle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/adblock_config"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -66,21 +60,7 @@
                 </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-        <LinearLayout
-            style="?android:attr/buttonBarStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start|bottom"
-            android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/btnBack"
-                style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/back" />
-
-        </LinearLayout>
         <com.google.android.material.floatingactionbutton.FloatingActionButton
 
             android:id="@+id/adblock_fab"

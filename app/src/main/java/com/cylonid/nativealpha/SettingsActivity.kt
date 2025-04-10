@@ -3,12 +3,14 @@ package com.cylonid.nativealpha
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.webkit.CookieManager
 import android.webkit.WebStorage
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import com.cylonid.nativealpha.activities.AdblockConfigActivity
+import com.cylonid.nativealpha.activities.ToolbarBaseActivity
 import com.cylonid.nativealpha.databinding.GlobalSettingsBinding
 import com.cylonid.nativealpha.model.DataManager
 import com.cylonid.nativealpha.model.GlobalSettings
@@ -20,13 +22,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class SettingsActivity : AppCompatActivity() {
-    
+class SettingsActivity : ToolbarBaseActivity<GlobalSettingsBinding>() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val binding = DataBindingUtil.setContentView<GlobalSettingsBinding>(
-            this, R.layout.global_settings
-        )
+
+        setToolbarTitle(getString(R.string.global_settings))
+
         val settings = DataManager.getInstance().settings
         val modified_settings = settings.copy()
         binding.settings = modified_settings
@@ -92,14 +94,17 @@ class SettingsActivity : AppCompatActivity() {
 
         binding.btnSave.setOnClickListener {
             DataManager.getInstance().settings = modified_settings
-            onBackPressed()
+            finish()
         }
 
         binding.btnCancel.setOnClickListener {
-            onBackPressed()
+            finish()
         }
     }
 
+    override fun inflateBinding(layoutInflater: LayoutInflater): GlobalSettingsBinding {
+        return GlobalSettingsBinding.inflate(layoutInflater)
+    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)

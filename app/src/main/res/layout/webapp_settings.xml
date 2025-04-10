@@ -26,13 +26,6 @@
             android:weightSum="100">
 
             <TextView
-                android:id="@+id/labelPageTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/web_app_settings"
-                android:textAppearance="@style/TextAppearance.AppCompat.Title" />
-
-            <TextView
                 android:id="@+id/labelTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

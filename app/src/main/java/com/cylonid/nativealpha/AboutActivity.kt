@@ -4,7 +4,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
+import com.cylonid.nativealpha.databinding.ActivityToolbarBaseBinding
 import com.cylonid.nativealpha.util.ColorUtils.getColorResFromThemeAttr
 import com.mikepenz.aboutlibraries.LibsBuilder
 import mehdi.sakout.aboutpage.AboutPage
@@ -15,7 +17,28 @@ class AboutActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val aboutPage = AboutPage(this)
+        val baseBinding = ActivityToolbarBaseBinding.inflate(layoutInflater)
+        setContentView(baseBinding.root)
+
+        baseBinding.activityContent.addView(generateAboutPageView())
+
+        val toolbar = baseBinding.toolbar.topAppBar
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = getString(R.string.app_info)
+
+        onBackPressedDispatcher.addCallback(this) {
+            finish()
+        }
+
+        toolbar.setNavigationOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
+        }
+
+    }
+
+    private fun generateAboutPageView(): View {
+        return AboutPage(this)
             .setDescription(
                 """
                 Native Alpha for Android
@@ -38,8 +61,6 @@ class AboutActivity : AppCompatActivity() {
             .addItem(showLicense())
             .addItem(showOpenSourcelibs())
             .create()
-
-        setContentView(aboutPage)
     }
 
     private fun addGitHubCustom(id: String, title: String): Element {

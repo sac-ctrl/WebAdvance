@@ -6,6 +6,7 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.cylonid.nativealpha.R
@@ -18,17 +19,14 @@ import com.cylonid.nativealpha.util.Const
 import com.cylonid.nativealpha.util.ProcessUtils
 
 
-class AdblockConfigActivity : AppCompatActivity() {
+class AdblockConfigActivity : ToolbarBaseActivity<AdblockConfigActivityBinding>() {
     private lateinit var adblockListFragment: AdblockListFragment
-    private lateinit var binding: AdblockConfigActivityBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = AdblockConfigActivityBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
+
         binding.adblockFab.setOnClickListener { showAddAdblockDialog() }
-        binding.btnBack.setOnClickListener { finish() }
+
         binding.btnRestoreDefault.setOnClickListener {
             DataManager.getInstance().apply {
                 settings.globalWebApp.adBlockSettings = Const.getDefaultAdBlockConfig()
@@ -38,18 +36,18 @@ class AdblockConfigActivity : AppCompatActivity() {
             updateAdblockList()
         }
 
+        setToolbarTitle(getString(R.string.adblock_config))
+
         adblockListFragment =
             supportFragmentManager.findFragmentById(R.id.adblock_fragment_container_view) as AdblockListFragment
     }
 
-    private fun updateAdblockList() {
-        adblockListFragment.updateAdblockList()
+    override fun inflateBinding(layoutInflater: LayoutInflater): AdblockConfigActivityBinding {
+        return AdblockConfigActivityBinding.inflate(layoutInflater)
     }
 
-
-    override fun onBackPressed() {
-        super.onBackPressed()
-        finish()
+    private fun updateAdblockList() {
+        adblockListFragment.updateAdblockList()
     }
 
     private fun showAddAdblockDialog() {
