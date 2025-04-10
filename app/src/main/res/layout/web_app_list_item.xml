@@ -30,7 +30,7 @@
         android:maxLines="1"
         android:gravity="center"
         android:textAllCaps="true"
-        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+        android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
         android:ellipsize="end" />
 
 </LinearLayout>
