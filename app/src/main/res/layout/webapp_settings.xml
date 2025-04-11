@@ -109,6 +109,15 @@
                         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
                         android:textStyle="bold" />
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        android:id="@+id/global_settings_info_text"
+                        android:layout_marginBottom="@dimen/settings_bottom_innersection"
+                        android:text="@string/these_settings_are_applied_globally_and_override_app_specific_settings"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
                     <LinearLayout
                         android:id="@+id/sectionWebAppDetailSettings"
                         android:layout_width="match_parent"

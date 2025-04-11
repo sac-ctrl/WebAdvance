@@ -175,6 +175,8 @@ class WebAppSettingsActivity : ToolbarBaseActivity<WebappSettingsBinding>() {
         binding.labelEditableBaseUrl.visibility = View.GONE
         binding.textBaseUrl.visibility = View.GONE
 
+        binding.globalSettingsInfoText.visibility = View.VISIBLE
+
         setToolbarTitle(getString(R.string.global_web_app_settings))
     }
 }
