@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        DataManager.getInstance().loadAppData();
         updateWebAppList()
     }
 
