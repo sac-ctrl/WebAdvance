@@ -54,7 +54,7 @@ class WebAppListFragment : Fragment(R.layout.fragment_web_app_list) {
         ): Boolean {
             if(direction == OnItemSwipeListener.SwipeDirection.RIGHT_TO_LEFT) {
                 item.markInactive(requiredActivity())
-                DataManager.getInstance().saveWebAppData()
+                saveCurrentDisplayedOrderOfWebAppsToDisk()
 
                 val itemSwipedSnackBar =
                     view?.let { Snackbar.make(it, getString(R.string.x_was_removed, item.title), Snackbar.LENGTH_SHORT) }
@@ -82,17 +82,21 @@ class WebAppListFragment : Fragment(R.layout.fragment_web_app_list) {
     private val onItemDragListener = object : OnItemDragListener<WebApp> {
 
         override fun onItemDropped(initialPosition: Int, finalPosition: Int, item: WebApp) {
-            for ((i, webapp) in adapter.dataSet.withIndex()) {
-                // Do not use "i" as index here, since adapter.dataSet includes only active website.
-                // The DataManager's websites array contains both active and inactive websites.
-                DataManager.getInstance().websites[webapp.ID].order = i
-            }
-            DataManager.getInstance().saveWebAppData()
+            saveCurrentDisplayedOrderOfWebAppsToDisk()
 
         }
 
         override fun onItemDragged(previousPosition: Int, newPosition: Int, item: WebApp) {
         }
+    }
+
+    private fun saveCurrentDisplayedOrderOfWebAppsToDisk() {
+        for ((i, webapp) in adapter.dataSet.withIndex()) {
+            // Do not use "i" as index here, since adapter.dataSet includes only active website.
+            // The DataManager's websites array contains both active and inactive websites.
+            DataManager.getInstance().websites[webapp.ID].order = i
+        }
+        DataManager.getInstance().saveWebAppData()
     }
     companion object {
         fun newInstance() = WebAppListFragment()
