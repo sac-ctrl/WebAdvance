@@ -63,6 +63,7 @@ import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewFeature;
 
 import com.cylonid.nativealpha.databinding.DialogHttpAuthBinding;
+import com.cylonid.nativealpha.helper.AdblockProviderApiHelper;
 import com.cylonid.nativealpha.helper.BiometricPromptHelper;
 import com.cylonid.nativealpha.helper.IconPopupMenuHelper;
 import com.cylonid.nativealpha.model.AdblockConfig;
@@ -124,9 +125,12 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
 
     private AdFilter adFilter = AdFilter.Companion.get();
 
+    private AdblockProviderApiHelper adblockProviderApiHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        adblockProviderApiHelper = new AdblockProviderApiHelper(adFilter);
         webappID = getIntent().getIntExtra(Const.INTENT_WEBAPPID, -1);
         EntryPointUtils.entryPointReached(this);
         webapp = DataManager.getInstance().getWebApp(webappID);
@@ -183,13 +187,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
             wv = findViewById(R.id.adblockwebview);
             wv.setVisibility(View.VISIBLE);
             adFilter.setupWebView(wv);
-            for(AdblockConfig config : DataManager.getInstance().getSettings().getGlobalWebApp().getAdBlockSettings())
-            {
-                Filter filter = adFilter.getViewModel().addFilter(config.getLabel(), config.getValue());
-                if(!filter.hasDownloaded()) {
-                    adFilter.getViewModel().download(filter.getUrl());
-                }
-            }
+            adblockProviderApiHelper.synchronizeAdblockProviderWithSettings(DataManager.getInstance().getSettings().getGlobalWebApp().getAdBlockSettings());
             adFilter.getViewModel().getOnDirty().observe(this, none -> wv.clearCache(false));
         }
 
