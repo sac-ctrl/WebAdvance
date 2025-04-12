@@ -56,4 +56,10 @@ object DateUtils {
         }
         return middle.after(low) && middle.before(high)
     }
+
+    @JvmStatic
+    fun isOlderThanDays(timestamp: Long, days: Int, targetTime: Long = System.currentTimeMillis()): Boolean {
+        val daysInMillis = days * 24L * 60 * 60 * 1000
+        return (targetTime - timestamp) > daysInMillis
+    }
 }

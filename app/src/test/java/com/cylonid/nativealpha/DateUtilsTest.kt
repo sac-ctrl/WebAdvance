@@ -81,4 +81,16 @@ class DateUtilsTest {
 
         assertTrue(DateUtils.isInInterval(low, time, high))
     }
+
+    @Test
+    fun `timestamp older than 14 days should return true`() {
+        val fourteenDaysAgo = System.currentTimeMillis() - (14L * 24 * 60 * 60 * 1000 + 1)
+        assertTrue(DateUtils.isOlderThanDays(fourteenDaysAgo, 14))
+    }
+
+    @Test
+    fun `timestamp less than 14 days ago should return false`() {
+        val thirteenDaysAgo = System.currentTimeMillis() - (13L * 24 * 60 * 60 * 1000)
+        assertFalse(DateUtils.isOlderThanDays(thirteenDaysAgo, 14))
+    }
 }
