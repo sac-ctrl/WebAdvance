@@ -26,7 +26,7 @@ public class Const {
 
     public static ArrayList<AdblockConfig> getDefaultAdBlockConfig() {
         ArrayList<AdblockConfig> list = new ArrayList<>();
-        list.add(new AdblockConfig("EasyList", "https://easylist.to/easylist/easylist.txt"));
+        list.add(new AdblockConfig("Fanboy Ultimate List", "https://fanboy.co.nz/r/fanboy-ultimate.txt"));
         return list;
     }
 }
