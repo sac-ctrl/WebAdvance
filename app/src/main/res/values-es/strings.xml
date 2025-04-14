@@ -119,7 +119,7 @@
     <string name="general">General</string>
     <string name="backup">Copia de seguridad</string>
     <string name="use_google_safe_browsing">Utilizar la navegación segura de Google</string>
-    <string name="block_all_third_party_requests">Bloquear todas las solicitudes de terceros</string>
+    <string name="block_all_third_party_requests">Bloquear solicitudes de terceros</string>
     <string name="sandbox">Sandbox</string>
     <string name="no_sandbox">No usar la sandbox.</string>
     <string name="all_sandboxes_used">Todas las sandboxes están en uso actualmente.</string>

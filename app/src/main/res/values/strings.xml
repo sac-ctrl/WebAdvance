@@ -119,7 +119,7 @@
     <string name="general">General</string>
     <string name="backup">Backup</string>
     <string name="use_google_safe_browsing">Use Google Safe Browsing</string>
-    <string name="block_all_third_party_requests">Block all third-party requests</string>
+    <string name="block_all_third_party_requests">Block third-party requests</string>
     <string name="sandbox">Sandbox</string>
     <string name="no_sandbox">Do not use sandbox.</string>
     <string name="all_sandboxes_used">All sandboxes are currently in use.</string>
