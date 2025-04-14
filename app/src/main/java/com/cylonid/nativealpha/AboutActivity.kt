@@ -50,7 +50,7 @@ class AboutActivity : AppCompatActivity() {
             .addItem(addGitHubCustom("cylonid", "GitHub"))
             .addPlayStore("com.cylonid.nativealpha.pro", "Play Store")
             .addWebsite(
-                "https://github.com/cylonid/NativeAlphaForAndroid/blob/110releasePreparations/privacy_policy.md",
+                "https://github.com/cylonid/NativeAlphaForAndroid/blob/dev/privacy_policy.md",
                 getString(
                     R.string.privacy_policy
                 )
