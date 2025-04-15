@@ -2,9 +2,8 @@ package com.cylonid.nativealpha.activities;
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.util.Log
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewTreeObserver
@@ -12,8 +11,9 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Button
 import android.widget.Toast
-import androidx.annotation.ColorInt
+import androidx.activity.addCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.cylonid.nativealpha.BuildConfig
@@ -22,17 +22,16 @@ import com.cylonid.nativealpha.databinding.NewsActivityBinding
 import com.cylonid.nativealpha.model.DataManager
 import com.cylonid.nativealpha.util.LocaleUtils
 import com.cylonid.nativealpha.util.NotificationUtils
-import com.cylonid.nativealpha.util.Utility
-import kotlin.properties.Delegates
+
 
 
 class NewsActivity : AppCompatActivity(), View.OnTouchListener, ViewTreeObserver.OnScrollChangedListener {
 
-    private var btnDefaultBackgroundColor: Drawable? = null
-    private var btnDefaultTextColor: Int = android.R.color.black
+    private lateinit var unattachedButtonAsStyleBackup: Button
 
     private lateinit var binding: NewsActivityBinding
 
+    @SuppressLint("InflateParams")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.news_activity)
@@ -40,18 +39,18 @@ class NewsActivity : AppCompatActivity(), View.OnTouchListener, ViewTreeObserver
         val view = binding.root
         setContentView(view)
 
+        val clonedView = LayoutInflater.from(this).inflate(R.layout.news_activity, null)
+        unattachedButtonAsStyleBackup = clonedView.findViewById(R.id.btnNewsConfirm)
+
+        onBackPressedDispatcher.addCallback(this) {}
+
         initializeUI()
         setButtonState()
     }
 
 
-    override fun onBackPressed() {}
-
-    @SuppressLint("ResourceAsColor")
     private fun disableAcceptButton() {
         binding.btnNewsConfirm.isActivated = false
-        btnDefaultTextColor = binding.btnNewsConfirm.currentTextColor
-        btnDefaultBackgroundColor = binding.btnNewsConfirm.background
 
         binding.btnNewsConfirm.setBackgroundColor(
             ContextCompat.getColor(
@@ -74,11 +73,10 @@ class NewsActivity : AppCompatActivity(), View.OnTouchListener, ViewTreeObserver
         }
     }
 
-    @SuppressLint("ResourceAsColor")
     private fun enableAcceptButton() {
         binding.btnNewsConfirm.isActivated = true
-        binding.btnNewsConfirm.setTextColor(btnDefaultTextColor)
-        binding.btnNewsConfirm.background = btnDefaultBackgroundColor
+        binding.btnNewsConfirm.background = unattachedButtonAsStyleBackup.background
+        binding.btnNewsConfirm.setTextColor(unattachedButtonAsStyleBackup.textColors)
 
         binding.btnNewsConfirm.setOnClickListener { confirm() }
     }
@@ -93,11 +91,12 @@ class NewsActivity : AppCompatActivity(), View.OnTouchListener, ViewTreeObserver
     private fun setButtonState() {
         val vto: ViewTreeObserver = binding.newsScrollchild.viewTreeObserver
         vto.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+            @SuppressLint("ClickableViewAccessibility")
             override fun onGlobalLayout() {
                 val height: Int = binding.newsScrollchild.measuredHeight
                 if (height > 0) {
                     binding.newsScrollchild.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                    if (binding.newsScrollchild.canScrollVertically(1) || binding.newsScrollview.canScrollVertically(-1)) {
+                    if (binding.newsScrollview.canScrollVertically(1) || binding.newsScrollview.canScrollVertically(-1)) {
                         binding.newsScrollview.setOnTouchListener(this@NewsActivity)
                         binding.newsScrollview.viewTreeObserver.addOnScrollChangedListener(this@NewsActivity)
                         disableAcceptButton()
