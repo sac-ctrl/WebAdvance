@@ -14,30 +14,33 @@
   * Create home screen shortcuts and retrieves icons in suitable resolution.
   * Various settings (JavaScript, cookies, adblocking, location/camera/microphone access) can be set for every web app individually
   * Navigation with multi-touch gestures while browsing.
-  * Opt-in adblock using an AdBlock Plus custom webview.
+  * Opt-in adblock with user-selected filter lists.
   * Less memory footprint and no privacy-invading app permissions in comparison to native apps
   * Dark mode for Android 10+
 
 ## Download Options
 [![IzzyOnDroid Download Badge](graphics/IzzyOnDroid.png)](https://apt.izzysoft.de/fdroid/index/apk/com.cylonid.nativealpha)
-[![APK Download Badge](graphics/apk_badge.png)](https://github.com/cylonid/NativeAlphaForAndroid/releases/download/v1.4.0/NativeAlpha-standard-universal-release-v1.4.0.apk)
+[![APK Download Badge](graphics/apk_badge.png)](https://github.com/cylonid/NativeAlphaForAndroid/releases/download/v1.5.0/NativeAlpha-standard-universal-release-v1.5.0.apk)
 [![Google Play Download Badge](graphics/google_play.png)](https://play.google.com/store/apps/details?id=com.cylonid.nativealpha)
 ### Paid Download
 [![Google Play Download Badge](graphics/google_play.png)](https://play.google.com/store/apps/details?id=com.cylonid.nativealpha.pro)
 
 ## Paid Features
+
+__Note: From v1.5.0, the GitHub and IzzyOnDroid release is functionally equivalent to Native Alpha Plus.__
+
   * Sandbox containers: Web Apps are loaded in fully separated sandboxes, cookies or other data are not shared with other Web Apps
   * Kiosk Mode: Fullscreen with menubars hidden
   * Biometric Access Protection: For every Web App, you can enable access protection (Fingerprint + fallback to lockscreen PIN)
   * Experimental "Force Dark Mode" also available for websites (configurable with respect to day-time)
   
-## Latest Changes (v1.4.0)
+## Latest Changes (v1.5.0)
 
-* Order of Web Apps in menu can be changed
-* File downloads are supported
-* Native Alpha custom context menu can be deactived so that the standard browser context menu is shown
-* Italian translation added
-* General, technical version updates
+* New adblock engine that allows users to add their own selection of block lists. By default, the app will download and use "Fanboy Ultimate List" from https://fanboy.co.nz. You can change your block list sources at any time.
+* Material Design 3-based components and theme
+* Cleaner main screen, less buttons: "Delete" and "Open settings" actions are available via swipe, Web Apps are opened by clicking on the label.
+* Login using HTTP Auth is supported
+* Several bugfixes, most notably regarding the top system bar on devices running Android 15
 
 ### Native Alpha Plus
 
@@ -78,10 +81,10 @@ A: Oreo (8.0). This is because older versions use a discontinued API for creatin
 
 A: You can build the app yourself, everything is open-source including the paid features.
 
-## Used libraries/resources
+## Notable used libraries/resources
 * [CircularProgressBar](https://github.com/lopspower/CircularProgressBar)
 * [JSoup](https://jsoup.org/)
-* [AdBlock+WebView](https://github.com/adblockplus/libadblockplus-android)
+* [AdblockAndroid](https://github.com/Edsuns/AdblockAndroid)
 * [MovableFloatingActionButton](https://stackoverflow.com/questions/46370836/android-movable-draggable-floating-action-button-fab)
 * [Android About Page](https://github.com/medyo/android-about-page)
 * [Android Databinding](https://developer.android.com/topic/libraries/data-binding)

@@ -4,7 +4,7 @@
 <li>Offers to create home screen shortcuts and retrieves icons in suitable resolution.</li>
 <li>arious settings (JavaScript, cookies, adblocking, location/camera/microphone access) can be set for every web app individually</li>
 <li>Navigation with multi-touch gestures while browsing.</li>
-<li>Opt-in adblock using an AdBlock Plus custom webview.</li>
+<li>Opt-in adblock with user-selected filter lists.</li>
 <li>Less memory footprint and no privacy-invading app permissions in comparison to native apps</li>
 <li>Dark mode for Android 10+</li>
 </ul>

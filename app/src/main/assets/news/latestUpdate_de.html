@@ -11,6 +11,9 @@
   function hideById(id) {
     document.getElementById(id).style.display = 'none';
   }
+  function showById(id) {
+    document.getElementById(id).style.display = 'block';
+  }
 </script>
 
 <body>
@@ -22,16 +25,20 @@
     <main>
       <article id="update">
         <h1>Aktuelle Neuerungen</h1>
-        <h3>Version: v1.4.0</h3>
+        <h3>Version: v1.5.0</h3>
         <div class="list-wrapper">
           <ul>
-            <li>Web-App-Reihenfolge im Menü kann geändert werden</li>
-            <li>Datei-Downloads werden unterstützt</li>
-            <li>Native Alpha-Kontextmenü kann pro Web-App deaktiviert werden, sodass das normale Browser-Kontextmenü gezeigt wird</li>
-            <li>Italienische Übersetzung hinzugefügt</li>
-            <li>Generelle, technische Versionsupdates</li>
+            <li>Neue Adblock-Engine, mit der Nutzer ihre eigene Auswahl an Blocklisten hinzufügen können. Standardmäßig lädt die App die „Fanboy Ultimate List“ von https://fanboy.co.nz herunter und verwendet sie. Sie können die Quellen Ihrer Blocklisten jederzeit ändern</li>
+            <li>Komponenten und Design basierend auf Material Design 3</li>
+            <li>Aufgeräumtere Hauptansicht, weniger Schaltflächen: „Löschen“ und „Einstellungen öffnen“ sind per Wischgeste verfügbar, Web-Apps werden durch Tippen auf das Label geöffnet</li>
+            <li>Login mittels HTTP Auth wird unterstützt</li>
+            <li>Seiten mit <i>color-scheme</i> (z.B. wikipedia.org) werden nun automatisch gemäß dem aktivem System-Farbschema (hell/dunkel) dargestellt.</li>
+            <li>Mehrere Fehlerbehebungen, insbesondere betreffend die obere Systemleiste auf Geräten mit Android 15</li>
           </ul>
         </div>
+      </article>
+      <article id="nonGp">
+        Nachdem Sie die über GitHub bzw. IzzyOnDroid verteilte App nutzen, erhalten Sie kostenlosen Zugang zu allen Features von Native Alpha Plus. Wenn Sie die App nützlich finden, können Sie den Entwickler auf <a href="https://liberapay.com/cylonid">Liberapay</a> unterstützen.
       </article>
       <article id="eula">
         <h1>Nutzungsbedingungen - <wbr>Haftungsausschluss</h1>

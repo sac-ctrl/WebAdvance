@@ -140,6 +140,9 @@ class NewsActivity : AppCompatActivity(), View.OnTouchListener, ViewTreeObserver
 private class NewsWebViewClient : WebViewClient() {
     override fun onPageFinished(view: WebView, url: String) {
         view.evaluateJavascript("hideById('eula')", null)
+        if(BuildConfig.FLAVOR == "extendedGitHub") {
+            view.evaluateJavascript("showById('nonGp')", null)
+        }
         view.settings.javaScriptEnabled = false
     }
 

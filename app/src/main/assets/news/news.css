@@ -64,3 +64,7 @@ ul li::before {
   width: 1em;
   color: var(--custom-red);
 }
+
+#nonGp {
+  display: none;
+}
