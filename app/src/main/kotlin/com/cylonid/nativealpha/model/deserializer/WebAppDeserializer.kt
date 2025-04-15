@@ -51,5 +51,6 @@ class WebAppDeserializer : JsonDeserializer<WebApp> {
         if (webapp.ID == Int.MAX_VALUE && !adblockKeyPresent) {
             webapp.adBlockSettings = Const.getDefaultAdBlockConfig()
         }
+        webapp.adBlockSettings = webapp.adBlockSettings.take(8).toMutableList()
     }
 }
