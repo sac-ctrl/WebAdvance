@@ -16,6 +16,7 @@ import com.cylonid.nativealpha.fragments.adblocklist.AdblockListFragment
 import com.cylonid.nativealpha.model.AdblockConfig
 import com.cylonid.nativealpha.model.DataManager
 import com.cylonid.nativealpha.util.Const
+import com.cylonid.nativealpha.util.NotificationUtils
 import com.cylonid.nativealpha.util.ProcessUtils
 
 
@@ -56,9 +57,17 @@ class AdblockConfigActivity : ToolbarBaseActivity<AdblockConfigActivityBinding>(
             .setView(localBinding.root)
             .setTitle(getString(R.string.add_a_new_adblock_provider))
             .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
+
                 val url = localBinding.addAdblockUrl.text.toString().trim()
+
                 val formattedUrl =
                     if (url.startsWith("https://") || url.startsWith("http://")) url else "https://$url"
+
+                val urlAlreadyExists = DataManager.getInstance().settings.globalWebApp.adBlockSettings.any { it.value == formattedUrl}
+                if(urlAlreadyExists) {
+                    NotificationUtils.showToast(this, getString(R.string.entry_already_exists))
+                    return@setPositiveButton
+                }
 
                 DataManager.getInstance().apply {
                     val label =

@@ -174,4 +174,5 @@
     <string name="username">Nome utente</string>
     <string name="password">Password</string>
     <string name="enter_http_auth_credentials">Insericsci le credenziali per %1$s su %2$s:</string>
+    <string name="entry_already_exists">Questa voce esiste già.</string>
 </resources>
