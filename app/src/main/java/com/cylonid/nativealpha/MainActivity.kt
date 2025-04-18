@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
     private fun personalizeToolbar() {
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         @StringRes val appName =
-            if (BuildConfig.FLAVOR != "extended") R.string.app_name else R.string.app_name_plus
+            if (BuildConfig.FLAVOR == "extended") R.string.app_name_plus else R.string.app_name
         toolbar.setTitle(appName)
         setSupportActionBar(toolbar)
     }

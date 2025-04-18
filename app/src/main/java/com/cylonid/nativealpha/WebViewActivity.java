@@ -379,7 +379,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
 
     @SuppressLint("RequiresFeature")
     private void setDarkModeIfNeeded() {
-        if (!BuildConfig.FLAVOR.equals("extended")) {
+        if (!BuildConfig.FLAVOR.contains("extended")) {
             return;
         }
 

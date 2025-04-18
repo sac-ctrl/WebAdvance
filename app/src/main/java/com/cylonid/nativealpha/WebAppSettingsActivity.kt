@@ -142,7 +142,7 @@ class WebAppSettingsActivity : ToolbarBaseActivity<WebappSettingsBinding>() {
     }
 
     private fun setupPlusSettings() {
-        if (BuildConfig.FLAVOR != "extended") {
+        if (!BuildConfig.FLAVOR.contains("extended")) {
             binding.sectionDarkmode.visibility = View.GONE
             binding.sectionSandbox.visibility = View.GONE
             binding.sectionKioskMode.visibility = View.GONE

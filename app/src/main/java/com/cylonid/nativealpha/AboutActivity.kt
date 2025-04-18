@@ -38,29 +38,35 @@ class AboutActivity : AppCompatActivity() {
     }
 
     private fun generateAboutPageView(): View {
-        return AboutPage(this)
-            .setDescription(
+        val page = AboutPage(this).apply {
+            setDescription(
                 """
                 Native Alpha for Android
                 by cylonid © ${Year.now().value}
                 """.trimIndent()
             )
-            .setImage(R.drawable.native_alpha_foreground)
-            .addItem(Element().setTitle("Version " + BuildConfig.VERSION_NAME))
-            .addItem(addGitHubCustom("cylonid", "GitHub"))
-            .addPlayStore("com.cylonid.nativealpha.pro", "Play Store")
-            .addWebsite(
+            setImage(R.drawable.native_alpha_foreground)
+            addItem(Element().setTitle("Version " + BuildConfig.VERSION_NAME))
+            addItem(addGitHubCustom("cylonid", "GitHub"))
+            addPlayStore("com.cylonid.nativealpha.pro", "Play Store")
+            addWebsite(
                 "https://github.com/cylonid/NativeAlphaForAndroid/blob/dev/privacy_policy.md",
                 getString(
                     R.string.privacy_policy
                 )
             )
-            .addGroup(getString(R.string.eula_title))
-            .addItem(showEULA())
-            .addGroup(getString(R.string.license))
-            .addItem(showLicense())
-            .addItem(showOpenSourcelibs())
-            .create()
+            if(BuildConfig.FLAVOR == "extendedGithub") {
+                addItem(showLiberaPay())
+            }
+            addGroup(getString(R.string.eula_title))
+            addItem(showEULA())
+            addGroup(getString(R.string.license))
+            addItem(showLicense())
+            addItem(showOpenSourcelibs())
+        }
+
+        return page.create()
+
     }
 
     private fun addGitHubCustom(id: String, title: String): Element {
@@ -102,6 +108,21 @@ class AboutActivity : AppCompatActivity() {
             startActivity(i)
         }
         return license
+    }
+
+    fun showLiberaPay(): Element {
+        val element = Element()
+        element.setTitle(getString(R.string.support_liberapay))
+        element.setIconDrawable(R.drawable.liberapay_logo)
+        element.skipTint = true
+
+        element.setOnClickListener {
+            val url = "https://liberapay.com/cylonid"
+            val i = Intent(Intent.ACTION_VIEW)
+            i.setData(Uri.parse(url))
+            startActivity(i)
+        }
+        return element
     }
 
     fun showPayPal(): Element {

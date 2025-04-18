@@ -179,5 +179,6 @@
     <string name="password">Password</string>
     <string name="enter_http_auth_credentials">Enter credentials for %1$s at %2$s:</string>
     <string name="entry_already_exists">This entry already exists.</string>
+    <string name="support_liberapay">Support me on Liberapay</string>
 
 </resources>

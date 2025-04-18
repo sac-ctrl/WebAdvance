@@ -21,7 +21,7 @@ public class SandboxManager {
     }
 
     public static SandboxManager getInstance() {
-        if (BuildConfig.FLAVOR.equals("extended")) {
+        if (BuildConfig.FLAVOR.contains("extended")) {
             instance = instance == null ? new SandboxManager() : instance;
             return instance;
         }
