@@ -395,7 +395,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
             if (needsForcedDarkMode) {
                 wv.setBackgroundColor(Color.BLACK);
                 wv.setForceDarkAllowed(true);
-//                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                 if (isForceDarkSupported) {
                     WebSettingsCompat.setForceDark(wv.getSettings(), WebSettingsCompat.FORCE_DARK_ON);
                 }
@@ -406,7 +406,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                     WebSettingsCompat.setAlgorithmicDarkeningAllowed(wv.getSettings(), true);
                 }
             } else {
-//                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
                 wv.setBackgroundColor(Color.WHITE);
 
                 if (isForceDarkSupported) {
@@ -430,14 +430,22 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
 
         String currentUrl = wv.getUrl();
         String title = currentUrl.length() < 32 ? currentUrl : currentUrl.substring(0, 32) + "…";
-        SpannableString spanString = new SpannableString(title);
+        SpannableString spanStringWebAppTitle = new SpannableString(title);
 
         // The item is disabled because it has no click action, but we want to override the disabled style (text color)
         int colorOnSurface = MaterialColors.getColor(center, R.attr.colorOnSurface, Color.BLACK);
-        spanString.setSpan(new ForegroundColorSpan(colorOnSurface), 0,     spanString.length(), 0);
+        ForegroundColorSpan foregroundColorSpan = new ForegroundColorSpan(colorOnSurface);
+        spanStringWebAppTitle.setSpan(foregroundColorSpan, 0,     spanStringWebAppTitle.length(), 0);
 
-        spanString.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, spanString.length(), 0);
-        mPopupMenu.getMenu().getItem(0).setTitle(spanString);
+        spanStringWebAppTitle.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, spanStringWebAppTitle.length(), 0);
+        mPopupMenu.getMenu().getItem(0).setTitle(spanStringWebAppTitle);
+
+        for (int i = 0; i < mPopupMenu.getMenu().size(); i++) {
+            MenuItem item = mPopupMenu.getMenu().getItem(i);
+            SpannableString spanString = new SpannableString(item.getTitle());
+            spanString.setSpan(foregroundColorSpan, 0, spanString.length(),0);
+            item.setTitle(spanString);
+        }
         if(wv.canGoForward()) mPopupMenu.getMenu().getItem(2).setVisible(true);
         if(BuildConfig.DEBUG) {
             mPopupMenu.getMenu().getItem(6).setVisible(true);
