@@ -24,8 +24,8 @@ import com.cylonid.nativealpha.util.LocaleUtils
 import com.cylonid.nativealpha.util.NotificationUtils
 
 
-
-class NewsActivity : AppCompatActivity(), View.OnTouchListener, ViewTreeObserver.OnScrollChangedListener {
+class NewsActivity : AppCompatActivity(), View.OnTouchListener,
+    ViewTreeObserver.OnScrollChangedListener {
 
     private lateinit var unattachedButtonAsStyleBackup: Button
 
@@ -69,7 +69,7 @@ class NewsActivity : AppCompatActivity(), View.OnTouchListener, ViewTreeObserver
                 this,
                 getString(R.string.scroll_to_bottom),
                 Toast.LENGTH_SHORT
-            ) 
+            )
         }
     }
 
@@ -96,7 +96,10 @@ class NewsActivity : AppCompatActivity(), View.OnTouchListener, ViewTreeObserver
                 val height: Int = binding.newsScrollchild.measuredHeight
                 if (height > 0) {
                     binding.newsScrollchild.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                    if (binding.newsScrollview.canScrollVertically(1) || binding.newsScrollview.canScrollVertically(-1)) {
+                    if (binding.newsScrollview.canScrollVertically(1) || binding.newsScrollview.canScrollVertically(
+                            -1
+                        )
+                    ) {
                         binding.newsScrollview.setOnTouchListener(this@NewsActivity)
                         binding.newsScrollview.viewTreeObserver.addOnScrollChangedListener(this@NewsActivity)
                         disableAcceptButton()
@@ -109,12 +112,17 @@ class NewsActivity : AppCompatActivity(), View.OnTouchListener, ViewTreeObserver
     private fun setText() {
         val fileId = intent.extras?.getString("text") ?: "latestUpdate"
 
-        binding.newsContent.loadUrl("file:///android_asset/news/" + fileId + "_" + LocaleUtils.fileEnding +".html")
-        if(DataManager.getInstance().eulaData) {
+        binding.newsContent.loadUrl("file:///android_asset/news/" + fileId + "_" + LocaleUtils.fileEnding + ".html")
+        binding.newsContent.settings.javaScriptEnabled = true
+        val hideEula = DataManager.getInstance().eulaData;
+        if (hideEula) {
             binding.btnNewsConfirm.isEnabled = true
-            binding.newsContent.settings.javaScriptEnabled = true
-            binding.newsContent.webViewClient = NewsWebViewClient()
         }
+
+        binding.newsContent.webViewClient = NewsWebViewClient(
+            hideEula = hideEula,
+            showLiberaPay = BuildConfig.FLAVOR == "extendedGithub"
+        )
     }
 
     private fun confirm() {
@@ -129,18 +137,20 @@ class NewsActivity : AppCompatActivity(), View.OnTouchListener, ViewTreeObserver
 
     override fun onScrollChanged() {
         val view = binding.newsScrollview.getChildAt(binding.newsScrollview.childCount - 1)
-        val bottomDetector: Int = view.bottom - (binding.newsScrollview.height + binding.newsScrollview.scrollY)
+        val bottomDetector: Int =
+            view.bottom - (binding.newsScrollview.height + binding.newsScrollview.scrollY)
 
         if (bottomDetector < 30) {
-           enableAcceptButton()
+            enableAcceptButton()
         }
     }
 }
 
-private class NewsWebViewClient : WebViewClient() {
+private class NewsWebViewClient(val hideEula: Boolean, val showLiberaPay: Boolean) :
+    WebViewClient() {
     override fun onPageFinished(view: WebView, url: String) {
-        view.evaluateJavascript("hideById('eula')", null)
-        if(BuildConfig.FLAVOR == "extendedGitHub") {
+        if (hideEula) view.evaluateJavascript("hideById('eula')", null)
+        if (showLiberaPay) {
             view.evaluateJavascript("showById('nonGp')", null)
         }
         view.settings.javaScriptEnabled = false

@@ -67,4 +67,5 @@ ul li::before {
 
 #nonGp {
   display: none;
+  text-align: start;
 }
