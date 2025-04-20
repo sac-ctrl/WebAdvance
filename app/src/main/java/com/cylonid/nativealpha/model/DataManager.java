@@ -9,9 +9,12 @@ import android.view.Gravity;
 import android.widget.Toast;
 
 import com.cylonid.nativealpha.R;
+import com.cylonid.nativealpha.model.deserializer.GlobalSettingsDeserializer;
+import com.cylonid.nativealpha.model.deserializer.WebAppDeserializer;
 import com.cylonid.nativealpha.util.App;
 import com.cylonid.nativealpha.util.Const;
 import com.cylonid.nativealpha.util.InvalidChecksumException;
+import com.cylonid.nativealpha.util.ShortcutIconUtils;
 import com.cylonid.nativealpha.util.Utility;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -137,7 +140,7 @@ public class DataManager {
             }
         }
 
-        Utility.deleteShortcuts(shortcuts_to_be_removed);
+        ShortcutIconUtils.deleteShortcuts(shortcuts_to_be_removed, App.getAppContext());
 
     }
 
@@ -150,7 +153,7 @@ public class DataManager {
         //Webapp data
         if (appdata.contains(shared_pref_webappdata)) {
             GsonBuilder gsonBuilder = new GsonBuilder();
-            gsonBuilder.registerTypeAdapter(WebApp.class, new WebAppInstanceCreator());
+            gsonBuilder.registerTypeAdapter(WebApp.class, new WebAppDeserializer());
             Gson gson = gsonBuilder.create();
             String json = appdata.getString(shared_pref_webappdata, "");
             int oldDataFormat = DataVersionConverter.getDataFormat(json);
@@ -164,23 +167,23 @@ public class DataManager {
         max_assigned_ID = appdata.getInt(shared_pref_max_id, max_assigned_ID);
         if (SandboxManager.getInstance() != null) SandboxManager.getInstance().setNextContainer(appdata.getInt(shared_pref_next_container, 0));
 
-        //Check legacy global settings
         if (appdata.getBoolean(shared_pref_global_settings_json, false)) {
-            //Global settings
-            if (appdata.contains(shared_pref_globalsettings)) {
-                GsonBuilder gsonBuilder = new GsonBuilder();
-                gsonBuilder.registerTypeAdapter(GlobalSettings.class, new GlobalSettingsInstanceCreator());
-                Gson gson = gsonBuilder.create();
-                String json = appdata.getString(shared_pref_globalsettings, "");
-                int oldDataFormat = DataVersionConverter.getDataFormat(json);
-                String currentDataFormattedJson = this.checkDataFormat(oldDataFormat, json);
-                settings = gson.fromJson(currentDataFormattedJson, new TypeToken<GlobalSettings>() {}.getType());
-                assertGlobalWebappData();
-                if(oldDataFormat != DataVersionConverter.getDataFormat(currentDataFormattedJson)) this.saveGlobalSettings();
-            }
-        }
-        else
             loadGlobalSettingsLegacy();
+        }
+        //Global settings
+        if (appdata.contains(shared_pref_globalsettings)) {
+            GsonBuilder gsonBuilder = new GsonBuilder();
+            gsonBuilder.registerTypeAdapter(WebApp.class, new WebAppDeserializer());
+            gsonBuilder.registerTypeAdapter(GlobalSettings.class, new GlobalSettingsDeserializer());
+            Gson gson = gsonBuilder.create();
+            String json = appdata.getString(shared_pref_globalsettings, "");
+            int oldDataFormat = DataVersionConverter.getDataFormat(json);
+            String currentDataFormattedJson = this.checkDataFormat(oldDataFormat, json);
+            settings = gson.fromJson(currentDataFormattedJson, GlobalSettings.class);
+            assertGlobalWebappData();
+            if(oldDataFormat != DataVersionConverter.getDataFormat(currentDataFormattedJson)) this.saveGlobalSettings();
+        }
+
     }
 
     public void loadGlobalSettingsLegacy() {

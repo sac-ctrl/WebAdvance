@@ -1,51 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/ll_row"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/webAppListItem"
     android:layout_width="match_parent"
     android:layout_height="@dimen/line_height"
+    android:background="?attr/colorSurface"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
     android:orientation="horizontal">
 
     <ImageView
+        android:background="?attr/colorSurface"
         android:id="@+id/dragAnchor"
         android:layout_weight="0.5"
         android:layout_width="wrap_content"
-        android:background="@color/transparent"
         android:layout_height="match_parent"
-        android:src="@drawable/baseline_drag_indicator_24"/>
+        android:src="@drawable/baseline_drag_indicator_24"
+        android:scaleType="center"
+        app:tint="?attr/colorOnSurface" />
 
-    <Button
-        android:id="@+id/btn_title"
+    <TextView
+        android:background="?attr/colorSurface"
+        android:id="@+id/btnWebAppTitle"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="4"
-        android:background="@color/transparent"
         android:maxLines="1"
-        android:ellipsize="end"
-        android:text="WebApp Title" />
-
-    <ImageButton
-        android:id="@+id/btnOpenWebview"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@color/transparent"
-        android:src="@drawable/ic_baseline_open_in_browser_24" />
-
-    <ImageButton
-        android:id="@+id/btnSettings"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@color/transparent"
-        android:src="@drawable/ic_settings_black_24dp" />
-
-    <ImageButton
-        android:id="@+id/btnDelete"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@color/transparent"
-        android:src="@drawable/ic_delete_black_24dp" />
+        android:gravity="center"
+        android:textAllCaps="true"
+        android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+        android:ellipsize="end" />
 
 </LinearLayout>

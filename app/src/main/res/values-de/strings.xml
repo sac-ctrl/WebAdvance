@@ -113,7 +113,7 @@
     <string name="general">Allgemeines</string>
     <string name="backup">Backup</string>
     <string name="use_google_safe_browsing">Google Safe Browsing aktivieren</string>
-    <string name="block_all_third_party_requests">Alle Drittanbieter-Anfragen blockieren</string>
+    <string name="block_all_third_party_requests">Drittanbieter-Anfragen blockieren</string>
     <string name="sandbox">Sandbox</string>
     <string name="no_sandbox">Sandbox nicht verwenden.</string>
     <string name="all_sandboxes_used">Alle Sandboxen sind in Verwendung.</string>
@@ -162,4 +162,17 @@
     <string name="always_show_software_buttons">Software-Navigationsbuttons immer anzeigen</string>
     <string name="use_standard_context_menu_temporarily">Einmalig Standard-Kontextmenü nutzen</string>
     <string name="use_standard_context_menu_permanently">Standard-Kontextmenü nutzen</string>
+    <string name="adblock_config">Adblocker-Einstellungen</string>
+    <string name="adblock_description">Die hier angelegten Einträge dienen als Quellen für den Werbeblocker. Die Blockregeln werden von der angegebenen URL heruntergeladen und regelmäßig aktualisiert. Bitte beachten Sie, dass zu viele hinzugefügte Quellen sich negativ auf die Performance auswirken können. Sie können bis zu 8 Einträge erstellen.</string>
+    <string name="add_a_new_adblock_provider">Neuen Adblock-Anbieter hinzufügen</string>
+    <string name="question_delete_item">Sind Sie sicher, dass Sie diesen Eintrag entfernen möchten?</string>
+    <string name="undo">Rückgängig</string>
+    <string name="x_was_removed">%1$s wurde entfernt.</string>
+    <string name="restore_standard_setting">Standard wiederherstellen</string>
+    <string name="http_auth_title">Anmelden (HTTP Auth)</string>
+    <string name="username">Benutzername</string>
+    <string name="password">Passwort</string>
+    <string name="enter_http_auth_credentials">Geben Sie die Zugangsdaten für %1$s bei %2$s ein:</string>
+    <string name="entry_already_exists">Dieser Eintrag existiert bereits.</string>
+    <string name="support_liberapay">Unterstütze mich auf Liberapay</string>
 </resources>

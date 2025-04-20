@@ -1,5 +1,6 @@
 package com.cylonid.nativealpha.util
 
+import android.app.Activity
 import android.content.Context
 import com.cylonid.nativealpha.model.WebApp
 import androidx.appcompat.app.AppCompatActivity
@@ -16,7 +17,7 @@ object WebViewLauncher {
         try {
             c.startActivity(createWebViewIntent(webapp, c))
         } catch (e: NullPointerException) {
-            Utility.showInfoSnackbar(
+            NotificationUtils.showInfoSnackbar(
                 c as AppCompatActivity,
                 c.getString(R.string.webview_activity_launch_failed),
                 Snackbar.LENGTH_LONG
@@ -26,13 +27,13 @@ object WebViewLauncher {
     }
 
     @JvmStatic
-    fun startWebViewInNewProcess(webapp: WebApp, c: Context) {
+    fun startWebViewInNewProcess(webapp: WebApp, a: Activity) {
         try {
-            ProcessPhoenix.triggerRebirth(c, createWebViewIntent(webapp, c))
+            ProcessPhoenix.triggerRebirth(a, createWebViewIntent(webapp, a))
         } catch (e: NullPointerException) {
-            Utility.showInfoSnackbar(
-                c as AppCompatActivity,
-                c.getString(R.string.webview_activity_launch_failed),
+            NotificationUtils.showInfoSnackbar(
+                a,
+                a.getString(R.string.webview_activity_launch_failed),
                 Snackbar.LENGTH_LONG
             )
             e.printStackTrace()

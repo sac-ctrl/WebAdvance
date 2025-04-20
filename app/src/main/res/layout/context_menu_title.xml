@@ -10,11 +10,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text=""
-        android:forceDarkAllowed="false"
-        android:background="@android:color/black"
         android:maxLines="1"
-        android:textColor="@android:color/white"
         android:ellipsize="end"
-        android:padding="8dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+        android:padding="8dp" />
 </LinearLayout>

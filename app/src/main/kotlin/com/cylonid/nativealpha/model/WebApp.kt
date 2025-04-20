@@ -1,18 +1,21 @@
 package com.cylonid.nativealpha.model
 
+import android.app.Activity
 import android.view.View
 import android.widget.*
+import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.FragmentActivity
 import com.cylonid.nativealpha.R
 import com.cylonid.nativealpha.WebAppSettingsActivity
 import com.cylonid.nativealpha.helper.BiometricPromptHelper
 import com.cylonid.nativealpha.util.Const
+import com.cylonid.nativealpha.util.ShortcutIconUtils
 import com.cylonid.nativealpha.util.Utility
 import java.util.*
 
-class WebApp {
-    val ID: Int
-    var baseUrl: String
+data class AdblockConfig(val label: String, val value: String)
+
+data class WebApp(var baseUrl: String, val ID: Int) {
     var title: String
     var isActiveEntry = true
     var isOverrideGlobalSettings = true
@@ -53,32 +56,30 @@ class WebApp {
     var isAllowMediaPlaybackInBackground = false
     var order = 0
     var alwaysUseFallbackContextMenu = false
+    var adBlockSettings = mutableListOf<AdblockConfig>()
 
-    constructor(url: String, id: Int, order: Int) {
-        title = url.replace("http://", "").replace("https://", "").replace("www.", "")
-        baseUrl = url
-        this.ID = id
+    init {
+        title = baseUrl.replace("http://", "").replace("https://", "").replace("www.", "")
+        initDefaultSettings()
+    }
+
+    constructor(baseUrl: String, ID: Int, order: Int): this(baseUrl, ID) {
         this.order = order
-        initDefaultSettings()
     }
 
-    constructor(url: String, id: Int) {
-        title = url.replace("http://", "").replace("https://", "").replace("www.", "")
-        baseUrl = url
-        this.ID = id
-        this.order = 0
-        initDefaultSettings()
+    constructor(baseUrl: String, ID: Int, adBlockSettings: MutableList<AdblockConfig>): this(baseUrl, ID) {
+        this.adBlockSettings = adBlockSettings
     }
 
-    constructor(other: WebApp) {
+    constructor(other: WebApp) : this(other.baseUrl, other.ID) {
         title = other.title
-        ID = other.ID
-        baseUrl = other.baseUrl
         isOverrideGlobalSettings = other.isOverrideGlobalSettings
         containerId = other.containerId
         isUseContainer = other.isUseContainer
         copySettings(other)
     }
+
+
 
     //This part of the copy ctor should be callable independently from actual object construction to copy values of the global web app template
     fun copySettings(other: WebApp) {
@@ -117,6 +118,7 @@ class WebApp {
         isAllowMediaPlaybackInBackground = other.isAllowMediaPlaybackInBackground
         order = other.order
         alwaysUseFallbackContextMenu = other.alwaysUseFallbackContextMenu
+        adBlockSettings = other.adBlockSettings
     }
 
     private fun initDefaultSettings() {
@@ -134,9 +136,12 @@ class WebApp {
         isOverrideGlobalSettings = false
     }
 
-    fun markInactive() {
+    fun markInactive(activity: Activity) {
         isActiveEntry = false
-        Utility.deleteShortcuts(Arrays.asList(ID))
+        ShortcutIconUtils.deleteShortcuts(
+            listOf(ID),
+            activity
+        )
     }
 
 
@@ -144,18 +149,18 @@ class WebApp {
         get() = baseUrl.replace("\\P{Alnum}".toRegex(), "").replace("https", "").replace("http", "").replace("www", "")
 
     fun onSwitchCookiesChanged(mSwitch: CompoundButton, isChecked: Boolean) {
-        val switchThirdPCookies = mSwitch.rootView.findViewById<Switch>(R.id.switch3PCookies)
+        val switchThirdPCookies = mSwitch.rootView.findViewById<SwitchCompat>(R.id.switch3PCookies)
         if (isChecked) switchThirdPCookies.isEnabled = true else {
             switchThirdPCookies.isEnabled = false
             switchThirdPCookies.isChecked = false
         }
     }
 
-    private fun disableSwitchBiometricAccessChangeListener(switchBiometricAccess: Switch) {
+    private fun disableSwitchBiometricAccessChangeListener(switchBiometricAccess: SwitchCompat) {
         switchBiometricAccess.setOnCheckedChangeListener(null)
     }
 
-    private fun enableSwitchBiometricAccessChangeListener(switchBiometricAccess: Switch,
+    private fun enableSwitchBiometricAccessChangeListener(switchBiometricAccess: SwitchCompat,
                                                           activity: WebAppSettingsActivity) {
         switchBiometricAccess.setOnCheckedChangeListener { switch, checked ->
             onSwitchBiometricAccessChanged(
@@ -167,7 +172,7 @@ class WebApp {
     }
 
     private fun setSwitchBiometricAccessSilently(newValue: Boolean,
-                                                 switchBiometricAccess: Switch,
+                                                 switchBiometricAccess: SwitchCompat,
                                                  activity: WebAppSettingsActivity) {
         disableSwitchBiometricAccessChangeListener(switchBiometricAccess)
         switchBiometricAccess.isChecked = newValue
@@ -180,7 +185,7 @@ class WebApp {
         activity: WebAppSettingsActivity
     ) {
         val switchBiometricAccess =
-            mSwitch.rootView.findViewById<Switch>(R.id.switchBiometricAccess)
+            mSwitch.rootView.findViewById<SwitchCompat>(R.id.switchBiometricAccess)
 
         // reset to value before user toggled, actual setting of value is done by prompt success callback
         setSwitchBiometricAccessSilently(!switchBiometricAccess.isChecked, switchBiometricAccess, activity)
@@ -204,8 +209,8 @@ class WebApp {
     }
 
     fun onSwitchJsChanged(mSwitch: CompoundButton, isChecked: Boolean) {
-        val switchDesktopVersion = mSwitch.rootView.findViewById<Switch>(R.id.switchDesktopSite)
-        val switchAdblock = mSwitch.rootView.findViewById<Switch>(R.id.switchAdblock)
+        val switchDesktopVersion = mSwitch.rootView.findViewById<SwitchCompat>(R.id.switchDesktopSite)
+        val switchAdblock = mSwitch.rootView.findViewById<SwitchCompat>(R.id.switchAdblock)
         if (isChecked) {
             switchDesktopVersion.isEnabled = true
             switchAdblock.isEnabled = true
@@ -218,7 +223,7 @@ class WebApp {
     }
 
     fun onSwitchForceDarkChanged(mSwitch: CompoundButton, isChecked: Boolean) {
-        val switchLimit = mSwitch.rootView.findViewById<Switch>(R.id.switchTimeSpanDarkMode)
+        val switchLimit = mSwitch.rootView.findViewById<SwitchCompat>(R.id.switchTimeSpanDarkMode)
         val txtBegin = mSwitch.rootView.findViewById<EditText>(R.id.textDarkModeBegin)
         val txtEnd = mSwitch.rootView.findViewById<EditText>(R.id.textDarkModeEnd)
         if (isChecked) {
@@ -253,7 +258,7 @@ class WebApp {
 
     fun onSwitchUserAgentChanged(mSwitch: CompoundButton, isChecked: Boolean) {
         val txt = mSwitch.rootView.findViewById<EditText>(R.id.textUserAgent)
-        val switchDesktopVersion = mSwitch.rootView.findViewById<Switch>(R.id.switchDesktopSite)
+        val switchDesktopVersion = mSwitch.rootView.findViewById<SwitchCompat>(R.id.switchDesktopSite)
         if (isChecked) {
             switchDesktopVersion.isChecked = false
             switchDesktopVersion.isEnabled = false

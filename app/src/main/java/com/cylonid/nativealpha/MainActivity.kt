@@ -3,35 +3,33 @@ package com.cylonid.nativealpha
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
 import android.text.Html
+import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.widget.EditText
-import android.widget.Switch
 import androidx.annotation.StringRes
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import com.cylonid.nativealpha.databinding.AddWebsiteDialogueBinding
 import com.cylonid.nativealpha.fragments.webapplist.WebAppListFragment
 import com.cylonid.nativealpha.model.DataManager
 import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.util.Const
 import com.cylonid.nativealpha.util.EntryPointUtils.entryPointReached
-import com.cylonid.nativealpha.util.Utility
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity() {
-    private var webAppListFragment: WebAppListFragment? = null
+    private lateinit var webAppListFragment: WebAppListFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(R.style.AppTheme_NoActionBar)
+        setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         webAppListFragment =
-            supportFragmentManager.findFragmentById(R.id.fragment_container_view) as WebAppListFragment?
+            supportFragmentManager.findFragmentById(R.id.fragment_container_view) as WebAppListFragment
         entryPointReached(this)
 
         if (DataManager.getInstance().websites.size == 0) {
@@ -41,6 +39,12 @@ class MainActivity : AppCompatActivity() {
         val fab = findViewById<FloatingActionButton>(R.id.fab)
         fab.setOnClickListener { buildAddWebsiteDialog(getString(R.string.add_webapp)) }
         personalizeToolbar()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        DataManager.getInstance().loadAppData();
+        updateWebAppList()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -60,60 +64,16 @@ class MainActivity : AppCompatActivity() {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     fun updateWebAppList() {
-        webAppListFragment!!.updateWebAppList()
+        webAppListFragment.updateWebAppList()
     }
 
     private fun personalizeToolbar() {
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        toolbar.setLogo(R.mipmap.native_alpha_white)
         @StringRes val appName =
-            if (BuildConfig.FLAVOR != "extended") R.string.app_name else R.string.app_name_plus
+            if (BuildConfig.FLAVOR == "extended") R.string.app_name_plus else R.string.app_name
         toolbar.setTitle(appName)
         setSupportActionBar(toolbar)
     }
-
-    private fun buildImportSuccessDialog() {
-        val builder = AlertDialog.Builder(this)
-
-        val message = """
-            ${getString(R.string.import_success_dialog_txt2)}
-            
-            ${getString(R.string.import_success_dialog_txt3)}
-            """.trimIndent()
-
-        builder.setMessage(message)
-        builder.setCancelable(false)
-        builder.setTitle(
-            getString(
-                R.string.import_success,
-                DataManager.getInstance().activeWebsitesCount
-            )
-        )
-        builder.setPositiveButton(getString(android.R.string.yes)) { _: DialogInterface?, _: Int ->
-            val webapps = DataManager.getInstance().activeWebsites
-            for (i in webapps.indices.reversed()) {
-                val webapp = webapps[i]
-                val last_webapp = i == webapps.size - 1
-                val msg = Html.fromHtml(
-                    getString(R.string.restore_shortcut, webapp.title),
-                    Html.FROM_HTML_MODE_COMPACT
-                )
-                val addition_dialog = AlertDialog.Builder(this)
-                    .setMessage(msg)
-                    .setPositiveButton(android.R.string.yes) { _: DialogInterface?, _: Int ->
-                        val frag = ShortcutDialogFragment.newInstance(webapp)
-                        frag.show(supportFragmentManager, "SCFetcher-" + webapp.ID)
-                    }
-                    .setNegativeButton(android.R.string.no) { _: DialogInterface?, _: Int -> }
-                    .create()
-
-                addition_dialog.show()
-            }
-        }
-        builder.setNegativeButton(getString(android.R.string.no)) { _: DialogInterface?, _: Int -> }
-        builder.create().show()
-    }
-
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -141,51 +101,83 @@ class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onBackPressed() {
-        moveTaskToBack(true)
+    private fun buildImportSuccessDialog() {
+        val message = """
+            ${getString(R.string.import_success_dialog_txt2)}
+            
+            ${getString(R.string.import_success_dialog_txt3)}
+            """.trimIndent()
+
+        AlertDialog.Builder(this).setMessage(message)
+            .setCancelable(false)
+            .setTitle(
+                getString(
+                    R.string.import_success,
+                    DataManager.getInstance().activeWebsitesCount
+                )
+            )
+            .setPositiveButton(getString(R.string.ok)) { _: DialogInterface?, _: Int ->
+                val webapps = DataManager.getInstance().activeWebsites
+                for (i in webapps.indices.reversed()) {
+                    val webapp = webapps[i]
+                    val msg = Html.fromHtml(
+                        getString(R.string.restore_shortcut, webapp.title),
+                        Html.FROM_HTML_MODE_COMPACT
+                    )
+                    AlertDialog.Builder(this)
+                        .setMessage(msg)
+                        .setPositiveButton(R.string.ok) { _: DialogInterface?, _: Int ->
+                            val frag = ShortcutDialogFragment.newInstance(webapp)
+                            frag.show(supportFragmentManager, "SCFetcher-" + webapp.ID)
+                        }
+                        .setNegativeButton(R.string.cancel) { _: DialogInterface?, _: Int -> }
+                        .create()
+                        .show()
+
+                }
+            }
+            .setNegativeButton(getString(R.string.cancel)) { _: DialogInterface?, _: Int -> }
+            .create().show()
     }
 
     private fun buildAddWebsiteDialog(title: String) {
-        val inflated_view = layoutInflater.inflate(R.layout.add_website_dialogue, null)
-        val url = inflated_view.findViewById<EditText>(R.id.websiteUrl)
-        val create_shortcut = inflated_view.findViewById<Switch>(R.id.switchCreateShortcut)
-
+        val localBinding = AddWebsiteDialogueBinding.inflate(layoutInflater)
         val dialog = AlertDialog.Builder(this@MainActivity)
-            .setView(inflated_view)
+            .setView(localBinding.root)
             .setTitle(title)
-            .setPositiveButton(android.R.string.ok, null) //Set to null. We override the onclick
-            .setNegativeButton(android.R.string.cancel, null)
-            .create()
+            .setPositiveButton(R.string.ok) { _: DialogInterface, _: Int ->
+                val url = localBinding.websiteUrl.text.toString().trim()
+                val urlWithProtocol =
+                    if (url.startsWith("https://") || url.startsWith("http://")) url else "https://$url"
+                val newSite = WebApp(
+                    urlWithProtocol,
+                    DataManager.getInstance().incrementedID,
+                    DataManager.getInstance().incrementedOrder
+                )
+                newSite.applySettingsForNewWebApp()
+                DataManager.getInstance().addWebsite(newSite)
 
-        dialog.setOnShowListener { dialogInterface: DialogInterface? ->
-            val positive = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            url.requestFocus()
-            positive.setOnClickListener { view: View? ->
-                var str_url = url.text.toString().trim { it <= ' ' }
-                if (str_url == "") {
-                    Utility.showInfoSnackbar(
-                        this,
-                        getString(R.string.no_url_entered),
-                        Snackbar.LENGTH_SHORT
-                    )
-                } else {
-                    if (!(str_url.startsWith("https://")) && !(str_url.startsWith("http://"))) {
-                        str_url = "https://$str_url"
-                    }
-                    val newSite = WebApp(str_url, DataManager.getInstance().incrementedID, DataManager.getInstance().incrementedOrder)
-                    newSite.applySettingsForNewWebApp()
-                    DataManager.getInstance().addWebsite(newSite)
-
-                    updateWebAppList()
-                    dialog.dismiss()
-                    if (create_shortcut.isChecked) {
-                        val frag = ShortcutDialogFragment.newInstance(newSite)
-                        frag.show(supportFragmentManager, "SCFetcher-" + newSite.ID)
-                    }
+                updateWebAppList()
+                if (localBinding.switchCreateShortcut.isChecked) {
+                    val frag = ShortcutDialogFragment.newInstance(newSite)
+                    frag.show(supportFragmentManager, "SCFetcher-" + newSite.ID)
                 }
             }
-        }
+            .setNegativeButton(R.string.cancel, null)
+            .create()
+
         dialog.show()
+        val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+        okButton.isEnabled = false
+        localBinding.websiteUrl.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                okButton.isEnabled = !s.isNullOrBlank()
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
     }
 }
 

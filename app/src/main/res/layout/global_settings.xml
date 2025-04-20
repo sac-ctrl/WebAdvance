@@ -28,8 +28,7 @@
                 android:layout_weight="99"
                 android:fadeScrollbars="false"
                 android:fillViewport="false"
-                android:scrollbarStyle="outsideOverlay"
-                android:scrollbarThumbVertical="@color/colorPrimary">
+                android:scrollbarStyle="outsideOverlay">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -37,20 +36,6 @@
                     android:layout_marginEnd="20dp"
                     android:orientation="vertical"
                     android:visibility="visible">
-
-                    <TextView
-                        android:id="@+id/labelPageTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/global_settings"
-                        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
-
-
-                    <Space
-                        android:layout_width="1dp"
-                        android:layout_height="30dp" />
-
-
 
                     <LinearLayout
                         android:id="@+id/sectionGeneral"
@@ -64,16 +49,15 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="@dimen/remove_divider"
                             android:text="@string/general"
                             android:textAppearance="@style/TextAppearance.AppCompat.Small"
                             android:textStyle="bold" />
 
-                        <TextView
+                        <Button
+                            android:id="@+id/btnAdblockConfig"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/these_settings_are_applied_globally_and_override_app_specific_settings"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+                            android:text="@string/adblock_config" />
 
                         <Button
                             android:id="@+id/btnGlobalWebApp"
@@ -104,42 +88,42 @@
 
                         </LinearLayout>
 
-                        <Switch
+                        <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/switchGlobalCache"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:checked="@={settings.clearCache}"
                             android:text="@string/clear_cache_after_usage" />
 
-                        <Switch
+                        <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/switchGlobalMultiTouchReload"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:checked="@={settings.multitouchReload}"
                             android:text="@string/global_settings_multitouch_reload" />
 
-                        <Switch
+                        <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/switchGlobalMultiTouch"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:checked="@={settings.twoFingerMultitouch}"
                             android:text="@string/use_two_finger_swipes_for_browser_forward_and_backward_navigation" />
 
-                        <Switch
+                        <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/switchGlobalMultiTouch3Fingers"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:checked="@={settings.threeFingerMultitouch}"
                             android:text="@string/use_three_finger_swipes_to_switch_between_web_apps_experimental" />
 
-                        <Switch
+                        <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/switchShowProgressbar"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:checked="@={settings.showProgressbar}"
                             android:text="@string/show_progress_bar_during_page_load" />
 
-                        <Switch
+                        <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/switchAlwaysShowSoftwareButtons"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -161,7 +145,6 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="@dimen/remove_divider"
                             android:text="@string/backup"
                             android:textAppearance="@style/TextAppearance.AppCompat.Small"
                             android:textStyle="bold" />
@@ -183,6 +166,7 @@
             </ScrollView>
 
             <LinearLayout
+                style="?android:attr/buttonBarStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
@@ -191,12 +175,14 @@
 
                 <Button
                     android:id="@+id/btnCancel"
+                    style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/cancel" />
 
                 <Button
                     android:id="@+id/btnSave"
+                    style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/save" />

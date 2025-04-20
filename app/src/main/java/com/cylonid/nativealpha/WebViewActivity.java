@@ -24,6 +24,7 @@ import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -33,6 +34,7 @@ import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
+import android.webkit.HttpAuthHandler;
 import android.webkit.PermissionRequest;
 import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
@@ -56,19 +58,26 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.ShareCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuCompat;
+import androidx.lifecycle.Observer;
 import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewFeature;
 
+import com.cylonid.nativealpha.databinding.DialogHttpAuthBinding;
+import com.cylonid.nativealpha.helper.AdblockProviderApiHelper;
 import com.cylonid.nativealpha.helper.BiometricPromptHelper;
 import com.cylonid.nativealpha.helper.IconPopupMenuHelper;
+import com.cylonid.nativealpha.model.AdblockConfig;
 import com.cylonid.nativealpha.model.DataManager;
 import com.cylonid.nativealpha.model.SandboxManager;
 import com.cylonid.nativealpha.model.WebApp;
 import com.cylonid.nativealpha.util.Const;
+import com.cylonid.nativealpha.util.DateUtils;
 import com.cylonid.nativealpha.util.EntryPointUtils;
 import com.cylonid.nativealpha.util.LocaleUtils;
+import com.cylonid.nativealpha.util.NotificationUtils;
 import com.cylonid.nativealpha.util.Utility;
 import com.cylonid.nativealpha.util.WebViewLauncher;
+import com.google.android.material.color.MaterialColors;
 import com.google.android.material.snackbar.Snackbar;
 import com.jakewharton.processphoenix.ProcessPhoenix;
 
@@ -82,8 +91,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
+import io.github.edsuns.adfilter.AdFilter;
+import io.github.edsuns.adfilter.Filter;
+import io.github.edsuns.adfilter.util.None;
 import pub.devrel.easypermissions.EasyPermissions;
 import static com.cylonid.nativealpha.util.Const.CODE_OPEN_FILE;
 
@@ -110,12 +123,16 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
     private boolean fallbackToDefaultLongClickBehaviour = false;
     private PopupMenu mPopupMenu = null;
 
+    private AdFilter adFilter = AdFilter.Companion.get();
+
+    private AdblockProviderApiHelper adblockProviderApiHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        adblockProviderApiHelper = new AdblockProviderApiHelper(adFilter);
         webappID = getIntent().getIntExtra(Const.INTENT_WEBAPPID, -1);
         EntryPointUtils.entryPointReached(this);
-
         webapp = DataManager.getInstance().getWebApp(webappID);
         if (webapp == null) {
             // Toast is shown in getWebApp method
@@ -165,11 +182,15 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
         wv = findViewById(R.id.webview);
         progressBar = findViewById(R.id.progressBar);
 
-        if (webapp.isUseAdblock()) {
+        if(webapp.isUseAdblock()) {
             wv.setVisibility(View.GONE);
             wv = findViewById(R.id.adblockwebview);
             wv.setVisibility(View.VISIBLE);
+            adFilter.setupWebView(wv);
+            adblockProviderApiHelper.synchronizeAdblockProviderWithSettings(DataManager.getInstance().getSettings().getGlobalWebApp().getAdBlockSettings());
+            adFilter.getViewModel().getOnDirty().observe(this, none -> wv.clearCache(false));
         }
+
         String fieldName = Stream.of(WebViewActivity.class.getDeclaredFields()).filter(f -> f.getType() == WebView.class).findFirst().orElseThrow(null).getName();
         String uaString = wv.getSettings().getUserAgentString().replace("; " + fieldName, "");
         wv.getSettings().setUserAgentString(uaString);
@@ -232,6 +253,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
             return true;
         });
 
+
         wv.setDownloadListener((dl_url, userAgent, contentDisposition, mimeType, contentLength) -> {
 
             if (mimeType.equals("application/pdf")) {
@@ -254,7 +276,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                                 Uri.parse(dl_url));
                     }
                     catch(Exception e) {
-                        Utility.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
+                        NotificationUtils.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
                     }
                   String file_name = Utility.getFileNameFromDownload(dl_url, contentDisposition, mimeType);
 
@@ -277,7 +299,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                       } else {
                           if (dm != null) {
                               dm.enqueue(request);
-                              Utility.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
+                              NotificationUtils.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
                           }
                       }
                   }
@@ -285,7 +307,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                       if (dm != null) {
                           dm.enqueue(request);
-                          Utility.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
+                          NotificationUtils.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
                       }
                   }
                 }
@@ -357,17 +379,12 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
 
     @SuppressLint("RequiresFeature")
     private void setDarkModeIfNeeded() {
-        if (!BuildConfig.FLAVOR.equals("extended")) {
+        if (!BuildConfig.FLAVOR.contains("extended")) {
             return;
-        }
-        if (Utility.isNightMode(this)) {
-            wv.setBackgroundColor(Color.BLACK);
-        } else {
-            wv.setBackgroundColor(Color.WHITE);
         }
 
         boolean needsForcedDarkMode = webapp.isUseTimespanDarkMode() &&
-                Utility.isInInterval(Utility.convertStringToCalendar(webapp.getTimespanDarkModeBegin()), Calendar.getInstance(), Utility.convertStringToCalendar(webapp.getTimespanDarkModeEnd()))
+                DateUtils.isInInterval(DateUtils.convertStringToCalendar(webapp.getTimespanDarkModeBegin()), Calendar.getInstance(), DateUtils.convertStringToCalendar(webapp.getTimespanDarkModeEnd()))
                 || (!webapp.isUseTimespanDarkMode() && webapp.isForceDarkMode());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -376,6 +393,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
             boolean isAlgorithmicDarkeningSupported = WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING);
 
             if (needsForcedDarkMode) {
+                wv.setBackgroundColor(Color.BLACK);
                 wv.setForceDarkAllowed(true);
                 getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                 if (isForceDarkSupported) {
@@ -388,7 +406,8 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                     WebSettingsCompat.setAlgorithmicDarkeningAllowed(wv.getSettings(), true);
                 }
             } else {
-                getDelegate().setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                wv.setBackgroundColor(Color.WHITE);
 
                 if (isForceDarkSupported) {
                     WebSettingsCompat.setForceDark(wv.getSettings(), WebSettingsCompat.FORCE_DARK_OFF);
@@ -411,12 +430,26 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
 
         String currentUrl = wv.getUrl();
         String title = currentUrl.length() < 32 ? currentUrl : currentUrl.substring(0, 32) + "…";
-        SpannableString spanString = new SpannableString(title);
-        spanString.setSpan(new ForegroundColorSpan(Color.BLACK), 0,     spanString.length(), 0); //fix the color to white
-        spanString.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, spanString.length(), 0);
-        mPopupMenu.getMenu().getItem(0).setTitle(spanString);
-        if(wv.canGoForward()) mPopupMenu.getMenu().getItem(2).setVisible(true);
+        SpannableString spanStringWebAppTitle = new SpannableString(title);
 
+        // The item is disabled because it has no click action, but we want to override the disabled style (text color)
+        int colorOnSurface = MaterialColors.getColor(center, R.attr.colorOnSurface, Color.BLACK);
+        ForegroundColorSpan foregroundColorSpan = new ForegroundColorSpan(colorOnSurface);
+        spanStringWebAppTitle.setSpan(foregroundColorSpan, 0,     spanStringWebAppTitle.length(), 0);
+
+        spanStringWebAppTitle.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), 0, spanStringWebAppTitle.length(), 0);
+        mPopupMenu.getMenu().getItem(0).setTitle(spanStringWebAppTitle);
+
+        for (int i = 0; i < mPopupMenu.getMenu().size(); i++) {
+            MenuItem item = mPopupMenu.getMenu().getItem(i);
+            SpannableString spanString = new SpannableString(item.getTitle());
+            spanString.setSpan(foregroundColorSpan, 0, spanString.length(),0);
+            item.setTitle(spanString);
+        }
+        if(wv.canGoForward()) mPopupMenu.getMenu().getItem(2).setVisible(true);
+        if(BuildConfig.DEBUG) {
+            mPopupMenu.getMenu().getItem(6).setVisible(true);
+        }
         mPopupMenu.setOnMenuItemClickListener(menuItem -> {
             switch(menuItem.getItemId()) {
                 case R.id.cmItemForward:
@@ -449,6 +482,14 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                 case R.id.cmMainMenu:
                     Intent intent = new Intent(this, MainActivity.class);
                     startActivity(intent);
+                    return true;
+                case R.id.cmShowAdblockProviders:
+                    StringBuilder message = new StringBuilder();
+                    for(Map.Entry<String, Filter> entry :  Objects.requireNonNull(AdFilter.Companion.get().getViewModel().getFilters().getValue()).entrySet()) {
+                        Filter filter = entry.getValue();
+                        message.append(filter.getUrl()).append(" has downloaded: ").append(filter.hasDownloaded()).append("\n\n");
+                }
+                    NotificationUtils.showToast(this, message.toString());
                     return true;
 
             }
@@ -514,7 +555,6 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
     @Override
     protected void onPause() {
         super.onPause();
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
 
         wv.evaluateJavascript("document.querySelectorAll('audio').forEach(x => x.pause());document.querySelectorAll('video').forEach(x => x.pause());", null);
         wv.onPause();
@@ -545,6 +585,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
     private Map<String, String> initCustomHeaders(boolean save_data) {
         Map<String, String> extraHeaders = new HashMap<>();
         extraHeaders.put("DNT", "1");
+        extraHeaders.put("X-REQUESTED-WITH", "");
         if (save_data)
             extraHeaders.put("Save-Data", "on");
         return Collections.unmodifiableMap(extraHeaders);
@@ -645,7 +686,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                 DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
                 if (dm != null) {
                     dm.enqueue(dl_request);
-                    Utility.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
+                    NotificationUtils.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
                 }
                 dl_request = null;
 
@@ -730,7 +771,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                 Intent intent = fileChooserParams.createIntent();
                 startActivityForResult(intent, CODE_OPEN_FILE);
             } catch (Exception e) {
-                Utility.showInfoSnackbar(WebViewActivity.this, getString(R.string.no_filemanager), Snackbar.LENGTH_LONG);
+                NotificationUtils.showInfoSnackbar(WebViewActivity.this, getString(R.string.no_filemanager), Snackbar.LENGTH_LONG);
                 e.printStackTrace();
             }
             return true;
@@ -816,7 +857,31 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
         }
     }
 
+    private void showHttpAuthDialog(final HttpAuthHandler handler, String host, String realm) {
+        DialogHttpAuthBinding localBinding = DialogHttpAuthBinding.inflate(LayoutInflater.from(this));
+        new AlertDialog.Builder(this)
+                .setView(localBinding.getRoot())
+                .setTitle(getString(R.string.http_auth_title))
+                .setMessage(getString(R.string.enter_http_auth_credentials, realm, host))
+                .setPositiveButton(getString(R.string.ok), (dialog, whichButton) -> {
+                    String username = localBinding.username.getText().toString();
+                    String password = localBinding.password.getText().toString();
+
+                    handler.proceed(username, password);
+
+                })
+                .setNegativeButton(getString(R.string.cancel), (dialog, whichButton) -> handler.cancel())
+                .show();
+    }
+
     private class CustomBrowser extends WebViewClient {
+
+        private AdFilter adFilter = AdFilter.Companion.get();
+
+        @Override
+        public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
+            showHttpAuthDialog(handler, host, realm);
+        }
 
         @Override
         public void onPageFinished(WebView view, String url) {
@@ -828,17 +893,27 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
             super.onPageFinished(view, url);
         }
 
+        @Override
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            adFilter.performScript(view, url);
+            super.onPageStarted(view, url, favicon);
+        }
+
         @Nullable
         @Override
         public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
             if(urlOnFirstPageload.equals("")) urlOnFirstPageload = request.getUrl().toString();
+
+            if(webapp.isUseAdblock()) {
+                return (adFilter.shouldIntercept(view, request)).getResourceResponse();
+            }
             if (webapp.isBlockThirdPartyRequests()) {
                 Uri uri = request.getUrl();
                 Uri webapp_uri = Uri.parse(webapp.getBaseUrl());
 
                 if(uri.getHost() != null) {
                     if (!uri.getHost().endsWith(webapp_uri.getHost())) {
-                        return null;
+                        return new WebResourceResponse("text/plain", "utf-8", null);
                     }
                 }
             }

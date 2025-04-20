@@ -136,6 +136,16 @@ public class TestUtils {
 
     }
 
+    public static CoordinatesProvider percentX(final float percent) {
+        return view -> {
+            int[] location = new int[2];
+            view.getLocationOnScreen(location);
+            float x = location[0] + view.getWidth() * percent;
+            float y = location[1] + view.getHeight() / 2f;
+            return new float[]{x, y};
+        };
+    }
+
     public static AppCompatActivity getCurrentActivity() {
         final AppCompatActivity[] activity = new AppCompatActivity[1];
         onView(isRoot()).check((view, noViewFoundException) -> activity[0] = (AppCompatActivity) view.getContext());

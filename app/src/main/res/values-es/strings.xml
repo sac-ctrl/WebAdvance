@@ -119,7 +119,7 @@
     <string name="general">General</string>
     <string name="backup">Copia de seguridad</string>
     <string name="use_google_safe_browsing">Utilizar la navegación segura de Google</string>
-    <string name="block_all_third_party_requests">Bloquear todas las solicitudes de terceros</string>
+    <string name="block_all_third_party_requests">Bloquear solicitudes de terceros</string>
     <string name="sandbox">Sandbox</string>
     <string name="no_sandbox">No usar la sandbox.</string>
     <string name="all_sandboxes_used">Todas las sandboxes están en uso actualmente.</string>
@@ -167,4 +167,17 @@
     <string name="always_show_software_buttons">Mostrar siempre los botones de navegación del software</string>
     <string name="use_standard_context_menu_temporarily">Utilizar el menú contextual estándar</string>
     <string name="use_standard_context_menu_permanently">Utilizar permanentemente el menú contextual estándar</string>
+    <string name="adblock_config">Configuración de Adblock</string>
+    <string name="adblock_description">Las entradas creadas aquí sirven como fuentes para el bloqueador de anuncios. Las reglas de bloqueo se descargan desde la URL especificada y se mantienen actualizadas. Tenga en cuenta que agregar demasiadas fuentes puede afectar negativamente el rendimiento. Puede crear hasta 8 entradas.</string>
+    <string name="add_a_new_adblock_provider">Añadir un nuevo proveedor de Adblock</string>
+    <string name="question_delete_item">¿Está seguro de que desea eliminar este elemento?</string>
+    <string name="undo">Deshacer</string>
+    <string name="x_was_removed">Se ha eliminado %1$s.</string>
+    <string name="restore_standard_setting">Restaurar configuración predeterminada</string>
+    <string name="http_auth_title">Iniciar sesión (HTTP Auth)</string>
+    <string name="username">Nombre de usuario</string>
+    <string name="password">Contraseña</string>
+    <string name="enter_http_auth_credentials">Introduce las credenciales para %1$s en %2$s:</string>
+    <string name="entry_already_exists">Esta entrada ya existe.</string>
+    <string name="support_liberapay">Apóyame en Liberapay</string>
 </resources>
