@@ -20,10 +20,15 @@
 
 ## Download Options
 [![IzzyOnDroid Download Badge](graphics/IzzyOnDroid.png)](https://apt.izzysoft.de/fdroid/index/apk/com.cylonid.nativealpha)
-[![APK Download Badge](graphics/apk_badge.png)](https://github.com/cylonid/NativeAlphaForAndroid/releases/download/v1.5.0/NativeAlpha-standard-universal-release-v1.5.0.apk)
+[![APK Download Badge](graphics/apk_badge.png)](https://github.com/cylonid/NativeAlphaForAndroid/releases/download/v1.5.0/NativeAlpha-extendedGithub-universal-release-v1.5.0.apk)
 [![Google Play Download Badge](graphics/google_play.png)](https://play.google.com/store/apps/details?id=com.cylonid.nativealpha)
 ### Paid Download
 [![Google Play Download Badge](graphics/google_play.png)](https://play.google.com/store/apps/details?id=com.cylonid.nativealpha.pro)
+
+
+
+
+[![LiberaPay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/cylonid/donate)
 
 ## Paid Features
 
