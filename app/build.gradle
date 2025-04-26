@@ -3,6 +3,10 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'com.mikepenz.aboutlibraries.plugin'
 
+aboutLibraries {
+    excludeFields = ["generated"]
+}
+
 //https://gist.github.com/shakalaca/6422811
 android {
      applicationVariants.all { variant ->
@@ -18,6 +22,9 @@ android {
          }
      }
 
+    dependenciesInfo {
+        includeInApk = false
+    }
     compileSdk 35
     splits {
         abi {
