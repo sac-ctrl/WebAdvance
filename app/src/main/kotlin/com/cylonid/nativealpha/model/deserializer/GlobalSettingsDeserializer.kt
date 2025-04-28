@@ -1,11 +1,14 @@
 package com.cylonid.nativealpha.model.deserializer
 
+import android.util.Log
 import com.cylonid.nativealpha.model.GlobalSettings
 import com.cylonid.nativealpha.model.WebApp
+import com.cylonid.nativealpha.util.Const
 import com.google.gson.Gson
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
+import java.lang.NullPointerException
 import java.lang.reflect.Type
 
 class GlobalSettingsDeserializer : JsonDeserializer<GlobalSettings> {
@@ -14,11 +17,17 @@ class GlobalSettingsDeserializer : JsonDeserializer<GlobalSettings> {
         typeOfT: Type,
         context: JsonDeserializationContext
     ): GlobalSettings {
-        val obj = json.asJsonObject
-        val globalWebApp = context.deserialize<WebApp>(obj.get("globalWebApp"), WebApp::class.java)
-        val settings = Gson().fromJson(obj, GlobalSettings::class.java)
-        settings.globalWebApp = globalWebApp
+        try {
+            val obj = json.asJsonObject
+            val globalWebApp =
+                context.deserialize<WebApp>(obj.get("globalWebApp"), WebApp::class.java)
+            val settings = Gson().fromJson(obj, GlobalSettings::class.java)
+            settings.globalWebApp = globalWebApp
 
-        return settings
+            return settings
+        }
+        catch(e: NullPointerException) {
+            return GlobalSettings()
+        }
     }
 }

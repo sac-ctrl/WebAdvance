@@ -20,7 +20,7 @@
 
 ## Download Options
 [![IzzyOnDroid Download Badge](graphics/IzzyOnDroid.png)](https://apt.izzysoft.de/fdroid/index/apk/com.cylonid.nativealpha)
-[![APK Download Badge](graphics/apk_badge.png)](https://github.com/cylonid/NativeAlphaForAndroid/releases/download/v1.5.0/NativeAlpha-extendedGithub-universal-release-v1.5.0.apk)
+[![APK Download Badge](graphics/apk_badge.png)](https://github.com/cylonid/NativeAlphaForAndroid/releases/download/v1.5.1/NativeAlpha-extendedGithub-universal-release-v1.5.1.apk)
 [![Google Play Download Badge](graphics/google_play.png)](https://play.google.com/store/apps/details?id=com.cylonid.nativealpha)
 ### Paid Download
 [![Google Play Download Badge](graphics/google_play.png)](https://play.google.com/store/apps/details?id=com.cylonid.nativealpha.pro)
@@ -46,6 +46,9 @@ __Note: From v1.5.0, the GitHub and IzzyOnDroid release is functionally equivale
 * Cleaner main screen, less buttons: "Delete" and "Open settings" actions are available via swipe, Web Apps are opened by clicking on the label.
 * Login using HTTP Auth is supported
 * Several bugfixes, most notably regarding the top system bar on devices running Android 15
+
+### Small release (v1.5.1)
+* Fixed a crash upon app start when global settings cannot be read from disk
 
 ### Native Alpha Plus
 
