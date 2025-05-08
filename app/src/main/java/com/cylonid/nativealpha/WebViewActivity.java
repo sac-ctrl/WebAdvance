@@ -429,7 +429,10 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
         mPopupMenu = IconPopupMenuHelper.getMenu(center, R.menu.wv_context_menu, WebViewActivity.this);
 
         String currentUrl = wv.getUrl();
-        String title = currentUrl.length() < 32 ? currentUrl : currentUrl.substring(0, 32) + "…";
+        String title = "";
+        if (currentUrl != null) {
+            title = currentUrl.length() < 32 ? currentUrl : currentUrl.substring(0, 32) + "…";
+        }
         SpannableString spanStringWebAppTitle = new SpannableString(title);
 
         // The item is disabled because it has no click action, but we want to override the disabled style (text color)
