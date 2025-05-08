@@ -967,8 +967,14 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
         @Override
         public void onLoadResource(WebView view, String url) {
             super.onLoadResource(view, url);
-            if (DataManager.getInstance().getWebApp(webappID).isRequestDesktop())
-                view.evaluateJavascript("document.querySelector('meta[name=\"viewport\"]').setAttribute('content', 'width=1024px, initial-scale=' + (document.documentElement.clientWidth / 1024));", null);
+
+           if (DataManager.getInstance().getWebApp(webappID).isRequestDesktop())
+               view.evaluateJavascript("""
+                        var needsForcedWidth = document.documentElement.clientWidth < 1200;
+                        if(needsForcedWidth) {
+                          document.querySelector('meta[name=\"viewport\"]').setAttribute('content', 'width=1200px, initial-scale=' + (document.documentElement.clientWidth / 1200));
+                        }
+                       """, null);
             view.evaluateJavascript("document.addEventListener(    \"visibilitychange\"    , (event) => {         event.stopImmediatePropagation();    }  );", null);
         }
 
