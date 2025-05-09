@@ -1,6 +1,7 @@
 package com.cylonid.nativealpha.helper
 
 import android.content.Context
+import android.os.Build
 import android.view.Gravity
 import android.view.View
 import android.widget.PopupMenu
@@ -11,7 +12,9 @@ object IconPopupMenuHelper {
     @JvmStatic
     fun getMenu(v: View, @MenuRes menuRes: Int, c: Context): PopupMenu {
         val popup = PopupMenu(c, v, Gravity.END)
-        popup.setForceShowIcon(true)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            popup.setForceShowIcon(true)
+        }
         popup.menuInflater.inflate(menuRes, popup.menu)
 
         return popup
