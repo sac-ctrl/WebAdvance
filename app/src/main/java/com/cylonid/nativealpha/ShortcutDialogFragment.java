@@ -387,7 +387,8 @@ public class ShortcutDialogFragment extends DialogFragment  {
         uiFavicon.setVisibility(View.VISIBLE);
     }
     private void showFailedMessage() {
-        NotificationUtils.showToast(requireActivity(), getString(R.string.icon_fetch_failed_line1, webapp.getTitle()) + getString(R.string.icon_fetch_failed_line2) + getString(R.string.icon_fetch_failed_line3));
+        String title = webapp != null && webapp.getTitle() != null ? webapp.getTitle() : "";
+        NotificationUtils.showToast(requireActivity(), getString(R.string.icon_fetch_failed_line1, title) + getString(R.string.icon_fetch_failed_line2) + getString(R.string.icon_fetch_failed_line3));
     }
 
     private void setShortcutTitle(String shortcut_title) {
