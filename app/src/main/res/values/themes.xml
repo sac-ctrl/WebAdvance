@@ -54,5 +54,9 @@
         <item name="android:windowBackground">@drawable/launch_screen</item>
     </style>
 
+    <style name="AppTheme.WebView">
+        <item name="android:statusBarColor">#373737</item>
+    </style>
+
 
 </resources>

@@ -45,7 +45,7 @@
             android:windowSoftInputMode="adjustResize"
             android:icon="@mipmap/native_alpha"
             android:roundIcon="@mipmap/native_alpha"
-            android:theme="@style/AppTheme"
+            android:theme="@style/AppTheme.WebView"
             android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
             android:launchMode="standard"
             android:documentLaunchMode="intoExisting"
