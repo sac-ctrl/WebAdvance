@@ -127,7 +127,6 @@ public class ShortcutDialogFragment extends DialogFragment  {
                 .setPositiveButton(android.R.string.ok, (dialog1, which) -> {
                     addShortcutToHomeScreen(bitmap);
                     dismiss();
-
                 })
                 .setNegativeButton(android.R.string.cancel,  (dialog1, which) -> {
                     dismiss();
@@ -200,17 +199,11 @@ public class ShortcutDialogFragment extends DialogFragment  {
         if (host_part.startsWith("oebb.at"))
             found_icons.put(Integer.MAX_VALUE, "https://www.oebb.at/.resources/pv-2017/themes/images/favicons/android-chrome-192x192.png");
 
-        //Wrong path in PWA manifest
-        if (host_part.startsWith("explosm.net"))
-            found_icons.put(Integer.MAX_VALUE, "https://files.explosm.net/img/favicons/site/android-chrome-192x192.png");
 
         //Path in PWA manifest is HTTP
         if (host_part.startsWith("oe3.orf.at"))
             found_icons.put(Integer.MAX_VALUE, "https://tubestatic.orf.at/mojo/1_3/storyserver//tube/common/images/apple-icons/oe3.png");
 
-        //Non-existing path
-        if (host_part.startsWith("darfichrein.de"))
-            found_icons.put(Integer.MAX_VALUE, "https://c.darfichrein.de/assets/img/logo1.png");
 
         return found_icons;
     }

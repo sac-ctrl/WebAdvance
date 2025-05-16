@@ -39,7 +39,7 @@ __Note: From v1.5.0, the GitHub and IzzyOnDroid release is functionally equivale
   * Biometric Access Protection: For every Web App, you can enable access protection (Fingerprint + fallback to lockscreen PIN)
   * Experimental "Force Dark Mode" also available for websites (configurable with respect to day-time)
   
-## Latest Changes (v1.5.0)
+## Latest Major Changes (v1.5.x)
 
 * New adblock engine that allows users to add their own selection of block lists. By default, the app will download and use "Fanboy Ultimate List" from https://fanboy.co.nz. You can change your block list sources at any time.
 * Material Design 3-based components and theme
@@ -47,8 +47,12 @@ __Note: From v1.5.0, the GitHub and IzzyOnDroid release is functionally equivale
 * Login using HTTP Auth is supported
 * Several bugfixes, most notably regarding the top system bar on devices running Android 15
 
-### Small release (v1.5.1)
-* Fixed a crash upon app start when global settings cannot be read from disk
+### Small release (v1.5.2)
+* Fixed cases where OK button could not be pressed on intro screen
+* Changed system top bar to neutral color again
+* Fixed an issue with desktop mode on large screens
+* Fixed crashes when opening pop up menu
+* Information dialog regarding adblock-related crashes
 
 ### Native Alpha Plus
 

@@ -175,4 +175,6 @@
     <string name="enter_http_auth_credentials">Geben Sie die Zugangsdaten für %1$s bei %2$s ein:</string>
     <string name="entry_already_exists">Dieser Eintrag existiert bereits.</string>
     <string name="support_liberapay">Unterstütze mich auf Liberapay</string>
+    <string name="adblock_warning_text">Ihre aktuellen Adblocker-Einstellungen führen möglicherweise zu Problemen oder Abstürzen. Leider funktionieren nicht alle Filterlisten auf allen Geräten.\n\nEs wird empfohlen, die Filterlisten zu leeren und testweise neu zu befüllen.</string>
+    <string name="warning">Warnung</string>
 </resources>

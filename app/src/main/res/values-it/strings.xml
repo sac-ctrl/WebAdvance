@@ -176,4 +176,6 @@
     <string name="enter_http_auth_credentials">Insericsci le credenziali per %1$s su %2$s:</string>
     <string name="entry_already_exists">Questa voce esiste già.</string>
     <string name="support_liberapay">Sostienimi su Liberapay</string>
+    <string name="adblock_warning_text">Le impostazioni attuali dell\'ad blocker potrebbero causare problemi o arresti anomali. Purtroppo non tutte le liste di filtri funzionano su tutti i dispositivi.\n\nSi consiglia di svuotare le liste di filtri e riempirle nuovamente per testare.</string>
+    <string name="warning">Avviso</string>
 </resources>

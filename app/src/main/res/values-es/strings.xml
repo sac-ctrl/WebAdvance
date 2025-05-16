@@ -180,4 +180,6 @@
     <string name="enter_http_auth_credentials">Introduce las credenciales para %1$s en %2$s:</string>
     <string name="entry_already_exists">Esta entrada ya existe.</string>
     <string name="support_liberapay">Apóyame en Liberapay</string>
+    <string name="adblock_warning_text">La configuración actual del bloqueador de anuncios puede causar problemas o fallos. Lamentablemente, no todas las listas de filtros funcionan en todos los dispositivos.\n\nSe recomienda vaciar las listas de filtros y volver a llenarlas como prueba.</string>
+    <string name="warning">Advertencia</string>
 </resources>

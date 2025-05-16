@@ -6,13 +6,11 @@ import android.app.Application;
 import android.app.DownloadManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
@@ -23,9 +21,7 @@ import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -41,13 +37,11 @@ import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -57,12 +51,11 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ShareCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.MenuCompat;
-import androidx.lifecycle.Observer;
 import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewFeature;
 
 import com.cylonid.nativealpha.databinding.DialogHttpAuthBinding;
+import com.cylonid.nativealpha.helper.AdblockLifecycleHelper;
 import com.cylonid.nativealpha.helper.AdblockProviderApiHelper;
 import com.cylonid.nativealpha.helper.BiometricPromptHelper;
 import com.cylonid.nativealpha.helper.IconPopupMenuHelper;
@@ -79,7 +72,6 @@ import com.cylonid.nativealpha.util.Utility;
 import com.cylonid.nativealpha.util.WebViewLauncher;
 import com.google.android.material.color.MaterialColors;
 import com.google.android.material.snackbar.Snackbar;
-import com.jakewharton.processphoenix.ProcessPhoenix;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -89,15 +81,14 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 import io.github.edsuns.adfilter.AdFilter;
 import io.github.edsuns.adfilter.Filter;
-import io.github.edsuns.adfilter.util.None;
 import pub.devrel.easypermissions.EasyPermissions;
+
 import static com.cylonid.nativealpha.util.Const.CODE_OPEN_FILE;
 
 public class WebViewActivity extends AppCompatActivity implements EasyPermissions.PermissionCallbacks {
@@ -123,13 +114,18 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
     private boolean fallbackToDefaultLongClickBehaviour = false;
     private PopupMenu mPopupMenu = null;
 
-    private AdFilter adFilter = AdFilter.Companion.get();
+    private AdFilter adFilter;
 
     private AdblockProviderApiHelper adblockProviderApiHelper;
+    private AdblockLifecycleHelper adblockLifecycleHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        adblockLifecycleHelper = new AdblockLifecycleHelper(this);
+        adblockLifecycleHelper.trySyncOperation(() -> adFilter = AdFilter.Companion.get(getApplicationContext()));
+
         adblockProviderApiHelper = new AdblockProviderApiHelper(adFilter);
         webappID = getIntent().getIntExtra(Const.INTENT_WEBAPPID, -1);
         EntryPointUtils.entryPointReached(this);
@@ -182,13 +178,23 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
         wv = findViewById(R.id.webview);
         progressBar = findViewById(R.id.progressBar);
 
-        if(webapp.isUseAdblock()) {
+        List<AdblockConfig> adblockConfigs = DataManager.getInstance().getSettings().getGlobalWebApp().getAdBlockSettings();
+        if (webapp.isUseAdblock() && !adblockConfigs.isEmpty()) {
             wv.setVisibility(View.GONE);
             wv = findViewById(R.id.adblockwebview);
             wv.setVisibility(View.VISIBLE);
+
             adFilter.setupWebView(wv);
-            adblockProviderApiHelper.synchronizeAdblockProviderWithSettings(DataManager.getInstance().getSettings().getGlobalWebApp().getAdBlockSettings());
-            adFilter.getViewModel().getOnDirty().observe(this, none -> wv.clearCache(false));
+            adblockLifecycleHelper.beforeAdblockOperation(() -> adblockProviderApiHelper.synchronizeAdblockProviderWithSettings(adblockConfigs));
+
+            adFilter.getViewModel().getOnDirty().observe(this, none -> wv.clearCache(false)
+            );
+
+            adFilter.getViewModel().getEnabledFilterCount().observe(this, count -> {
+                if (count == adblockConfigs.size()) {
+                    adblockLifecycleHelper.afterAdblockOperation();
+                }
+            });
         }
 
         String fieldName = Stream.of(WebViewActivity.class.getDeclaredFields()).filter(f -> f.getType() == WebView.class).findFirst().orElseThrow(null).getName();
