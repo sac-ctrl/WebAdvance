@@ -40,6 +40,7 @@ class NewsActivity : AppCompatActivity(), View.OnTouchListener {
         setContentView(view)
 
         binding.newsContent.settings.javaScriptEnabled = true
+        binding.newsContent.isLongClickable = false
         binding.newsContent.webChromeClient = WebChromeClient()
 
         onBackPressedDispatcher.addCallback(this) {}
