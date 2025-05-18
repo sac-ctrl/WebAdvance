@@ -144,30 +144,28 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
     @SuppressLint("ClickableViewAccessibility")
     private void setupWebView() {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            String processName = Application.getProcessName();
-            String packageName = this.getPackageName();
+        String processName = Application.getProcessName();
+        String packageName = this.getPackageName();
 
-            boolean hasSandboxing = SandboxManager.getInstance() != null;
-            // Sandboxed Web App is openend in main process using an old shortcut
-            if(packageName.equals(processName) && webapp.isUseContainer() && hasSandboxing) {
+        boolean hasSandboxing = SandboxManager.getInstance() != null;
+        // Sandboxed Web App is openend in main process using an old shortcut
+        if (packageName.equals(processName) && webapp.isUseContainer() && hasSandboxing) {
+            WebViewLauncher.startWebViewInNewProcess(webapp, this);
+        }
+
+        if (!packageName.equals(processName) && hasSandboxing) {
+            if (SandboxManager.getInstance().isSandboxUsedByAnotherApp(webapp)) {
+                SandboxManager.getInstance().unregisterWebAppFromSandbox(webapp.getContainerId());
                 WebViewLauncher.startWebViewInNewProcess(webapp, this);
             }
-
-            if (!packageName.equals(processName) && hasSandboxing) {
-                if (SandboxManager.getInstance().isSandboxUsedByAnotherApp(webapp)) {
-                    SandboxManager.getInstance().unregisterWebAppFromSandbox(webapp.getContainerId());
-                    WebViewLauncher.startWebViewInNewProcess(webapp, this);
-                }
-                try {
-                    SandboxManager.getInstance().registerWebAppToSandbox(webapp);
-                    WebView.setDataDirectorySuffix(webapp.getContainerId() + webapp.getAlphanumericBaseUrl() + "_" + webapp.getID());
-                } catch (IllegalStateException e) {
-                    e.printStackTrace();
-                }
+            try {
+                SandboxManager.getInstance().registerWebAppToSandbox(webapp);
+                WebView.setDataDirectorySuffix(webapp.getContainerId() + webapp.getAlphanumericBaseUrl() + "_" + webapp.getID());
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
             }
-
         }
+
         setContentView(R.layout.full_webview);
 
         if(webapp.isKeepAwake()) {
