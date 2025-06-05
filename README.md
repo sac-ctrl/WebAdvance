@@ -93,12 +93,12 @@ A: This is because Native Alpha makes use of caching in the same way your browse
 
 <details>
 <summary><i> Q: What is the minimum Android version for running Native Alpha? </i></summary>
-A: Oreo (8.0). This is because older versions use a discontinued API for creating screenshots which currently is not implemented.
+A: Android 9 and newer are supported.
 </details>
 
 <details>
 <summary><i> Q: I don't want to use Google Play services, is there any other way to obtain Native Alpha Plus? </i></summary>
-A: You can build the app yourself, everything is open-source including the paid features.
+A: You can build the app yourself, everything is open-source including the paid features. Also, the GitHub release includes the Pro features.
 </details>
 
 ## Notable used libraries/resources
