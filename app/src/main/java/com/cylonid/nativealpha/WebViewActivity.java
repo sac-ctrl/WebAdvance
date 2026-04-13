@@ -28,8 +28,11 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
+import androidx.appcompat.widget.Toolbar;
 import android.webkit.HttpAuthHandler;
 import android.webkit.PermissionRequest;
 import android.webkit.SslErrorHandler;
@@ -48,6 +51,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ShareCompat;
 import androidx.core.content.ContextCompat;
@@ -70,9 +74,12 @@ import com.cylonid.nativealpha.util.LocaleUtils;
 import com.cylonid.nativealpha.util.NotificationUtils;
 import com.cylonid.nativealpha.util.Utility;
 import com.cylonid.nativealpha.util.WebViewLauncher;
+import com.cylonid.nativealpha.waos.model.DownloadRecord;
+import com.cylonid.nativealpha.waos.model.DownloadRepository;
 import com.google.android.material.color.MaterialColors;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -168,6 +175,25 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
 
         setContentView(R.layout.full_webview);
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        toolbar.setTitle(webapp.getTitle());
+
+        ImageButton buttonBack = findViewById(R.id.button_back);
+        ImageButton buttonForward = findViewById(R.id.button_forward);
+        ImageButton buttonRefresh = findViewById(R.id.button_refresh);
+        ImageButton buttonHome = findViewById(R.id.button_home);
+        ImageButton buttonShare = findViewById(R.id.button_share);
+        ImageButton buttonCopyUrl = findViewById(R.id.button_copy_url);
+        ImageButton buttonOpenExternal = findViewById(R.id.button_open_external);
+        ImageButton buttonDownloadHistory = findViewById(R.id.button_download_history);
+        ImageButton buttonClipboard = findViewById(R.id.button_clipboard);
+        ImageButton buttonCredentials = findViewById(R.id.button_credentials);
+        ImageButton buttonFind = findViewById(R.id.button_find);
+
         if(webapp.isKeepAwake()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
@@ -176,6 +202,51 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
 
         wv = findViewById(R.id.webview);
         progressBar = findViewById(R.id.progressBar);
+
+        buttonBack.setOnClickListener(v -> {
+            if (wv.canGoBack()) wv.goBack(); else onBackPressed();
+        });
+        buttonForward.setOnClickListener(v -> {
+            if (wv.canGoForward()) wv.goForward();
+        });
+        buttonRefresh.setOnClickListener(v -> wv.reload());
+        buttonHome.setOnClickListener(v -> loadURL(wv, webapp.getBaseUrl()));
+        buttonShare.setOnClickListener(v -> {
+            new ShareCompat.IntentBuilder(WebViewActivity.this)
+                    .setType("text/plain")
+                    .setChooserTitle("Share URL")
+                    .setText(wv.getUrl())
+                    .startChooser();
+        });
+        buttonCopyUrl.setOnClickListener(v -> {
+            ClipboardManager clipboard = getSystemService(ClipboardManager.class);
+            ClipData clip = ClipData.newPlainText("URL", wv.getUrl());
+            clipboard.setPrimaryClip(clip);
+            NotificationUtils.showInfoSnackbar(WebViewActivity.this, getString(R.string.copy_url), Snackbar.LENGTH_SHORT);
+        });
+        buttonOpenExternal.setOnClickListener(v -> {
+            String currentUrl = wv.getUrl();
+            if (currentUrl != null && !currentUrl.isEmpty()) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(currentUrl));
+                startActivity(browserIntent);
+            }
+        });
+        buttonDownloadHistory.setOnClickListener(v -> {
+            Intent intent = new Intent(this, com.cylonid.nativealpha.waos.ui.DownloadHistoryActivity.class);
+            intent.putExtra(WaosConstants.EXTRA_DOWNLOAD_APP_ID, webappID);
+            startActivity(intent);
+        });
+        buttonClipboard.setOnClickListener(v -> {
+            Intent intent = new Intent(this, com.cylonid.nativealpha.waos.ui.ClipboardManagerActivity.class);
+            intent.putExtra(WaosConstants.EXTRA_CLIPBOARD_APP_ID, webappID);
+            startActivity(intent);
+        });
+        buttonCredentials.setOnClickListener(v -> {
+            Intent intent = new Intent(this, com.cylonid.nativealpha.waos.ui.CredentialVaultActivity.class);
+            intent.putExtra(WaosConstants.EXTRA_WAOS_APP_ID, webappID);
+            startActivity(intent);
+        });
+        buttonFind.setOnClickListener(v -> showFindInPageDialog());
 
         List<AdblockConfig> adblockConfigs = DataManager.getInstance().getSettings().getGlobalWebApp().getAdBlockSettings();
         if (webapp.isUseAdblock() && !adblockConfigs.isEmpty()) {
@@ -283,6 +354,9 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                     catch(Exception e) {
                         NotificationUtils.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
                     }
+                    if (request == null) {
+                        return;
+                    }
                   String file_name = Utility.getFileNameFromDownload(dl_url, contentDisposition, mimeType);
 
                   request.setMimeType(mimeType);
@@ -291,8 +365,9 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                   request.setTitle(file_name);
                   request.allowScanningByMediaScanner();
                   request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                  request.setDestinationInExternalPublicDir(
-                          Environment.DIRECTORY_DOWNLOADS, file_name);
+
+                  String appFolder = "WAOS/" + sanitizeFolderName(webapp.getTitle());
+                  request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, appFolder + "/" + file_name);
 
                   DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
 
@@ -305,6 +380,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                           if (dm != null) {
                               dm.enqueue(request);
                               NotificationUtils.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
+                              saveDownloadRecord(appFolder + "/" + file_name, file_name, mimeType, contentLength);
                           }
                       }
                   }
@@ -313,11 +389,15 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                       if (dm != null) {
                           dm.enqueue(request);
                           NotificationUtils.showInfoSnackbar(this, getString(R.string.file_download), Snackbar.LENGTH_SHORT);
+                          saveDownloadRecord(appFolder + "/" + file_name, file_name, mimeType, contentLength);
                       }
                   }
                 }
 
             }
+
+        });
+
         });
         wv.setOnTouchListener(new View.OnTouchListener() {
             private int mode = NONE;
@@ -426,6 +506,34 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
             }
         }
 
+    }
+
+    private void saveDownloadRecord(String uriPath, String fileName, String mimeType, long sizeBytes) {
+        try {
+            DownloadRecord record = new DownloadRecord(webappID, fileName, mimeType, uriPath, sizeBytes);
+            DownloadRepository.saveDownload(this, record);
+        } catch (Exception ignored) {
+        }
+    }
+
+    private String sanitizeFolderName(String input) {
+        return input.replaceAll("[^a-zA-Z0-9_\\-]", "_").trim();
+    }
+
+    private void showFindInPageDialog() {
+        final EditText input = new EditText(this);
+        input.setHint("Search in page");
+        new AlertDialog.Builder(this)
+                .setTitle("Find in page")
+                .setView(input)
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    String query = input.getText().toString().trim();
+                    if (!query.isEmpty()) {
+                        wv.findAllAsync(query);
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
     @SuppressLint("NonConstantResourceId")

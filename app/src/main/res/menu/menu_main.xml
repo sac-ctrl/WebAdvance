@@ -8,8 +8,13 @@
         android:title="@string/action_settings"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_waos_dashboard"
+        android:orderInCategory="110"
+        android:title="@string/action_waos_dashboard"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_about"
-        android:orderInCategory="100"
+        android:orderInCategory="120"
         android:title="@string/app_info"
         app:showAsAction="never" />
 </menu>

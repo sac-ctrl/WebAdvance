@@ -98,6 +98,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
             return true
         }
+        if (id == R.id.action_waos_dashboard) {
+            val intent = Intent(this, WaosDashboardActivity::class.java)
+            startActivity(intent)
+            return true
+        }
         if (id == R.id.action_about) {
             val intent = Intent(this, AboutActivity::class.java)
             startActivity(intent)

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/edit_pin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter PIN"
+        android:inputType="numberPassword" />
+
+    <EditText
+        android:id="@+id/edit_pin_confirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Confirm PIN"
+        android:inputType="numberPassword"
+        android:layout_marginTop="12dp" />
+</LinearLayout>
