@@ -58,6 +58,71 @@ data class WebApp(
         ERROR
     }
 
+    @Ignore
+    var baseUrl: String = ""
+    @Ignore
+    var ID: Int = -1
+    @Ignore
+    var title: String = ""
+    @Ignore
+    var isOpenUrlExternal: Boolean = false
+    @Ignore
+    var isAllowCookies: Boolean = true
+    @Ignore
+    var isAllowThirdPartyCookies: Boolean = false
+    @Ignore
+    var isRestorePage: Boolean = false
+    @Ignore
+    var isAllowJs: Boolean = true
+    @Ignore
+    var isActiveEntry: Boolean = true
+    @Ignore
+    var isRequestDesktop: Boolean = false
+    @Ignore
+    var isClearCache: Boolean = false
+    @Ignore
+    var isUseAdblock: Boolean = false
+    @Ignore
+    var isSendSavedataRequest: Boolean = false
+    @Ignore
+    var isBlockImages: Boolean = false
+    @Ignore
+    var isAllowHttp: Boolean = true
+    @Ignore
+    var isAllowLocationAccess: Boolean = false
+    @Ignore
+    var isUseCustomUserAgent: Boolean = false
+    @Ignore
+    var isAutoreload: Boolean = false
+    @Ignore
+    var timeAutoreload: Long = 0
+    @Ignore
+    var isForceDarkMode: Boolean = false
+    @Ignore
+    var isUseTimespanDarkMode: Boolean = false
+    @Ignore
+    var timespanDarkModeBegin: String = ""
+    @Ignore
+    var timespanDarkModeEnd: String = ""
+    @Ignore
+    var isIgnoreSslErrors: Boolean = false
+    @Ignore
+    var isShowExpertSettings: Boolean = false
+    @Ignore
+    var isSafeBrowsing: Boolean = true
+    @Ignore
+    var isBlockThirdPartyRequests: Boolean = false
+    @Ignore
+    var isDrmAllowed: Boolean = true
+    @Ignore
+    var isShowFullscreen: Boolean = false
+    @Ignore
+    var isOverrideGlobalSettings: Boolean = false
+    @Ignore
+    var containerId: String = ""
+    @Ignore
+    var isUseContainer: Boolean = false
+
     var isBiometricProtection = false
     var isAllowMediaPlaybackInBackground = false
     var order = 0
@@ -74,19 +139,49 @@ data class WebApp(
     var lastScrollPosition: Int = 0
 
     init {
+        if (baseUrl.isEmpty()) {
+            baseUrl = url
+        }
+        if (ID < 0) {
+            ID = id.toInt()
+        }
+        if (title.isEmpty()) {
+            title = baseUrl.replace("http://", "").replace("https://", "").replace("www.", "")
+        }
+        initDefaultSettings()
+    }
+
+    constructor(baseUrl: String, ID: Int, order: Int) : this(
+        id = ID.toLong(),
+        name = baseUrl,
+        url = baseUrl
+    ) {
+        this.baseUrl = baseUrl
+        this.ID = ID
+        this.order = order
         title = baseUrl.replace("http://", "").replace("https://", "").replace("www.", "")
         initDefaultSettings()
     }
 
-    constructor(baseUrl: String, ID: Int, order: Int): this(baseUrl, ID) {
-        this.order = order
-    }
-
-    constructor(baseUrl: String, ID: Int, adBlockSettings: MutableList<AdblockConfig>): this(baseUrl, ID) {
+    constructor(baseUrl: String, ID: Int, adBlockSettings: MutableList<AdblockConfig>) : this(
+        id = ID.toLong(),
+        name = baseUrl,
+        url = baseUrl
+    ) {
+        this.baseUrl = baseUrl
+        this.ID = ID
         this.adBlockSettings = adBlockSettings
+        title = baseUrl.replace("http://", "").replace("https://", "").replace("www.", "")
+        initDefaultSettings()
     }
 
-    constructor(other: WebApp) : this(other.baseUrl, other.ID) {
+    constructor(other: WebApp) : this(
+        id = other.id,
+        name = other.name,
+        url = other.url
+    ) {
+        baseUrl = other.baseUrl
+        ID = other.ID
         title = other.title
         isOverrideGlobalSettings = other.isOverrideGlobalSettings
         containerId = other.containerId
