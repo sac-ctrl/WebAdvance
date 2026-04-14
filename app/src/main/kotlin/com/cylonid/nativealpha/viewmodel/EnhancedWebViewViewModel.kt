@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.webview.*
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +16,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EnhancedWebViewViewModel @Inject constructor(
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private var currentWebView: WebView? = null

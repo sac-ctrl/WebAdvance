@@ -5,13 +5,14 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
 import com.cylonid.nativealpha.R
+import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class FileViewerManager @Inject constructor(
-    private val context: Context
+    @ApplicationContext private val context: Context
 ) {
 
     fun openFile(file: File) {
