@@ -400,7 +400,7 @@ data class WebApp(
         if (isChecked) expertSettings.visibility = View.VISIBLE else expertSettings.visibility = View.GONE
     }
 
-    fun onSwitchSandboxChanged(mSwitch: CompoundButton?, isChecked: Boolean) {
+    fun onSwitchSandboxChanged(mSwitch: CompoundButton, isChecked: Boolean) {
         containerId = if (isChecked) {
             SandboxManager.getInstance().calculateNextFreeContainerId()
         } else {
