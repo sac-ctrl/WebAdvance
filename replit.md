@@ -73,14 +73,16 @@ Dark WAOS theme with:
 ## Key Features
 - **Advanced Dashboard**: Glassmorphism cards, animated gradient background, category filter chips, grid/list toggle
 - **Sample Data**: Auto-seeds 8 sample apps on first launch (Google, YouTube, Gmail, WhatsApp, Reddit, GitHub, Twitter, LinkedIn)
-- **Full Navigation**: All buttons wired up (FAB adds app, grid/list toggle, settings, context menu with open/edit/delete)
+- **Full Navigation**: All buttons wired up (FAB adds app, grid/list toggle, settings, context menu with ALL features)
 - **Sort & Group**: Modal sort/group sheet with real-time app reordering
 - **Status Indicators**: Pulsing animated status dots (Active=green, Background=yellow, Error=red)
-- **WebView Per-App**: Each app opens in isolated WebView with separate session
-- **Floating Windows**: Apps can be floated as chat-head style overlays
-- **Download Manager**: Per-app download history
-- **Credential Vault**: Encrypted credential storage with biometric unlock
-- **Clipboard Manager**: Per-app clipboard history
+- **WebView Per-App**: Each app opens in isolated Kotlin WebViewActivity (registered in manifest)
+- **Floating Windows**: Apps can be floated as chat-head overlays (permission check + FloatingWindowService)
+- **Download Manager**: Per-app download history (DownloadHistoryActivity with EXTRA_DOWNLOAD_APP_ID)
+- **Credential Vault**: Encrypted credential storage with biometric unlock (CredentialVaultActivity)
+- **Clipboard Manager**: Per-app clipboard history (ClipboardManagerActivity with EXTRA_CLIPBOARD_APP_ID)
+- **Universal Crash Logger**: GlobalCrashHandler intercepts ALL crashes → saves to SharedPreferences → shows CrashActivity with full trace + copy button; crash history viewable in Settings
+- **Context Menu**: Long-press any app card → Quick Actions (Open, Float, Edit) + Features row (Downloads, Clipboard, Credentials) + Delete
 
 ## Build Notes
 - `build.gradle` uses custom Gradle tasks to generate 8 WebView activity copies at build time

@@ -6,24 +6,25 @@ import android.content.Context;
 
 import androidx.work.Configuration;
 import androidx.work.WorkManager;
+import com.cylonid.nativealpha.crash.GlobalCrashHandler;
 import dagger.hilt.android.HiltAndroidApp;
 
 @HiltAndroidApp
 public class App extends Application {
 
-    @SuppressLint("StaticFieldLeak") //We are using app context which is never deleted during runtime, so this is not a leak per se.
-    //https://stackoverflow.com/questions/2002288/static-way-to-get-context-in-android
+    @SuppressLint("StaticFieldLeak")
     private static Context context;
 
     public void onCreate() {
         super.onCreate();
 
         App.context = getApplicationContext();
-       if(!WorkManager.isInitialized()) {
-           WorkManager.initialize(this, new Configuration.Builder().build());
-       }
 
+        GlobalCrashHandler.Companion.install(this);
 
+        if (!WorkManager.isInitialized()) {
+            WorkManager.initialize(this, new Configuration.Builder().build());
+        }
     }
 
     public static Context getAppContext() {

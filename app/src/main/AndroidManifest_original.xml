@@ -100,6 +100,21 @@
             android:name="com.cylonid.nativealpha.waos.service.FloatingWindowService"
             android:exported="false" />
 
+        <activity
+            android:name="com.cylonid.nativealpha.crash.CrashActivity"
+            android:theme="@style/AppTheme"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:excludeFromRecents="true" />
+
+        <activity
+            android:name="com.cylonid.nativealpha.ui.WebViewActivity"
+            android:parentActivityName="com.cylonid.nativealpha.MainActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/AppTheme.WebView"
+            android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
+            android:launchMode="standard" />
+
 <!--        Make sure to also copy changes to WebViewActivity in build.gradle-->
         <activity
             android:name=".WebViewActivity"

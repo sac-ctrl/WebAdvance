@@ -1,6 +1,9 @@
 package com.cylonid.nativealpha.ui.screens
 
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -40,6 +43,11 @@ import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.ui.WebViewActivity
 import com.cylonid.nativealpha.ui.theme.*
 import com.cylonid.nativealpha.viewmodel.MainViewModel
+import com.cylonid.nativealpha.waos.service.FloatingWindowService
+import com.cylonid.nativealpha.waos.ui.ClipboardManagerActivity
+import com.cylonid.nativealpha.waos.ui.CredentialVaultActivity
+import com.cylonid.nativealpha.waos.ui.DownloadHistoryActivity
+import com.cylonid.nativealpha.waos.util.WaosConstants
 
 enum class SortOption(val displayName: String) {
     NAME("Name"),
@@ -489,6 +497,38 @@ fun MainDashboardScreen(
                         .apply { putExtra("webAppId", app.id) }
                     context.startActivity(intent)
                 },
+                onFloat = {
+                    contextMenuApp = null
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
+                        val permIntent = Intent(
+                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            Uri.parse("package:${context.packageName}")
+                        )
+                        context.startActivity(permIntent)
+                    } else {
+                        val intent = Intent(context, FloatingWindowService::class.java)
+                            .apply { putExtra("webAppId", app.id) }
+                        context.startService(intent)
+                    }
+                },
+                onDownloads = {
+                    contextMenuApp = null
+                    val intent = Intent(context, DownloadHistoryActivity::class.java)
+                        .apply { putExtra(WaosConstants.EXTRA_DOWNLOAD_APP_ID, app.id.toInt()) }
+                    context.startActivity(intent)
+                },
+                onClipboard = {
+                    contextMenuApp = null
+                    val intent = Intent(context, ClipboardManagerActivity::class.java)
+                        .apply { putExtra(WaosConstants.EXTRA_CLIPBOARD_APP_ID, app.id.toInt()) }
+                    context.startActivity(intent)
+                },
+                onCredentials = {
+                    contextMenuApp = null
+                    val intent = Intent(context, CredentialVaultActivity::class.java)
+                        .apply { putExtra(WaosConstants.EXTRA_WAOS_APP_ID, app.id.toInt()) }
+                    context.startActivity(intent)
+                },
                 onEdit = {
                     contextMenuApp = null
                     navController.navigate("edit_webapp/${app.id}")
@@ -852,6 +892,10 @@ private fun AppContextMenu(
     webApp: WebApp,
     onDismiss: () -> Unit,
     onOpen: () -> Unit,
+    onFloat: () -> Unit,
+    onDownloads: () -> Unit,
+    onClipboard: () -> Unit,
+    onCredentials: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -868,47 +912,125 @@ private fun AppContextMenu(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(48.dp)
                         .background(
                             Brush.linearGradient(listOf(gradStart, gradEnd)),
-                            RoundedCornerShape(12.dp)
+                            RoundedCornerShape(14.dp)
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(getAppEmoji(webApp), fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(getAppEmoji(webApp), fontSize = 20.sp, color = Color.White, fontWeight = FontWeight.Bold)
                 }
                 Spacer(Modifier.width(12.dp))
-                Column {
+                Column(Modifier.weight(1f)) {
                     Text(webApp.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     Text(
                         webApp.url.replace("https://", "").replace("http://", ""),
                         color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis
                     )
                 }
+                IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
+                    Icon(Icons.Rounded.Close, null, tint = TextMuted, modifier = Modifier.size(16.dp))
+                }
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(18.dp))
             HorizontalDivider(color = CardBorder)
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(14.dp))
 
-            listOf(
+            Text(
+                "QUICK ACTIONS",
+                color = TextMuted,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.5.sp
+            )
+            Spacer(Modifier.height(10.dp))
+
+            val quickActions = listOf(
                 Triple(Icons.Rounded.OpenInNew, "Open", onOpen),
-                Triple(Icons.Rounded.Edit, "Edit App", onEdit),
-                Triple(Icons.Rounded.Delete, "Delete", onDelete)
-            ).forEachIndexed { idx, (icon, label, action) ->
-                val isDelete = idx == 2
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .clickable { action() }
-                        .padding(vertical = 14.dp, horizontal = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(icon, null, tint = if (isDelete) ErrorRed else TextSecondary, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(12.dp))
-                    Text(label, color = if (isDelete) ErrorRed else TextPrimary, fontSize = 15.sp)
+                Triple(Icons.Rounded.OpenWith, "Float", onFloat),
+                Triple(Icons.Rounded.Edit, "Edit", onEdit)
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                quickActions.forEach { (icon, label, action) ->
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(BgMedium)
+                            .border(1.dp, CardBorder, RoundedCornerShape(14.dp))
+                            .clickable { action() }
+                            .padding(vertical = 12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        val tint = when (label) {
+                            "Open" -> CyanPrimary
+                            "Float" -> VioletSecondary
+                            else -> TextSecondary
+                        }
+                        Icon(icon, null, tint = tint, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.height(4.dp))
+                        Text(label, color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                    }
                 }
+            }
+
+            Spacer(Modifier.height(14.dp))
+            Text(
+                "FEATURES",
+                color = TextMuted,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.5.sp
+            )
+            Spacer(Modifier.height(10.dp))
+
+            val featureActions = listOf(
+                Triple(Icons.Rounded.Download, "Downloads", onDownloads),
+                Triple(Icons.Rounded.ContentPaste, "Clipboard", onClipboard),
+                Triple(Icons.Rounded.Lock, "Credentials", onCredentials)
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                featureActions.forEach { (icon, label, action) ->
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(BgMedium)
+                            .border(1.dp, CardBorder, RoundedCornerShape(14.dp))
+                            .clickable { action() }
+                            .padding(vertical = 12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(icon, null, tint = TextSecondary, modifier = Modifier.size(22.dp))
+                        Spacer(Modifier.height(4.dp))
+                        Text(label, color = TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(14.dp))
+            HorizontalDivider(color = CardBorder)
+            Spacer(Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { onDelete() }
+                    .padding(vertical = 12.dp, horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Rounded.Delete, null, tint = ErrorRed, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(12.dp))
+                Text("Delete App", color = ErrorRed, fontSize = 14.sp, fontWeight = FontWeight.Medium)
             }
         }
     }

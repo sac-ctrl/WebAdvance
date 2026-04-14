@@ -1,8 +1,16 @@
 package com.cylonid.nativealpha.ui.screens
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,13 +22,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.cylonid.nativealpha.crash.CrashEntry
+import com.cylonid.nativealpha.crash.CrashLogStorage
 import com.cylonid.nativealpha.ui.theme.*
 import com.cylonid.nativealpha.viewmodel.SettingsViewModel
 
@@ -31,6 +44,7 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
 
     Box(modifier = Modifier.fillMaxSize().background(BgDeep)) {
         Scaffold(
@@ -169,6 +183,8 @@ fun SettingsScreen(
                     }
                 }
 
+                CrashLogSection(context)
+
                 SettingsSectionCard(title = "About", icon = Icons.Rounded.Info) {
                     SettingsInfoRow("App", "WAOS - Web App Operating System")
                     SettingsInfoRow("Version", "1.5.2")
@@ -179,6 +195,214 @@ fun SettingsScreen(
                 Spacer(Modifier.height(32.dp))
             }
         }
+    }
+}
+
+@Composable
+private fun CrashLogSection(context: Context) {
+    val crashes = remember { CrashLogStorage.getCrashLogs(context) }
+    var expanded by remember { mutableStateOf(false) }
+    var selectedCrash by remember { mutableStateOf<CrashEntry?>(null) }
+    var showClearConfirm by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(CardSurface)
+            .border(
+                1.dp,
+                if (crashes.isNotEmpty()) ErrorRed.copy(0.3f) else CardBorder,
+                RoundedCornerShape(20.dp)
+            )
+            .padding(16.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = !expanded }
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(
+                        if (crashes.isNotEmpty()) ErrorRed.copy(0.15f) else VioletSecondary.copy(0.12f),
+                        RoundedCornerShape(8.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Rounded.BugReport,
+                    null,
+                    tint = if (crashes.isNotEmpty()) ErrorRed else VioletSecondary,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
+                Text("Crash Logs", color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                Text(
+                    if (crashes.isEmpty()) "No crashes recorded" else "${crashes.size} crash(es) saved",
+                    color = if (crashes.isNotEmpty()) ErrorRed else TextMuted,
+                    fontSize = 11.sp
+                )
+            }
+            Icon(
+                if (expanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
+                null,
+                tint = TextMuted,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        AnimatedVisibility(
+            visible = expanded,
+            enter = expandVertically() + fadeIn()
+        ) {
+            Column {
+                Spacer(Modifier.height(14.dp))
+                HorizontalDivider(color = CardBorder)
+                Spacer(Modifier.height(12.dp))
+
+                if (crashes.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No crashes recorded yet", color = TextMuted, fontSize = 13.sp)
+                    }
+                } else {
+                    crashes.take(10).forEach { crash ->
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(BgMedium)
+                                .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+                                .clickable { selectedCrash = if (selectedCrash == crash) null else crash }
+                                .padding(12.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .background(ErrorRed, androidx.compose.foundation.shape.CircleShape)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    crash.timestamp,
+                                    color = TextMuted,
+                                    fontSize = 11.sp,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text("v${crash.appVersion}", color = TextMuted, fontSize = 10.sp)
+                            }
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                crash.message,
+                                color = TextPrimary,
+                                fontSize = 12.sp,
+                                maxLines = if (selectedCrash == crash) Int.MAX_VALUE else 2
+                            )
+
+                            AnimatedVisibility(
+                                visible = selectedCrash == crash,
+                                enter = expandVertically() + fadeIn()
+                            ) {
+                                Column {
+                                    Spacer(Modifier.height(8.dp))
+                                    Text("Thread: ${crash.threadName}", color = TextMuted, fontSize = 11.sp)
+                                    Spacer(Modifier.height(6.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(Color(0xFF0A0F1A))
+                                            .padding(8.dp)
+                                            .horizontalScroll(rememberScrollState())
+                                    ) {
+                                        Text(
+                                            crash.stackTrace.take(800) + if (crash.stackTrace.length > 800) "\n..." else "",
+                                            color = Color(0xFFFF7777),
+                                            fontSize = 10.sp,
+                                            fontFamily = FontFamily.Monospace,
+                                            lineHeight = 14.sp
+                                        )
+                                    }
+                                    Spacer(Modifier.height(8.dp))
+                                    val fullReport = buildString {
+                                        appendLine("=== WAOS Crash Report ===")
+                                        appendLine("Time: ${crash.timestamp}")
+                                        appendLine("Version: ${crash.appVersion}")
+                                        appendLine("Thread: ${crash.threadName}")
+                                        appendLine("Error: ${crash.message}")
+                                        appendLine()
+                                        appendLine("Stack Trace:")
+                                        append(crash.stackTrace)
+                                    }
+                                    Button(
+                                        onClick = {
+                                            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                            cm.setPrimaryClip(ClipData.newPlainText("WAOS Crash", fullReport))
+                                            Toast.makeText(context, "Copied!", Toast.LENGTH_SHORT).show()
+                                        },
+                                        modifier = Modifier.fillMaxWidth().height(36.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = ErrorRed.copy(0.15f),
+                                            contentColor = ErrorRed
+                                        ),
+                                        shape = RoundedCornerShape(10.dp),
+                                        contentPadding = PaddingValues(horizontal = 12.dp)
+                                    ) {
+                                        Icon(Icons.Rounded.ContentCopy, null, modifier = Modifier.size(14.dp))
+                                        Spacer(Modifier.width(6.dp))
+                                        Text("Copy Report", fontSize = 12.sp)
+                                    }
+                                }
+                            }
+                        }
+                        Spacer(Modifier.height(8.dp))
+                    }
+
+                    Spacer(Modifier.height(4.dp))
+                    OutlinedButton(
+                        onClick = { showClearConfirm = true },
+                        modifier = Modifier.fillMaxWidth().height(40.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = ErrorRed),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, ErrorRed.copy(0.3f))
+                    ) {
+                        Icon(Icons.Rounded.Delete, null, modifier = Modifier.size(14.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Clear All Crash Logs", fontSize = 12.sp)
+                    }
+                }
+            }
+        }
+    }
+
+    if (showClearConfirm) {
+        AlertDialog(
+            onDismissRequest = { showClearConfirm = false },
+            containerColor = CardSurface,
+            titleContentColor = TextPrimary,
+            textContentColor = TextSecondary,
+            title = { Text("Clear Crash Logs?", fontWeight = FontWeight.Bold) },
+            text = { Text("All ${crashes.size} saved crash logs will be permanently deleted.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    CrashLogStorage.clearLogs(context)
+                    showClearConfirm = false
+                }) { Text("Clear", color = ErrorRed, fontWeight = FontWeight.Bold) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearConfirm = false }) {
+                    Text("Cancel", color = TextSecondary)
+                }
+            },
+            shape = RoundedCornerShape(20.dp)
+        )
     }
 }
 
