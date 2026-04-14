@@ -34,7 +34,7 @@ class ClipboardViewModel @Inject constructor(
         viewModelScope.launch {
             if (webAppId == null) {
                 // Global clipboard - combine all apps
-                clipboardDao.getItemsForApp(0L).collect { items ->
+                clipboardDao.getItemsForApp(0L, Int.MAX_VALUE).collect { items ->
                     _clipboardItems.value = items
                 }
             } else {

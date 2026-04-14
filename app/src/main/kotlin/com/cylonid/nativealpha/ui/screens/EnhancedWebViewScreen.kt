@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,6 +47,7 @@ fun EnhancedWebViewScreen(
     
     // WebView reference
     var webViewRef: WebView? by remember { mutableStateOf(null) }
+    val context = LocalContext.current
 
     LaunchedEffect(webAppId) {
         viewModel.loadWebApp(webAppId)
@@ -105,7 +107,7 @@ fun EnhancedWebViewScreen(
                                 DropdownMenuItem(
                                     text = { Text("Copy URL") },
                                     onClick = {
-                                        val clipboard = androidx.compose.ui.platform.LocalContext.current
+                                        val clipboard = context
                                             .getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                                         clipboard.setPrimaryClip(
                                             android.content.ClipData.newPlainText("URL", currentUrl)

@@ -8,7 +8,6 @@ import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
 import android.webkit.ConsoleMessage
-import android.webkit.FileChooserParams
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
@@ -88,6 +87,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cylonid.nativealpha.viewmodel.ConsoleMessageData
 import com.cylonid.nativealpha.viewmodel.WebViewViewModel
+import com.cylonid.nativealpha.waos.ui.DownloadHistoryActivity
 import com.cylonid.nativealpha.webview.WebViewClientWithDownload
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -352,9 +352,9 @@ fun WebViewScreen(
                                     viewModel.addConsoleMessage(
                                         ConsoleMessageData(
                                             message = it.message(),
-                                            level = it.messageLevel().name,
-                                            source = it.sourceId() ?: "",
-                                            line = it.lineNumber()
+                                            level = it.messageLevel().ordinal,
+                                            sourceId = it.sourceId() ?: "",
+                                            lineNumber = it.lineNumber()
                                         )
                                     )
                                 }
@@ -366,7 +366,7 @@ fun WebViewScreen(
                             override fun onShowFileChooser(
                                 webView: WebView?,
                                 filePathCallback: ValueCallback<Array<Uri>>?,
-                                fileChooserParams: FileChooserParams?
+                                fileChooserParams: WebChromeClient.FileChooserParams?
                             ): Boolean = true
                         }
                         loadUrl(webApp?.url ?: "")
@@ -514,13 +514,18 @@ fun ConsolePanel(
 
 @Composable
 fun ConsoleMessageItem(message: ConsoleMessageData) {
+    val levelName = when (message.level) {
+        ConsoleMessage.MessageLevel.ERROR.ordinal -> "ERROR"
+        ConsoleMessage.MessageLevel.WARNING.ordinal -> "WARNING"
+        else -> "LOG"
+    }
     val color = when (message.level) {
-        "ERROR" -> MaterialTheme.colorScheme.error
-        "WARNING" -> MaterialTheme.colorScheme.tertiary
+        ConsoleMessage.MessageLevel.ERROR.ordinal -> MaterialTheme.colorScheme.error
+        ConsoleMessage.MessageLevel.WARNING.ordinal -> MaterialTheme.colorScheme.tertiary
         else -> MaterialTheme.colorScheme.onSurface
     }
     Text(
-        text = "[${message.level}] ${message.source}:${message.line} ${message.message}",
+        text = "[$levelName] ${message.sourceId}:${message.lineNumber} ${message.message}",
         color = color,
         style = MaterialTheme.typography.bodySmall,
         modifier = Modifier.padding(vertical = 2.dp)

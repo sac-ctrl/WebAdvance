@@ -145,7 +145,7 @@ class EnhancedWebViewViewModel @Inject constructor(
             },
             onClipboardPaste = {
                 // Return pasted content from system clipboard if available
-                null
+                ""
             },
             onScrollPositionChange = { position ->
                 // Save scroll position

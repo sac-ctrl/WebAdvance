@@ -316,6 +316,17 @@ class WebViewViewModel @Inject constructor(
         _webViewState.value = _webViewState.value.copy(shouldDownloadUrl = null)
     }
 
+    fun takeScreenshot() {
+        _webViewState.value = _webViewState.value.copy(shouldTakeScreenshot = true)
+    }
+
+    fun updateNavigationState(canGoBack: Boolean, canGoForward: Boolean) {
+        _webViewState.value = _webViewState.value.copy(
+            canGoBack = canGoBack,
+            canGoForward = canGoForward
+        )
+    }
+
     fun clearActionFlags() {
         _webViewState.value = _webViewState.value.copy(
             shouldGoBack = false,

@@ -1,0 +1,80 @@
+You are an expert Android/Kotlin + Jetpack Compose engineer.
+
+TASK:
+Fix ALL compilation errors in the provided project using the attached ERROR LOG.
+
+STRICT RULES:
+
+1. Do NOT skip ANY error — every single error must be fixed.
+2. Work in PARALLEL across multiple files (not sequential slow fixing).
+3. Prioritize fixes that remove maximum errors globally (e.g., missing imports, dependencies).
+4. Do NOT break existing working logic.
+5. Do NOT remove features unless absolutely necessary — prefer fixing.
+6. Ensure final result = SUCCESSFUL BUILD (./gradlew assembleStandardDebug passes).
+
+APPROACH (MANDATORY):
+Follow this exact strategy:
+
+STEP 1: GLOBAL FIXES (apply across entire project)
+
+- Add all missing Jetpack Compose imports (Icons, Color, dp, Modifier, etc.)
+- Fix missing dependencies in build.gradle (Compose UI, Material Icons, Coil, etc.)
+- Resolve unresolved references caused by missing libraries
+- Ensure Kotlin + Compose compatibility versions are correct
+
+STEP 2: MISSING CLASSES & FILES
+
+- Detect missing classes (e.g., MainViewModel, DownloadHistoryActivity)
+- Either:
+  a) Create minimal working implementations, OR
+  b) Fix incorrect imports/package references
+
+STEP 3: FUNCTION ERRORS
+
+- Implement missing functions (takeScreenshot, updateNavigationState, generatePassword, etc.)
+- If unclear, create safe placeholder implementations that compile
+
+STEP 4: TYPE & PARAMETER FIXES
+
+- Fix all type mismatches (String vs Int, Int vs Object, etc.)
+- Correct function signatures and parameter names
+
+STEP 5: COMPOSE ERRORS
+
+- Ensure all @Composable functions are correctly scoped
+- Fix invalid Composable calls
+- Add required state handling (remember, mutableStateOf, etc.)
+
+STEP 6: VIEWMODEL & DATA LAYER
+
+- Fix broken ViewModels (map, id, name, etc.)
+- Ensure proper data classes exist and match usage
+
+STEP 7: FINAL CLEANUP
+
+- Remove deprecated or conflicting code
+- Ensure no unused/broken references remain
+
+OUTPUT FORMAT:
+
+- Show ALL modified files
+- For each file:
+  - Show BEFORE → AFTER changes
+- Clearly mention:
+  ✔ What was fixed
+  ✔ Why it was broken
+  ✔ How it was resolved
+
+FINAL GOAL:
+The project must compile successfully with:
+./gradlew assembleStandardDebug
+
+IMPORTANT:
+
+- Do NOT stop until ALL errors from the log are resolved
+- Do NOT leave partial fixes
+- Optimize for speed + completeness
+- Handle multiple files simultaneously
+
+ERROR LOG:
+{PASTE YOUR FULL ERROR LOG HERE}

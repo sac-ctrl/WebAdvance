@@ -3,13 +3,18 @@ package com.cylonid.nativealpha.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cylonid.nativealpha.manager.Credential
 import com.cylonid.nativealpha.viewmodel.CredentialViewModel
@@ -27,6 +32,9 @@ fun CredentialVaultScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val showBiometricButton by viewModel.showBiometricButton.collectAsState()
     val isAuthenticated by viewModel.isAuthenticated.collectAsState()
+    val showAddDialog by viewModel.showAddDialog.collectAsState()
+    val showPinDialog by viewModel.showPinDialog.collectAsState()
+    val editingCredential by viewModel.editingCredential.collectAsState()
 
     LaunchedEffect(webAppId) {
         viewModel.loadCredentials(webAppId)
@@ -141,7 +149,7 @@ fun CredentialVaultScreen(
         // Add/Edit Credential Dialog
         if (showAddDialog) {
             AddCredentialDialog(
-                credential = viewModel.editingCredential,
+                credential = editingCredential,
                 onDismiss = { viewModel.hideAddCredentialDialog() },
                 onSave = { credential ->
                     viewModel.saveCredential(webAppId, credential)

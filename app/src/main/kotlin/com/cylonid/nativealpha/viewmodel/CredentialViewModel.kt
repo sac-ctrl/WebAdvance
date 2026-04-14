@@ -148,4 +148,8 @@ class CredentialViewModel @Inject constructor(
     fun showPinDialog() {
         _showPinDialog.value = true
     }
+
+    fun hidePinDialog() {
+        _showPinDialog.value = false
+    }
 }

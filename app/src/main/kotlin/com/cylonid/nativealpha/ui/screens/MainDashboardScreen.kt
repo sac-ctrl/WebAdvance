@@ -35,6 +35,7 @@ import android.content.Intent
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.ui.WebViewActivity
+import com.cylonid.nativealpha.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

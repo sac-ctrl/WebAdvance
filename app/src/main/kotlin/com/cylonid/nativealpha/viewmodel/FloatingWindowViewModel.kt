@@ -1,6 +1,7 @@
 package com.cylonid.nativealpha.viewmodel
 
 import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cylonid.nativealpha.data.WindowPresetRepository
@@ -44,24 +45,25 @@ class FloatingWindowViewModel @Inject constructor(
 
     private fun loadPresets() {
         viewModelScope.launch {
-            val presets = windowPresetRepository.getAllPresets().map { entity ->
-                WindowPreset(
-                    id = entity.id,
-                    name = entity.name,
-                    windows = entity.windows.map { windowEntity ->
-                        FloatingWindowInfo(
-                            id = windowEntity.id,
-                            appName = windowEntity.appName,
-                            x = windowEntity.x,
-                            y = windowEntity.y,
-                            width = windowEntity.width,
-                            height = windowEntity.height,
-                            isMinimized = windowEntity.isMinimized
-                        )
-                    }
-                )
+            windowPresetRepository.getAllPresets().collect { entities ->
+                _windowPresets.value = entities.map { entity ->
+                    WindowPreset(
+                        id = entity.id,
+                        name = entity.name,
+                        windows = entity.windows.map { windowEntity ->
+                            FloatingWindowInfo(
+                                id = windowEntity.id,
+                                appName = windowEntity.appName,
+                                x = windowEntity.x,
+                                y = windowEntity.y,
+                                width = windowEntity.width,
+                                height = windowEntity.height,
+                                isMinimized = windowEntity.isMinimized
+                            )
+                        }
+                    )
+                }
             }
-            _windowPresets.value = presets
         }
     }
 

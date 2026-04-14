@@ -42,16 +42,17 @@ class BackupViewModel @Inject constructor(
 
     private fun loadBackupHistory() {
         viewModelScope.launch {
-            val backups = backupRepository.getAllBackups().map { entity ->
-                BackupInfo(
-                    id = entity.id,
-                    name = entity.name,
-                    date = dateFormat.format(Date(entity.timestamp)),
-                    size = formatFileSize(entity.size),
-                    path = entity.path
-                )
+            backupRepository.getAllBackups().collect { entities ->
+                _backupHistory.value = entities.map { entity ->
+                    BackupInfo(
+                        id = entity.id,
+                        name = entity.name,
+                        date = dateFormat.format(Date(entity.timestamp)),
+                        size = formatFileSize(entity.size),
+                        path = entity.path
+                    )
+                }
             }
-            _backupHistory.value = backups
         }
     }
 

@@ -73,6 +73,43 @@ class FileViewerManager @Inject constructor(
         }
     }
 
+    fun getRecentFiles(): List<java.io.File> {
+        val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(
+            android.os.Environment.DIRECTORY_DOWNLOADS
+        )
+        val appDir = context.getExternalFilesDir(null)
+        val dirs = listOfNotNull(downloadsDir, appDir)
+        return dirs.flatMap { dir ->
+            dir.listFiles()?.toList() ?: emptyList()
+        }.filter { it.isFile }.sortedByDescending { it.lastModified() }.take(50)
+    }
+
+    fun shareFile(file: java.io.File) {
+        val mimeType = getMimeType(file.extension) ?: "*/*"
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = mimeType
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(Intent.createChooser(intent, "Share ${file.name}").apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        })
+    }
+
+    fun deleteFile(file: java.io.File): Boolean {
+        return try {
+            file.delete()
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     private fun getMimeType(extension: String): String? {
         return when (extension.lowercase()) {
             "jpg", "jpeg" -> "image/jpeg"

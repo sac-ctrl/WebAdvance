@@ -3,6 +3,8 @@ package com.cylonid.nativealpha.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -134,10 +136,10 @@ fun FloatingWindowCard(
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 IconButton(onClick = onMinimize) {
-                    Icon(Icons.Default.Minimize, contentDescription = "Minimize")
+                    Icon(Icons.Default.Remove, contentDescription = "Minimize")
                 }
                 IconButton(onClick = onMaximize) {
-                    Icon(Icons.Default.Maximize, contentDescription = "Maximize")
+                    Icon(Icons.Default.Fullscreen, contentDescription = "Maximize")
                 }
                 IconButton(onClick = onClose) {
                     Icon(Icons.Default.Close, contentDescription = "Close")
