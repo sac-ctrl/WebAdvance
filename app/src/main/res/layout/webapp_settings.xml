@@ -84,7 +84,7 @@
                         android:autofillHints=""
                         android:fontFamily="sans-serif"
                         android:inputType="text"
-                        android:text="@={webapp.title}" />
+                        android:text="@{webapp.title}" />
                 <LinearLayout
                     android:id="@+id/sectionSandbox"
                     android:layout_width="match_parent"
@@ -337,7 +337,7 @@
                                         android:focusable="false"
                                         android:fontFamily="sans-serif"
                                         android:inputType="none"
-                                        android:text="@={webapp.timespanDarkModeBegin}" />
+                                        android:text="@{webapp.timespanDarkModeBegin}" />
                                 </LinearLayout>
 
                                 <LinearLayout
@@ -365,7 +365,7 @@
                                         android:focusable="false"
                                         android:fontFamily="sans-serif"
                                         android:inputType="none"
-                                        android:text="@={webapp.timespanDarkModeEnd}" />
+                                        android:text="@{webapp.timespanDarkModeEnd}" />
                                 </LinearLayout>
                             </LinearLayout>
                         </LinearLayout>
@@ -514,14 +514,14 @@
                                 android:id="@+id/switchOpenUrlExternal"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.openUrlExternal}"
+                                android:checked="@{webapp.isOpenUrlExternal}"
                                 android:text="@string/open_external_links_in_browser_app" />
 
                             <com.google.android.material.materialswitch.MaterialSwitch
                                 android:id="@+id/switchEnableZoom"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.enableZooming}"
+                                android:checked="@{webapp.isEnableZooming}"
                                 android:text="@string/activate_two_finger_zoom" />
 
                             <TextView
@@ -545,7 +545,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="sans-serif"
                                 android:inputType="text"
-                                android:text="@={webapp.group}" />
+                                android:text="@{webapp.group}" />
 
                             <TextView
                                 android:id="@+id/labelCustomIcon"
@@ -567,7 +567,7 @@
                                     android:fontFamily="sans-serif"
                                     android:inputType="textUri"
                                     android:hint="Icon URI or URL"
-                                    android:text="@={webapp.iconUri}" />
+                                    android:text="@{webapp.iconUri}" />
 
                                 <Button
                                     android:id="@+id/button_fetch_favicon"
@@ -605,13 +605,13 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="sans-serif"
                                 android:inputType="text"
-                                android:text="@={webapp.customDownloadFolder}" />
+                                android:text="@{webapp.customDownloadFolder}" />
 
                             <com.google.android.material.materialswitch.MaterialSwitch
                                 android:id="@+id/switchClipboardSync"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.clipboardSyncEnabled}"
+                                android:checked="@{webapp.clipboardSyncEnabled}"
                                 android:text="@string/clipboard_sync" />
 
                             <TextView
@@ -627,7 +627,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="sans-serif"
                                 android:inputType="number"
-                                android:text="@={String.valueOf(webapp.clipboardMaxItems)}" />
+                                android:text="@{String.valueOf(webapp.clipboardMaxItems)}" />
 
                             <TextView
                                 android:id="@+id/labelFloatingWindowDefaults"
@@ -650,7 +650,7 @@
                                     android:hint="W"
                                     android:fontFamily="sans-serif"
                                     android:inputType="number"
-                                    android:text="@={String.valueOf(webapp.floatingWindowWidth)}" />
+                                    android:text="@{String.valueOf(webapp.floatingWindowWidth)}" />
 
                                 <EditText
                                     android:id="@+id/textFloatingHeight"
@@ -661,7 +661,7 @@
                                     android:hint="H"
                                     android:fontFamily="sans-serif"
                                     android:inputType="number"
-                                    android:text="@={String.valueOf(webapp.floatingWindowHeight)}" />
+                                    android:text="@{String.valueOf(webapp.floatingWindowHeight)}" />
 
                                 <EditText
                                     android:id="@+id/textFloatingOpacity"
@@ -672,7 +672,7 @@
                                     android:hint="Opacity"
                                     android:fontFamily="sans-serif"
                                     android:inputType="number"
-                                    android:text="@={String.valueOf(webapp.floatingWindowOpacity)}" />
+                                    android:text="@{String.valueOf(webapp.floatingWindowOpacity)}" />
                             </LinearLayout>
 
                             <TextView
@@ -730,7 +730,7 @@
                                 android:id="@+id/switchFallbackToStandardContextmenu"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.alwaysUseFallbackContextMenu}"
+                                android:checked="@{webapp.alwaysUseFallbackContextMenu}"
                                 android:text="@string/use_standard_context_menu_permanently" />
 
                             <com.google.android.material.materialswitch.MaterialSwitch
@@ -738,7 +738,7 @@
                                 android:visibility="gone"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                                                android:checked="@={webapp.allowMediaPlaybackInBackground}"
+                                                                android:checked="@{webapp.isAllowMediaPlaybackInBackground}"
                                 android:text="@string/allow_media_playback_in_background" />
 
 
@@ -783,7 +783,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="sans-serif"
                                 android:inputType="textUri"
-                                android:text="@={webapp.baseUrl}"
+                                android:text="@{webapp.baseUrl}"
                                 tools:ignore="UnusedAttribute" />
 
                             <TextView
@@ -798,7 +798,7 @@
                                 android:id="@+id/switchUserAgent"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.useCustomUserAgent}"
+                                android:checked="@{webapp.isUseCustomUserAgent}"
                                 android:onCheckedChanged="@{(switch, checked) -> webapp.onSwitchUserAgentChanged(switch, checked)}"
                                 android:text="@string/use_custom_user_agent" />
 
@@ -820,7 +820,7 @@
                                     android:fontFamily="sans-serif"
                                     android:hint="@string/insert_custom_user_agent"
                                     android:inputType="text"
-                                    android:text="@={webapp.userAgent}"
+                                    android:text="@{webapp.userAgent}"
                                     tools:ignore="UnusedAttribute" />
 
                             </LinearLayout>
@@ -862,7 +862,7 @@
                                     android:id="@+id/switchIgnoreSSLErrors"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:checked="@={webapp.ignoreSslErrors}"
+                                    android:checked="@{webapp.isIgnoreSslErrors}"
                                     android:text="@string/ignore_ssl_errors" />
 
                             </LinearLayout>
