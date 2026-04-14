@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'com.mikepenz.aboutlibraries.plugin'
+apply plugin: 'dagger.hilt.android.plugin'
 
 aboutLibraries {
     excludeFields = ["generated"]
@@ -155,9 +156,18 @@ dependencies {
     implementation('com.github.Edsuns.AdblockAndroid:ad-filter:v0.9.1') {
         exclude group: 'org.jetbrains.anko'
     }
-    implementation 'androidx.work:work-runtime:2.10.0'
+    implementation 'androidx.work:work-runtime-ktx:2.9.0'
     kapt "com.android.databinding:compiler:3.1.4"
     implementation 'com.google.android.material:material:1.12.0'
+
+    // Link Management System dependencies
+    implementation 'androidx.room:room-runtime:2.6.1'
+    implementation 'androidx.room:room-ktx:2.6.1'
+    kapt 'androidx.room:room-compiler:2.6.1'
+
+    // Hilt for dependency injection
+    implementation 'com.google.dagger:hilt-android:2.48'
+    kapt 'com.google.dagger:hilt-compiler:2.48'
 
 
 }

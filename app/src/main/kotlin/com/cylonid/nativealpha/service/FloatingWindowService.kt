@@ -34,10 +34,12 @@ class FloatingWindowService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
         val webAppId = intent?.getLongExtra("webAppId", 0L) ?: 0L
+        val webAppUrl = intent?.getStringExtra("webAppUrl") ?: "https://example.com"
+        val webAppName = intent?.getStringExtra("webAppName") ?: "Web App"
         val windowId = intent?.getLongExtra("windowId", 0L) ?: 0L
 
         when (action) {
-            ACTION_ADD_WINDOW -> addFloatingWindow(webAppId)
+            ACTION_ADD_WINDOW -> addFloatingWindow(webAppId, webAppUrl, webAppName)
             ACTION_REMOVE_WINDOW -> removeFloatingWindow(windowId)
             ACTION_CLOSE_ALL -> closeAllWindows()
             ACTION_MINIMIZE_WINDOW -> minimizeWindow(windowId)
@@ -47,7 +49,7 @@ class FloatingWindowService : Service() {
         return START_STICKY
     }
 
-    private fun addFloatingWindow(webAppId: Long) {
+    private fun addFloatingWindow(webAppId: Long, webAppUrl: String, webAppName: String) {
         if (floatingWindows.containsKey(webAppId)) return
 
         val layoutParams = WindowManager.LayoutParams().apply {
@@ -85,7 +87,7 @@ class FloatingWindowService : Service() {
         }
 
         // TODO: Load actual web app URL
-        webView.loadUrl("https://example.com")
+        webView.loadUrl(webAppUrl)
 
         closeButton.setOnClickListener {
             removeFloatingWindow(webAppId)

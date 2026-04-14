@@ -4,6 +4,7 @@ import android.graphics.BitmapFactory
 import android.media.MediaPlayer
 import android.widget.MediaController
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -11,7 +12,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -144,33 +148,178 @@ fun ImageViewer(file: File) {
     }
 
     if (bitmap != null) {
-        Image(
-            bitmap = bitmap.asImageBitmap(),
-            contentDescription = "Image",
-            modifier = Modifier.fillMaxSize()
-        )
+        var scale by remember { mutableStateOf(1f) }
+        var offset by remember { mutableStateOf(Offset.Zero) }
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTransformGestures { _, pan, zoom, _ ->
+                        scale = (scale * zoom).coerceIn(0.5f, 5f)
+                        offset += pan
+                    }
+                }
+        ) {
+            Image(
+                bitmap = bitmap.asImageBitmap(),
+                contentDescription = "Image",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer(
+                        scaleX = scale,
+                        scaleY = scale,
+                        translationX = offset.x,
+                        translationY = offset.y
+                    )
+            )
+
+            // Zoom controls
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+            ) {
+                FloatingActionButton(
+                    onClick = { scale = (scale * 1.2f).coerceAtMost(5f) },
+                    modifier = Modifier.size(48.dp),
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
+                ) {
+                    Icon(Icons.Default.ZoomIn, contentDescription = "Zoom In")
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                FloatingActionButton(
+                    onClick = { scale = (scale / 1.2f).coerceAtLeast(0.5f) },
+                    modifier = Modifier.size(48.dp),
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
+                ) {
+                    Icon(Icons.Default.ZoomOut, contentDescription = "Zoom Out")
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                FloatingActionButton(
+                    onClick = {
+                        scale = 1f
+                        offset = Offset.Zero
+                    },
+                    modifier = Modifier.size(48.dp),
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f)
+                ) {
+                    Icon(Icons.Default.Refresh, contentDescription = "Reset")
+                }
+            }
+        }
     } else {
-        Text("Failed to load image")
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                Icons.Default.BrokenImage,
+                contentDescription = "Broken image",
+                modifier = Modifier.size(64.dp),
+                tint = MaterialTheme.colorScheme.error
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Failed to load image",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
     }
 }
 
 @Composable
 fun VideoViewer(file: File) {
     val context = LocalContext.current
+    var isFullscreen by remember { mutableStateOf(false) }
+    var isPlaying by remember { mutableStateOf(false) }
+    var currentPosition by remember { mutableStateOf(0) }
+    var duration by remember { mutableStateOf(0) }
 
-    AndroidView(
-        factory = { ctx ->
-            android.widget.VideoView(ctx).apply {
-                setVideoURI(file.toUri())
-                setMediaController(MediaController(ctx).also { it.setAnchorView(this) })
-                setOnPreparedListener { mp ->
-                    mp.isLooping = false
-                    start()
+    Box(modifier = Modifier.fillMaxSize()) {
+        AndroidView(
+            factory = { ctx ->
+                android.widget.VideoView(ctx).apply {
+                    setVideoURI(file.toUri())
+                    setMediaController(MediaController(ctx).also { it.setAnchorView(this) })
+                    setOnPreparedListener { mp ->
+                        duration = mp.duration
+                        mp.isLooping = false
+                        start()
+                        isPlaying = true
+                    }
+                    setOnCompletionListener {
+                        isPlaying = false
+                        currentPosition = 0
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxSize()
+        )
+
+        // Video controls overlay
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
+                        shape = MaterialTheme.shapes.medium
+                    )
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = {
+                    // Play/pause logic would be handled by MediaController
+                }) {
+                    Icon(
+                        if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = if (isPlaying) "Pause" else "Play"
+                    )
+                }
+
+                Text(
+                    text = formatDuration(currentPosition),
+                    style = MaterialTheme.typography.bodySmall
+                )
+
+                Slider(
+                    value = currentPosition.toFloat(),
+                    onValueChange = { /* Seek functionality */ },
+                    valueRange = 0f..duration.toFloat(),
+                    modifier = Modifier.weight(1f)
+                )
+
+                Text(
+                    text = formatDuration(duration),
+                    style = MaterialTheme.typography.bodySmall
+                )
+
+                IconButton(onClick = { isFullscreen = !isFullscreen }) {
+                    Icon(
+                        if (isFullscreen) Icons.Default.FullscreenExit else Icons.Default.Fullscreen,
+                        contentDescription = if (isFullscreen) "Exit fullscreen" else "Enter fullscreen"
+                    )
                 }
             }
-        },
-        modifier = Modifier.fillMaxSize()
-    )
+        }
+    }
+}
+
+private fun formatDuration(milliseconds: Int): String {
+    val seconds = milliseconds / 1000
+    val minutes = seconds / 60
+    val remainingSeconds = seconds % 60
+    return String.format("%d:%02d", minutes, remainingSeconds)
 }
 
 @Composable

@@ -1,12 +1,16 @@
 package com.cylonid.nativealpha.viewmodel
 
-import com.cylonid.nativealpha.manager.ClipboardManager
-import com.cylonid.nativealpha.model.WebApp
+import androidx.work.*
+import com.cylonid.nativealpha.worker.RefreshWorker
+import java.util.concurrent.TimeUnit
 
 @HiltViewModel
 class WebViewViewModel @Inject constructor(
     private val repository: WebAppRepository,
     private val downloadManager: DownloadManager,
+    private val linkSystem: LinkManagementSystem,
+    private val historyTracker: LinkHistoryTracker,
+    private val workManager: WorkManager,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -48,6 +52,11 @@ class WebViewViewModel @Inject constructor(
             repository.getWebAppById(id).collect { app ->
                 _webApp.value = app
                 _isLoading.value = false
+                
+                // Schedule auto-refresh if enabled
+                if (app?.refreshInterval ?: 0 > 0) {
+                    scheduleAutoRefresh()
+                }
             }
         }
     }
@@ -181,9 +190,58 @@ class WebViewViewModel @Inject constructor(
         )
     }
 
-    fun showFindInPage() {
+    fun copyUrlWithFormat(format: LinkManagementSystem.LinkFormat) {
+        val currentUrl = _webViewState.value.currentUrl
+        val pageTitle = webApp.value?.name ?: "Web Page"
+
+        viewModelScope.launch {
+            val formattedUrl = linkSystem.copyUrl(currentUrl, pageTitle, format)
+            historyTracker.recordAction(
+                url = currentUrl,
+                pageTitle = pageTitle,
+                action = "copy",
+                format = format.name
+            )
+        }
+    }
+
+    fun saveCurrentLink() {
+        val currentUrl = _webViewState.value.currentUrl
+        val pageTitle = webApp.value?.name ?: "Web Page"
+
+        linkSystem.saveLink(currentUrl, pageTitle)
+        viewModelScope.launch {
+            historyTracker.recordAction(
+                url = currentUrl,
+                pageTitle = pageTitle,
+                action = "save"
+            )
+        }
+    }
+
+    fun shareCurrentPage() {
+        val currentUrl = _webViewState.value.currentUrl
+        val pageTitle = webApp.value?.name ?: "Web Page"
+
+        linkSystem.shareLink(currentUrl, pageTitle)
+        viewModelScope.launch {
+            historyTracker.recordAction(
+                url = currentUrl,
+                pageTitle = pageTitle,
+                action = "share"
+            )
+        }
+    }
+
+    fun getCurrentPageInfo(callback: (String, String) -> Unit) {
+        val currentUrl = _webViewState.value.currentUrl
+        val pageTitle = webApp.value?.name ?: "Web Page"
+        callback(currentUrl, pageTitle)
+    }
+
+    fun printPage() {
         _webViewState.value = _webViewState.value.copy(
-            shouldShowFindInPage = true
+            shouldPrint = true
         )
     }
 
@@ -276,11 +334,47 @@ class WebViewViewModel @Inject constructor(
         )
     }
 
-    fun updateNavigationState(canGoBack: Boolean, canGoForward: Boolean) {
-        _webViewState.value = _webViewState.value.copy(
-            canGoBack = canGoBack,
-            canGoForward = canGoForward
-        )
+    fun scheduleAutoRefresh() {
+        webApp.value?.let { app ->
+            if (app.refreshInterval > 0) {
+                val refreshWork = PeriodicWorkRequestBuilder<RefreshWorker>(
+                    app.refreshInterval.toLong(),
+                    TimeUnit.MINUTES
+                ).setInputData(
+                    workDataOf("webAppId" to app.id)
+                ).build()
+
+                workManager.enqueueUniquePeriodicWork(
+                    "refresh_${app.id}",
+                    ExistingPeriodicWorkPolicy.REPLACE,
+                    refreshWork
+                )
+            }
+        }
+    }
+
+    fun cancelAutoRefresh() {
+        webApp.value?.let { app ->
+            workManager.cancelUniqueWork("refresh_${app.id}")
+        }
+    }
+
+    fun performSmartRefresh() {
+        webApp.value?.let { app ->
+            if (app.isSmartRefreshEnabled) {
+                // Inject JavaScript to check for DOM changes
+                executeJavaScript("""
+                    (function() {
+                        const currentContent = document.body.innerHTML;
+                        if (window.lastContent && window.lastContent !== currentContent) {
+                            // Content changed, notify app
+                            window.waosContentChanged = true;
+                        }
+                        window.lastContent = currentContent;
+                    })();
+                """.trimIndent())
+            }
+        }
     }
 }
 

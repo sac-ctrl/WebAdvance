@@ -17,9 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.cylonid.nativealpha.viewmodel.WebViewViewModel
-import dagger.hilt.android.AndroidEntryPoint
+import com.cylonid.nativealpha.webview.SessionManager
 
 @AndroidEntryPoint
 class WebViewActivity : ComponentActivity() {
@@ -57,8 +55,19 @@ fun WebViewScreen(
     val isDesktopMode by viewModel.isDesktopMode.collectAsState()
     val isAdblockEnabled by viewModel.isAdblockEnabled.collectAsState()
     val isAutoScrollEnabled by viewModel.isAutoScrollEnabled.collectAsState()
-    val isAutoClickEnabled by viewModel.isAutoClickEnabled.collectAsState()
-    val webApp by viewModel.webApp.collectAsState()
+    var showFindDialog by remember { mutableStateOf(false) }
+    var findQuery by remember { mutableStateOf("") }
+    val linkExample = remember { LinkManagementExample(context, webApp?.id ?: 0L) }
+    val notificationSystem = remember { 
+        webApp?.let { app ->
+            SmartNotificationSystem(context, app.id, app.name)
+        }
+    }
+    val sessionManager = remember {
+        webApp?.let { app ->
+            SessionManager(context, app.id, app.name)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -70,6 +79,12 @@ fun WebViewScreen(
                     }
                 },
                 actions = {
+                    // Link Management Button
+                    IconButton(onClick = {
+                        linkExample.showLinkOptions()
+                    }) {
+                        Icon(Icons.Default.Link, contentDescription = "Link options")
+                    }
                     // Back/Forward Navigation
                     IconButton(
                         onClick = { viewModel.goBack() },
@@ -113,7 +128,7 @@ fun WebViewScreen(
                     }
 
                     // Find in Page
-                    IconButton(onClick = { viewModel.showFindInPage() }) {
+                    IconButton(onClick = { showFindDialog = true }) {
                         Icon(Icons.Default.Search, contentDescription = "Find in page")
                     }
 
@@ -181,6 +196,8 @@ fun WebViewScreen(
                             val intent = Intent(context, com.cylonid.nativealpha.service.FloatingWindowService::class.java).apply {
                                 action = com.cylonid.nativealpha.service.FloatingWindowService.ACTION_ADD_WINDOW
                                 putExtra("webAppId", app.id)
+                                putExtra("webAppUrl", app.url)
+                                putExtra("webAppName", app.name)
                             }
                             context.startService(intent)
                         }
@@ -224,7 +241,7 @@ fun WebViewScreen(
             // WebView
             AndroidView(
                 factory = { context ->
-                    WebView(context).apply {
+                    sessionManager?.createIsolatedWebView(context, url) ?: WebView(context).apply {
                         layoutParams = ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT
@@ -247,36 +264,37 @@ fun WebViewScreen(
                             setSupportZoom(true)
                         }
 
-                        webViewClient = object : WebViewClient() {
-                            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                                super.onPageStarted(view, url, favicon)
-                                viewModel.onPageStarted(url ?: "")
-                            }
-
-                            override fun onPageFinished(view: WebView?, url: String?) {
-                                super.onPageFinished(view, url, url?.let { view?.getFavicon() })
-                                viewModel.onPageFinished(url ?: "")
+                        webViewClient = WebViewClientWithDownload(
+                            context = context,
+                            onPageStarted = { url -> viewModel.onPageStarted(url) },
+                            onPageFinished = { url -> 
+                                viewModel.onPageFinished(url)
                                 // Inject JavaScript automation
-                                injectAutomationScripts(view)
+                                injectAutomationScripts(webView)
+                                // Setup link management
+                                linkExample.setupWebViewLinkHandling(webView)
+                                // Setup notification monitoring
+                                notificationSystem?.setupDOMMonitoring(webView)
+                            },
+                            onDownloadStart = { filename, url ->
+                                // Handle download through our DownloadManager
+                                viewModel.handleDownload(url, webApp)
                             }
+                        )
 
-                            override fun onReceivedError(
-                                view: WebView?,
-                                request: WebResourceRequest?,
-                                error: WebResourceError?
-                            ) {
-                                super.onReceivedError(view, request, error)
-                                viewModel.onError(error?.description?.toString() ?: "Unknown error")
-                            }
+                        // Add download listener
+                        setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
+                            viewModel.handleDownload(url, webApp)
+                        }
 
-                            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                                val url = request?.url?.toString()
-                                if (url != null && viewModel.shouldHandleDownload(url)) {
-                                    viewModel.handleDownload(url, webApp)
-                                    return true
+                        // Add JavaScript interface for notifications
+                        notificationSystem?.let { system ->
+                            addJavascriptInterface(object {
+                                @android.webkit.JavascriptInterface
+                                fun reportContentChange(trigger: String) {
+                                    system.reportContentChange(trigger)
                                 }
-                                return super.shouldOverrideUrlLoading(view, request)
-                            }
+                            }, "WebApp")
                         }
 
                         webChromeClient = object : WebChromeClient() {
@@ -360,25 +378,42 @@ fun WebViewScreen(
                         viewModel.clearActionFlags()
                     }
 
-                    // TODO: Implement other actions (find in page, print, zoom, etc.)
-                    if (webViewState.shouldShowFindInPage) {
-                        // Show find in page dialog
-                        viewModel.clearActionFlags()
-                    }
                     if (webViewState.shouldPrint) {
                         // Print functionality
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            val printManager = context.getSystemService(Context.PRINT_SERVICE) as android.print.PrintManager
+                            val printAdapter = webView.createPrintDocumentAdapter("WAOS Print")
+                            val printJob = printManager.print("WAOS Document", printAdapter, null)
+                        }
                         viewModel.clearActionFlags()
                     }
                     if (webViewState.shouldZoomIn) {
                         webView.zoomIn()
                         viewModel.clearActionFlags()
                     }
-                    if (webViewState.shouldZoomOut) {
-                        webView.zoomOut()
-                        viewModel.clearActionFlags()
-                    }
                     if (webViewState.shouldTakeScreenshot) {
                         // Screenshot functionality
+                        webView.evaluateJavascript("""
+                            (function() {
+                                const canvas = document.createElement('canvas');
+                                const ctx = canvas.getContext('2d');
+                                canvas.width = window.innerWidth;
+                                canvas.height = window.innerHeight;
+                                
+                                // Draw the current page
+                                const data = '<svg xmlns="http://www.w3.org/2000/svg" width="' + canvas.width + '" height="' + canvas.height + '">' +
+                                    '<foreignObject width="100%" height="100%">' +
+                                    '<div xmlns="http://www.w3.org/1999/xhtml">' +
+                                    document.documentElement.innerHTML +
+                                    '</div></foreignObject></svg>';
+                                
+                                // This is a simplified version - real screenshot would use WebView.capturePicture()
+                                // or PixelCopy for API 24+
+                                return 'screenshot_taken';
+                            })();
+                        """.trimIndent()) { result ->
+                            // Handle screenshot result
+                        }
                         viewModel.clearActionFlags()
                     }
                 },
@@ -395,6 +430,21 @@ fun WebViewScreen(
                         viewModel.executeJavaScript(command)
                     },
                     modifier = Modifier.height(200.dp)
+                )
+            }
+
+            // Find in Page Dialog
+            if (showFindDialog) {
+                FindInPageDialog(
+                    query = findQuery,
+                    onQueryChange = { findQuery = it },
+                    onFindNext = {
+                        viewModel.executeJavaScript("window.waosFind?.findNext('$findQuery');")
+                    },
+                    onFindPrevious = {
+                        viewModel.executeJavaScript("window.waosFind?.findPrevious('$findQuery');")
+                    },
+                    onDismiss = { showFindDialog = false }
                 )
             }
 
@@ -490,9 +540,98 @@ private fun injectAutomationScripts(webView: WebView?) {
                 }
             };
 
-            console.log('WAOS automation scripts loaded');
-        })();
-    """.trimIndent(), null)
+            // Find in page functionality
+            window.waosFind = {
+                currentIndex: -1,
+                matches: [],
+                
+                find: function(query) {
+                    // Clear previous highlights
+                    this.clearHighlights();
+                    
+                    if (!query) return;
+                    
+                    const body = document.body;
+                    const textNodes = this.getTextNodes(body);
+                    this.matches = [];
+                    
+                    textNodes.forEach(node => {
+                        const text = node.textContent;
+                        const index = text.toLowerCase().indexOf(query.toLowerCase());
+                        if (index >= 0) {
+                            this.matches.push({
+                                node: node,
+                                start: index,
+                                end: index + query.length
+                            });
+                        }
+                    });
+                    
+                    if (this.matches.length > 0) {
+                        this.currentIndex = 0;
+                        this.highlightCurrent();
+                    }
+                },
+                
+                findNext: function(query) {
+                    if (query && query !== this.lastQuery) {
+                        this.find(query);
+                        this.lastQuery = query;
+                    } else if (this.matches.length > 0) {
+                        this.currentIndex = (this.currentIndex + 1) % this.matches.length;
+                        this.highlightCurrent();
+                    }
+                },
+                
+                findPrevious: function(query) {
+                    if (query && query !== this.lastQuery) {
+                        this.find(query);
+                        this.lastQuery = query;
+                    } else if (this.matches.length > 0) {
+                        this.currentIndex = this.currentIndex <= 0 ? this.matches.length - 1 : this.currentIndex - 1;
+                        this.highlightCurrent();
+                    }
+                },
+                
+                highlightCurrent: function() {
+                    this.clearHighlights();
+                    if (this.currentIndex >= 0 && this.currentIndex < this.matches.length) {
+                        const match = this.matches[this.currentIndex];
+                        const range = document.createRange();
+                        range.setStart(match.node, match.start);
+                        range.setEnd(match.node, match.end);
+                        
+                        const highlight = document.createElement('mark');
+                        highlight.style.backgroundColor = 'yellow';
+                        range.surroundContents(highlight);
+                        
+                        // Scroll into view
+                        highlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                },
+                
+                clearHighlights: function() {
+                    document.querySelectorAll('mark').forEach(mark => {
+                        const parent = mark.parentNode;
+                        while (mark.firstChild) {
+                            parent.insertBefore(mark.firstChild, mark);
+                        }
+                        parent.removeChild(mark);
+                    });
+                },
+                
+                getTextNodes: function(node) {
+                    const textNodes = [];
+                    const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, null);
+                    let currentNode;
+                    while (currentNode = walker.nextNode()) {
+                        if (currentNode.textContent.trim()) {
+                            textNodes.push(currentNode);
+                        }
+                    }
+                    return textNodes;
+                }
+            };
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -560,10 +699,52 @@ fun ConsoleMessageItem(message: ConsoleMessageData) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ErrorPanel(
-    error: String,
-    onRetry: () -> Unit
+fun FindInPageDialog(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onFindNext: () -> Unit,
+    onFindPrevious: () -> Unit,
+    onDismiss: () -> Unit
 ) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Find in Page") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = onQueryChange,
+                    placeholder = { Text("Search text...") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onFindPrevious,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Previous")
+                    }
+                    OutlinedButton(
+                        onClick = onFindNext,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Next")
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close")
+            }
+        }
+    )
+}
     Card(
         modifier = Modifier
             .fillMaxWidth()
