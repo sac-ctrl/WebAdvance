@@ -14,6 +14,7 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.cylonid.nativealpha.R
+import kotlin.jvm.JvmName
 import com.cylonid.nativealpha.WebAppSettingsActivity
 import com.cylonid.nativealpha.data.Converters
 import com.cylonid.nativealpha.model.SandboxManager
@@ -149,6 +150,7 @@ data class WebApp(
     var group: String = "Default"
     @Ignore
     private var _clipboardSyncEnabled: Boolean = true
+    @get:JvmName("isClipboardSyncEnabled")
     var clipboardSyncEnabled: Boolean
         get() = _clipboardSyncEnabled
         set(value) { _clipboardSyncEnabled = value }
