@@ -347,6 +347,7 @@ fun EnhancedWebViewScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WebViewSettingsPanel(
     app: WebApp?,

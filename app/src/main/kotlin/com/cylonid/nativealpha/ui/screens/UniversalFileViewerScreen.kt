@@ -541,7 +541,7 @@ fun ApkInfoViewer(file: File) {
         try {
             getApkInfo(context, file)
         } catch (e: Exception) {
-            ApkInfo("Failed to read APK", "", "", 0L, emptyList())
+            ApkInfo("Failed to read APK", "", 0L, 0L, emptyList())
         }
     }
 

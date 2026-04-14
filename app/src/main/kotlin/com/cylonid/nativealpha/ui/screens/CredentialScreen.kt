@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cylonid.nativealpha.manager.Credential
 import com.cylonid.nativealpha.viewmodel.CredentialViewModel
+import com.cylonid.nativealpha.ui.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -96,7 +97,7 @@ fun CredentialScreen(
             AddCredentialDialog(
                 credential = editingCredential,
                 onDismiss = { viewModel.hideAddCredentialDialog() },
-                onSave = { cred ->
+                onSave = { cred: Credential ->
                     viewModel.saveCredential(webAppId ?: 0L, cred)
                 }
             )
