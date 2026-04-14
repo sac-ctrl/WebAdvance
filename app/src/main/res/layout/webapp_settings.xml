@@ -104,7 +104,7 @@
                         android:id="@+id/switchSandbox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:checked="@={webapp.isUseContainer}"
+                        android:checked="@{webapp.isUseContainer}"
                         android:onCheckedChanged="@{(switch, checked) -> webapp.onSwitchSandboxChanged(switch, checked)}"
                         android:text="@string/enable_sandbox" />
 

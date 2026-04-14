@@ -401,6 +401,7 @@ data class WebApp(
     }
 
     fun onSwitchSandboxChanged(mSwitch: CompoundButton, isChecked: Boolean) {
+        isUseContainer = isChecked
         containerId = if (isChecked) {
             SandboxManager.getInstance().calculateNextFreeContainerId()
         } else {
