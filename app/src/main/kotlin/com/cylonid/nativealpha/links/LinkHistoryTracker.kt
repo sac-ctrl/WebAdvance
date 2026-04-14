@@ -2,7 +2,9 @@ package com.cylonid.nativealpha.links
 
 import android.content.Context
 import androidx.room.*
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
 
 /**
  * Link history database entity
@@ -90,9 +92,9 @@ abstract class LinkHistoryDatabase : RoomDatabase() {
 /**
  * Link history tracker
  */
-class LinkHistoryTracker(
-    private val context: Context,
-    private val appId: Long
+class LinkHistoryTracker @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val appId: Long = 0L
 ) {
     private val db = LinkHistoryDatabase.getInstance(context)
     private val dao = db.linkHistoryDao()

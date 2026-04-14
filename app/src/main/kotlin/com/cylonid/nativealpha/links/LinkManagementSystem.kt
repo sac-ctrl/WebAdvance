@@ -3,18 +3,20 @@ package com.cylonid.nativealpha.links
 import android.content.Context
 import android.content.Intent
 import android.webkit.WebView
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 
 /**
  * Link management system for copying URLs in various formats
  */
-class LinkManagementSystem(
-    private val context: Context,
-    private val appId: Long
+class LinkManagementSystem @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val appId: Long = 0L
 ) {
     private val _savedLinks = MutableStateFlow<List<SavedLink>>(emptyList())
     val savedLinks: StateFlow<List<SavedLink>> = _savedLinks.asStateFlow()

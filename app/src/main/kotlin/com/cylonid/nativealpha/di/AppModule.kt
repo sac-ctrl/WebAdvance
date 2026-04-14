@@ -1,11 +1,16 @@
 package com.cylonid.nativealpha.di
 
 import android.content.Context
+import android.view.WindowManager
 import androidx.room.Room
+import androidx.work.WorkManager
 import com.cylonid.nativealpha.data.*
+import com.cylonid.nativealpha.links.LinkHistoryTracker
+import com.cylonid.nativealpha.links.LinkManagementSystem
 import com.cylonid.nativealpha.manager.*
 import com.cylonid.nativealpha.repository.WebAppRepository
 import com.cylonid.nativealpha.service.BackupService
+import com.cylonid.nativealpha.service.FloatingWindowService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -129,5 +134,35 @@ object AppModule {
         credentialManager: CredentialManager
     ): BackupService {
         return BackupService(context, database, webAppRepository, credentialManager)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
+        return WorkManager.getInstance(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWindowManager(@ApplicationContext context: Context): WindowManager {
+        return context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    }
+
+    @Provides
+    @Singleton
+    fun provideLinkManagementSystem(@ApplicationContext context: Context): LinkManagementSystem {
+        return LinkManagementSystem(context, 0L)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLinkHistoryTracker(@ApplicationContext context: Context): LinkHistoryTracker {
+        return LinkHistoryTracker(context, 0L)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFloatingWindowService(): FloatingWindowService {
+        return FloatingWindowService()
     }
 }
