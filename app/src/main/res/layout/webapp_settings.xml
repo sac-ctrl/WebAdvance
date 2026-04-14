@@ -32,6 +32,17 @@
                 android:text="@{webapp.baseUrl}"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
+            <TextView
+                android:id="@+id/globalSettingsInfoText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="These settings apply globally to all web apps unless overridden per app."
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textColor="@color/md_theme_onSurfaceVariant"
+                android:visibility="gone"
+                android:padding="4dp"
+                android:background="@color/md_theme_surfaceVariant" />
+
             <Space
                 android:layout_width="1dp"
                 android:layout_height="10dp" />
@@ -522,13 +533,6 @@
                                 android:textStyle="bold" />
 
                             <TextView
-                                android:id="@+id/labelCustomIcon"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:text="@string/custom_icon"
-                                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
-
-                            <TextView
                                 android:id="@+id/labelGroup"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -553,17 +557,28 @@
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:weightSum="3">
+                                android:orientation="horizontal">
 
                                 <EditText
                                     android:id="@+id/textIconUri"
                                     android:layout_width="0dp"
-                                    android:layout_weight="2"
+                                    android:layout_weight="3"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="sans-serif"
                                     android:inputType="textUri"
+                                    android:hint="Icon URI or URL"
                                     android:text="@={webapp.iconUri}" />
+
+                                <Button
+                                    android:id="@+id/button_fetch_favicon"
+                                    android:layout_width="0dp"
+                                    android:layout_weight="1"
+                                    android:layout_height="wrap_content"
+                                    android:text="Fetch"
+                                    android:textAllCaps="false"
+                                    android:textSize="11sp"
+                                    android:layout_marginStart="4dp"
+                                    android:contentDescription="Auto-fetch favicon from website" />
 
                                 <Button
                                     android:id="@+id/button_select_icon"
@@ -572,7 +587,9 @@
                                     android:layout_height="wrap_content"
                                     android:text="@string/select_icon"
                                     android:textAllCaps="false"
-                                    android:layout_marginStart="8dp" />
+                                    android:textSize="11sp"
+                                    android:layout_marginStart="4dp"
+                                    android:contentDescription="Select icon from gallery" />
                             </LinearLayout>
 
                             <TextView
@@ -657,6 +674,57 @@
                                     android:inputType="number"
                                     android:text="@={String.valueOf(webapp.floatingWindowOpacity)}" />
                             </LinearLayout>
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Cache Mode"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                                android:layout_marginTop="4dp" />
+
+                            <Button
+                                android:id="@+id/button_cache_mode"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Cache Mode: Default"
+                                android:textAllCaps="false"
+                                android:gravity="start|center_vertical"
+                                android:paddingStart="8dp"
+                                android:contentDescription="Select cache mode" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Link Copy Format"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                                android:layout_marginTop="4dp" />
+
+                            <Button
+                                android:id="@+id/button_link_format"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Link Format: Plain URL"
+                                android:textAllCaps="false"
+                                android:gravity="start|center_vertical"
+                                android:paddingStart="8dp"
+                                android:contentDescription="Select link copy format" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Credential Vault Auto-Lock (minutes)"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                                android:layout_marginTop="4dp" />
+
+                            <EditText
+                                android:id="@+id/textCredentialTimeout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif"
+                                android:inputType="number"
+                                android:hint="5"
+                                android:text="5"
+                                android:contentDescription="Credential vault auto-lock timeout in minutes" />
 
                             <com.google.android.material.materialswitch.MaterialSwitch
                                 android:id="@+id/switchFallbackToStandardContextmenu"

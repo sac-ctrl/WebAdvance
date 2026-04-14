@@ -2,12 +2,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="12dp"
+    android:layout_margin="8dp"
     android:orientation="vertical"
     android:padding="16dp"
     android:background="@drawable/card_background"
-    android:elevation="6dp"
-    android:foreground="?attr/selectableItemBackground">
+    android:elevation="4dp"
+    android:foreground="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,14 +17,34 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <ImageView
-            android:id="@+id/waos_app_icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_baseline_home_24"
-            android:tint="@color/colorSignature"
-            android:contentDescription="App icon"
-            android:layout_marginEnd="12dp" />
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/waos_app_icon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_baseline_home_24"
+                android:tint="@color/colorSignature"
+                android:contentDescription="App icon"
+                android:layout_marginEnd="12dp" />
+
+            <TextView
+                android:id="@+id/waos_notification_badge"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="top|end"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/notification_badge_background"
+                android:gravity="center"
+                android:text="0"
+                android:textColor="@android:color/white"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                android:contentDescription="Notification count" />
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -36,7 +58,8 @@
                 android:layout_height="wrap_content"
                 android:text="App Title"
                 android:textAppearance="?attr/textAppearanceHeadline6"
-                android:textColor="@color/md_theme_onSurface" />
+                android:textColor="@color/md_theme_onSurface"
+                android:contentDescription="App name" />
 
             <TextView
                 android:id="@+id/waos_app_group"
@@ -45,7 +68,8 @@
                 android:text="Default Group"
                 android:textAppearance="?attr/textAppearanceBody2"
                 android:textColor="@color/md_theme_onSurfaceVariant"
-                android:layout_marginTop="2dp" />
+                android:layout_marginTop="2dp"
+                android:contentDescription="App group" />
 
             <TextView
                 android:id="@+id/waos_app_subtitle"
@@ -54,7 +78,19 @@
                 android:text="https://example.com"
                 android:textAppearance="?attr/textAppearanceBody2"
                 android:textColor="@color/md_theme_onSurfaceVariant"
-                android:layout_marginTop="2dp" />
+                android:layout_marginTop="2dp"
+                android:contentDescription="App URL" />
+
+            <TextView
+                android:id="@+id/waos_app_last_updated"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:textSize="11sp"
+                android:textColor="@color/md_theme_onSurfaceVariant"
+                android:layout_marginTop="3dp"
+                android:contentDescription="Last used time"
+                android:visibility="gone" />
         </LinearLayout>
 
         <TextView
@@ -65,17 +101,9 @@
             android:background="@drawable/status_chip_background"
             android:text="Active"
             android:textColor="@color/md_theme_onPrimary"
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            android:contentDescription="App status" />
     </LinearLayout>
-
-    <TextView
-        android:id="@+id/waos_app_hint"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Tap to open, long press for actions"
-        android:textColor="@color/md_theme_onSurfaceVariant"
-        android:textSize="13sp"
-        android:layout_marginTop="10dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -91,7 +119,8 @@
             android:text="Open"
             android:textAllCaps="false"
             android:backgroundTint="@color/md_theme_primary"
-            android:textColor="@android:color/white" />
+            android:textColor="@android:color/white"
+            android:contentDescription="Open this web app" />
 
         <Button
             android:id="@+id/button_download_history"
@@ -100,7 +129,8 @@
             android:layout_height="wrap_content"
             android:text="Downloads"
             android:textAllCaps="false"
-            android:layout_marginStart="8dp" />
+            android:layout_marginStart="8dp"
+            android:contentDescription="View download history" />
     </LinearLayout>
 
     <LinearLayout
@@ -115,7 +145,8 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="Clipboard"
-            android:textAllCaps="false" />
+            android:textAllCaps="false"
+            android:contentDescription="Open clipboard manager" />
 
         <Button
             android:id="@+id/button_credentials"
@@ -124,6 +155,7 @@
             android:layout_height="wrap_content"
             android:text="Vault"
             android:textAllCaps="false"
-            android:layout_marginStart="8dp" />
+            android:layout_marginStart="8dp"
+            android:contentDescription="Open credential vault" />
     </LinearLayout>
 </LinearLayout>

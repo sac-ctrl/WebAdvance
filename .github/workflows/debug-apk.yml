@@ -1,0 +1,89 @@
+name: Build Debug APK
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-debug-apk:
+    name: Build Debug APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build Standard Debug APK
+        run: ./gradlew assembleStandardDebug --stacktrace --no-daemon
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: waos-debug-apk-${{ github.run_number }}
+          path: app/build/outputs/apk/standard/debug/*.apk
+          retention-days: 30
+
+      - name: Upload Build Reports on Failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: build-reports-${{ github.run_number }}
+          path: |
+            app/build/reports/
+            app/build/outputs/logs/
+          retention-days: 7
+
+      - name: Create GitHub Release on Tag
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: app/build/outputs/apk/standard/debug/*.apk
+          name: "WAOS Debug Build ${{ github.ref_name }}"
+          body: |
+            ## WAOS Debug Build
+
+            ### Features Implemented
+            - Multi-account session isolation (8 separate WebView sandboxes)
+            - Per-app credential vault with PIN + biometric auth
+            - Clipboard manager with per-app isolation and swipe-delete
+            - Universal file viewer (image, video, audio, PDF, text)
+            - Floating bubble launcher
+            - Download history with search and filter
+            - Smart folder grouping on dashboard
+            - Auto-fetch favicon from websites
+            - Card notification badges and last-updated timestamps
+            - Haptic feedback on interactions
+            - Comprehensive accessibility support
+
+            > This is a debug build. Do not distribute publicly.
+          draft: false
+          prerelease: true

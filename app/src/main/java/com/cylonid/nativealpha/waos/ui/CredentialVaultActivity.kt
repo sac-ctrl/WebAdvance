@@ -8,6 +8,10 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.EditText
@@ -30,12 +34,20 @@ class CredentialVaultActivity : AppCompatActivity() {
     companion object {
         private const val REQUEST_EXPORT_VAULT = 4132
         private const val REQUEST_IMPORT_VAULT = 4133
+        private const val DEFAULT_TIMEOUT_MINUTES = 5
     }
 
     private lateinit var credentialRecyclerView: RecyclerView
     private lateinit var adapter: CredentialAdapter
     private var appId: Int = -1
     private var vaultPin: String? = null
+    private val autoLockHandler = Handler(Looper.getMainLooper())
+    private var autoLockTimeoutMs = (DEFAULT_TIMEOUT_MINUTES * 60 * 1000).toLong()
+    private val autoLockRunnable = Runnable {
+        vaultPin = null
+        Toast.makeText(this, "Vault locked due to inactivity", Toast.LENGTH_SHORT).show()
+        ensurePinUnlocked()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,22 +56,83 @@ class CredentialVaultActivity : AppCompatActivity() {
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.title = "Credential Vault"
 
         appId = intent.getIntExtra(WaosConstants.EXTRA_WAOS_APP_ID, -1)
         credentialRecyclerView = findViewById(R.id.credential_recycler_view)
         credentialRecyclerView.layoutManager = LinearLayoutManager(this)
 
+        val prefs = getSharedPreferences("waos_app_settings", Context.MODE_PRIVATE)
+        val timeoutMinutes = prefs.getInt("${appId}_credential_timeout_min", DEFAULT_TIMEOUT_MINUTES)
+        autoLockTimeoutMs = (timeoutMinutes * 60 * 1000).toLong()
+
         findViewById<Button>(R.id.button_add_credential).setOnClickListener {
+            hapticTap()
             showAddCredentialDialog()
         }
         findViewById<Button>(R.id.button_export_vault).setOnClickListener {
+            hapticTap()
             exportVault()
         }
         findViewById<Button>(R.id.button_import_vault).setOnClickListener {
+            hapticTap()
             importVault()
         }
 
         ensurePinUnlocked()
+    }
+
+    override fun onUserInteraction() {
+        super.onUserInteraction()
+        resetAutoLockTimer()
+    }
+
+    private fun startAutoLockTimer() {
+        autoLockHandler.removeCallbacks(autoLockRunnable)
+        if (autoLockTimeoutMs > 0) {
+            autoLockHandler.postDelayed(autoLockRunnable, autoLockTimeoutMs)
+        }
+    }
+
+    private fun resetAutoLockTimer() {
+        if (vaultPin != null) {
+            autoLockHandler.removeCallbacks(autoLockRunnable)
+            autoLockHandler.postDelayed(autoLockRunnable, autoLockTimeoutMs)
+        }
+    }
+
+    private fun cancelAutoLockTimer() {
+        autoLockHandler.removeCallbacks(autoLockRunnable)
+    }
+
+    private fun hapticTap() {
+        try {
+            val v = getSystemService(VIBRATOR_SERVICE) as? Vibrator
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                v?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
+            } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                v?.vibrate(VibrationEffect.createOneShot(30, VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                v?.vibrate(30)
+            }
+        } catch (_: Exception) {}
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cancelAutoLockTimer()
+    }
+
+    override fun onPause() {
+        super.onPause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (vaultPin != null) {
+            startAutoLockTimer()
+        }
     }
 
     private fun ensurePinUnlocked() {
@@ -157,6 +230,7 @@ class CredentialVaultActivity : AppCompatActivity() {
         val credentials = CredentialRepository.loadCredentials(this, appId, pin)
         adapter = CredentialAdapter(credentials) { item -> showCredentialActions(item) }
         credentialRecyclerView.adapter = adapter
+        startAutoLockTimer()
     }
 
     private fun showCredentialActions(item: CredentialItem) {

@@ -11,7 +11,7 @@ import java.text.DateFormat
 import java.util.*
 
 class ClipboardAdapter(
-    private val clipboardItems: List<ClipboardItem>,
+    private var clipboardItems: MutableList<ClipboardItem>,
     private val onCopy: (ClipboardItem) -> Unit
 ) : RecyclerView.Adapter<ClipboardAdapter.ViewHolder>() {
 
@@ -23,12 +23,19 @@ class ClipboardAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = clipboardItems[position]
-        holder.clipText.text = item.text
-        holder.clipMeta.text = DateFormat.getDateTimeInstance().format(Date(item.timestamp))
+        val preview = if (item.text.length > 200) item.text.take(200) + "…" else item.text
+        holder.clipText.text = preview
+        holder.clipMeta.text = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(item.timestamp))
         holder.itemView.setOnClickListener { onCopy(item) }
+        holder.itemView.contentDescription = "Clipboard item: ${preview.take(50)}"
     }
 
     override fun getItemCount(): Int = clipboardItems.size
+
+    fun updateItems(newItems: MutableList<ClipboardItem>) {
+        clipboardItems = newItems
+        notifyDataSetChanged()
+    }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val clipText: TextView = view.findViewById(R.id.clip_text)

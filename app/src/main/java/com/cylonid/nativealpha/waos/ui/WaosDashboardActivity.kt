@@ -5,9 +5,14 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -24,6 +29,9 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.cylonid.nativealpha.R
 import java.util.Collections
+import java.util.Date
+import java.text.SimpleDateFormat
+import java.util.Locale
 import com.cylonid.nativealpha.WebAppSettingsActivity
 import com.cylonid.nativealpha.model.DataManager
 import com.cylonid.nativealpha.model.WebApp
@@ -40,21 +48,20 @@ class WaosDashboardActivity : AppCompatActivity() {
     private lateinit var toggleLayoutButton: Button
     private lateinit var sortAppsButton: Button
     private lateinit var addAppButton: FloatingActionButton
-    private lateinit var adapter: WaosAppAdapter
-    private var isGridMode = true
+    private lateinit var adapter: WaosGroupedAdapter
+    private var isGridMode = false
     private var currentSortMode = SortMode.ORDER
+    private var isFolderGroupingEnabled = false
+    private var vibrator: Vibrator? = null
 
-    private enum class SortMode {
-        ORDER,
-        NAME,
-        GROUP
-    }
+    private enum class SortMode { ORDER, NAME, GROUP }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_waos_dashboard)
 
         DataManager.getInstance().loadAppData()
+        vibrator = getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -67,29 +74,31 @@ class WaosDashboardActivity : AppCompatActivity() {
         addAppButton = findViewById(R.id.button_add_app)
         swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout)
         dashboardRecyclerView = findViewById(R.id.dashboard_recycler_view)
-        dashboardRecyclerView.layoutManager = GridLayoutManager(this, 2)
         dashboardRecyclerView.itemAnimator = DefaultItemAnimator()
 
-        adapter = WaosAppAdapter(
-            emptyList(),
-            onOpenApp = { app -> openWebApp(app) },
-            onShowDownloads = { app -> openDownloadHistory(app.ID) },
-            onShowClipboard = { app -> openClipboard(app.ID) },
-            onShowCredentials = { app -> openCredentials(app.ID) },
-            onShowOptions = { app -> showAppActions(app) }
+        adapter = WaosGroupedAdapter(
+            items = emptyList(),
+            onOpenApp = { app -> hapticTap(); openWebApp(app) },
+            onShowDownloads = { app -> hapticTap(); openDownloadHistory(app.ID) },
+            onShowClipboard = { app -> hapticTap(); openClipboard(app.ID) },
+            onShowCredentials = { app -> hapticTap(); openCredentials(app.ID) },
+            onShowOptions = { app -> hapticLongPress(); showAppActions(app) }
         )
         dashboardRecyclerView.adapter = adapter
 
+        setupLayoutManager()
         setupSearch()
         setupRefresh()
         setupLayoutToggle()
         setupSort()
         setupAddApp()
         setupDragAndDrop()
+        setupFolderGroupingToggle()
         loadApps()
 
         val launchBubbleButton = findViewById<Button>(R.id.button_launch_floating)
-        launchBubbleButton.setOnClickListener {
+        launchBubbleButton?.setOnClickListener {
+            hapticTap()
             startService(Intent(this, com.cylonid.nativealpha.waos.service.FloatingWindowService::class.java))
         }
     }
@@ -99,22 +108,93 @@ class WaosDashboardActivity : AppCompatActivity() {
         loadApps()
     }
 
-    private fun loadApps() {
-        val apps = when (currentSortMode) {
+    private fun setupLayoutManager() {
+        dashboardRecyclerView.layoutManager = LinearLayoutManager(this)
+    }
+
+    private fun hapticTap() {
+        try {
+            vibrator?.let {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    it.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
+                } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    it.vibrate(VibrationEffect.createOneShot(30, VibrationEffect.DEFAULT_AMPLITUDE))
+                } else {
+                    @Suppress("DEPRECATION")
+                    it.vibrate(30)
+                }
+            }
+        } catch (_: Exception) {}
+    }
+
+    private fun hapticLongPress() {
+        try {
+            vibrator?.let {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    it.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK))
+                } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    it.vibrate(VibrationEffect.createOneShot(60, VibrationEffect.DEFAULT_AMPLITUDE))
+                } else {
+                    @Suppress("DEPRECATION")
+                    it.vibrate(60)
+                }
+            }
+        } catch (_: Exception) {}
+    }
+
+    private fun loadApps(query: String = searchInput.text?.toString() ?: "") {
+        val allApps = when (currentSortMode) {
             SortMode.NAME -> DataManager.getInstance().getActiveWebsites().sortedBy { it.title.lowercase() }
             SortMode.GROUP -> DataManager.getInstance().getActiveWebsites().sortedWith(compareBy({ it.group.lowercase() }, { it.order }))
             SortMode.ORDER -> DataManager.getInstance().getActiveWebsites().sortedBy { it.order }
         }
-        adapter.updateWebApps(apps)
-        appCountText.text = getString(R.string.waos_app_count_format, apps.size)
+
+        val filtered = if (query.isBlank()) allApps else allApps.filter {
+            it.getTitle().contains(query, ignoreCase = true) ||
+                it.getBaseUrl().contains(query, ignoreCase = true) ||
+                it.group.contains(query, ignoreCase = true)
+        }
+
+        val items: List<WaosListItem> = if (isFolderGroupingEnabled) {
+            buildGroupedItems(filtered)
+        } else {
+            filtered.map { WaosListItem.AppItem(it) }
+        }
+
+        adapter.updateItems(items)
+        val total = filtered.size
+        val suffix = if (total == 1) "app" else "apps"
+        appCountText.text = "$total $suffix"
         swipeRefreshLayout.isRefreshing = false
+    }
+
+    private fun buildGroupedItems(apps: List<WebApp>): List<WaosListItem> {
+        val grouped = apps.groupBy { it.group.ifBlank { "Default" } }
+        val result = mutableListOf<WaosListItem>()
+        val sortedGroups = grouped.keys.sorted()
+        for (groupName in sortedGroups) {
+            val groupApps = grouped[groupName] ?: continue
+            result.add(WaosListItem.GroupHeader(groupName, groupApps.size))
+            result.addAll(groupApps.map { WaosListItem.AppItem(it) })
+        }
+        return result
+    }
+
+    private fun setupFolderGroupingToggle() {
+        val groupToggleButton = findViewById<Button>(R.id.button_group_toggle)
+        groupToggleButton?.setOnClickListener {
+            hapticTap()
+            isFolderGroupingEnabled = !isFolderGroupingEnabled
+            groupToggleButton.text = if (isFolderGroupingEnabled) "Ungrouped" else "Grouped"
+            loadApps()
+        }
     }
 
     private fun setupSearch() {
         searchInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                adapter.filter(s?.toString() ?: "")
+                loadApps(s?.toString() ?: "")
             }
             override fun afterTextChanged(s: Editable?) {}
         })
@@ -122,6 +202,7 @@ class WaosDashboardActivity : AppCompatActivity() {
 
     private fun setupSort() {
         sortAppsButton.setOnClickListener {
+            hapticTap()
             currentSortMode = when (currentSortMode) {
                 SortMode.ORDER -> SortMode.NAME
                 SortMode.NAME -> SortMode.GROUP
@@ -139,6 +220,7 @@ class WaosDashboardActivity : AppCompatActivity() {
 
     private fun setupAddApp() {
         addAppButton.setOnClickListener {
+            hapticTap()
             val view = LayoutInflater.from(this).inflate(R.layout.add_website_dialogue, null)
             val websiteUrl = view.findViewById<EditText>(R.id.websiteUrl)
 
@@ -178,54 +260,57 @@ class WaosDashboardActivity : AppCompatActivity() {
 
     private fun setupRefresh() {
         val refreshButton = findViewById<ImageButton>(R.id.button_refresh)
-        refreshButton.setOnClickListener { loadApps() }
+        refreshButton?.setOnClickListener { hapticTap(); loadApps() }
         swipeRefreshLayout.setOnRefreshListener { loadApps() }
     }
 
     private fun setupLayoutToggle() {
         toggleLayoutButton.text = if (isGridMode) "List" else "Grid"
         toggleLayoutButton.setOnClickListener {
+            hapticTap()
             isGridMode = !isGridMode
             toggleLayoutButton.text = if (isGridMode) "List" else "Grid"
             dashboardRecyclerView.layoutManager = if (isGridMode) GridLayoutManager(this, 2) else LinearLayoutManager(this)
-            adapter.notifyDataSetChanged()
         }
     }
 
     private fun setupDragAndDrop() {
         val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
-            ItemTouchHelper.UP or ItemTouchHelper.DOWN,
-            0
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
         ) {
-            override fun onMove(
-                recyclerView: RecyclerView,
-                viewHolder: RecyclerView.ViewHolder,
-                target: RecyclerView.ViewHolder
-            ): Boolean {
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
+                val fromType = viewHolder.itemViewType
+                val toType = target.itemViewType
+                if (fromType != WaosGroupedAdapter.TYPE_APP || toType != WaosGroupedAdapter.TYPE_APP) return false
                 val from = viewHolder.adapterPosition
                 val to = target.adapterPosition
-                val updated = adapter.currentApps.toMutableList()
-                Collections.swap(updated, from, to)
-                adapter.updateWebApps(updated)
+                val currentItems = adapter.currentItems.toMutableList()
+                Collections.swap(currentItems, from, to)
+                adapter.updateItems(currentItems)
                 return true
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) = Unit
 
+            override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+                if (viewHolder.itemViewType != WaosGroupedAdapter.TYPE_APP) return 0
+                return super.getMovementFlags(recyclerView, viewHolder)
+            }
+
             override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
                 super.clearView(recyclerView, viewHolder)
-                applyOrderToApps(adapter.currentApps)
+                saveAppOrder()
             }
         })
         itemTouchHelper.attachToRecyclerView(dashboardRecyclerView)
     }
 
-    private fun applyOrderToApps(apps: List<WebApp>) {
-        apps.forEachIndexed { index, webapp ->
-            webapp.order = index + 1
-            DataManager.getInstance().replaceWebApp(webapp)
+    private fun saveAppOrder() {
+        val appItems = adapter.currentItems.filterIsInstance<WaosListItem.AppItem>()
+        appItems.forEachIndexed { index, item ->
+            item.app.order = index + 1
+            DataManager.getInstance().replaceWebApp(item.app)
         }
-        loadApps()
     }
 
     private fun showAppActions(app: WebApp) {
@@ -235,16 +320,16 @@ class WaosDashboardActivity : AppCompatActivity() {
             .setTitle(app.getTitle())
             .setItems(actions) { _, which ->
                 when (which) {
-                    0 -> openWebApp(app)
-                    1 -> openAppSettings(app.ID)
-                    2 -> openDownloadHistory(app.ID)
-                    3 -> openClipboard(app.ID)
-                    4 -> openCredentials(app.ID)
-                    5 -> cloneWebApp(app)
-                    6 -> confirmDeleteWebApp(app)
-                    7 -> toggleLockWebApp(app)
-                    8 -> copyAppUrl(app)
-                    9 -> startService(Intent(this, com.cylonid.nativealpha.waos.service.FloatingWindowService::class.java))
+                    0 -> { hapticTap(); openWebApp(app) }
+                    1 -> { hapticTap(); openAppSettings(app.ID) }
+                    2 -> { hapticTap(); openDownloadHistory(app.ID) }
+                    3 -> { hapticTap(); openClipboard(app.ID) }
+                    4 -> { hapticTap(); openCredentials(app.ID) }
+                    5 -> { hapticTap(); cloneWebApp(app) }
+                    6 -> { hapticTap(); confirmDeleteWebApp(app) }
+                    7 -> { hapticTap(); toggleLockWebApp(app) }
+                    8 -> { hapticTap(); copyAppUrl(app) }
+                    9 -> { hapticTap(); startService(Intent(this, com.cylonid.nativealpha.waos.service.FloatingWindowService::class.java)) }
                 }
             }
             .show()
@@ -256,9 +341,7 @@ class WaosDashboardActivity : AppCompatActivity() {
         Toast.makeText(this, "App URL copied", Toast.LENGTH_SHORT).show()
     }
 
-    private fun openWebApp(app: WebApp) {
-        WebViewLauncher.startWebView(app, this)
-    }
+    private fun openWebApp(app: WebApp) { WebViewLauncher.startWebView(app, this) }
 
     private fun openAppSettings(appId: Int) {
         val intent = Intent(this, WebAppSettingsActivity::class.java)
@@ -312,70 +395,146 @@ class WaosDashboardActivity : AppCompatActivity() {
     }
 }
 
-private class WaosAppAdapter(
-    apps: List<WebApp>,
+sealed class WaosListItem {
+    data class GroupHeader(val name: String, val count: Int) : WaosListItem()
+    data class AppItem(val app: WebApp) : WaosListItem()
+}
+
+class WaosGroupedAdapter(
+    items: List<WaosListItem>,
     private val onOpenApp: (WebApp) -> Unit,
     private val onShowDownloads: (WebApp) -> Unit,
     private val onShowClipboard: (WebApp) -> Unit,
     private val onShowCredentials: (WebApp) -> Unit,
     private val onShowOptions: (WebApp) -> Unit
-) : RecyclerView.Adapter<WaosAppViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private var originalApps: List<WebApp> = apps.toList()
-    var currentApps: List<WebApp> = apps
+    companion object {
+        const val TYPE_HEADER = 0
+        const val TYPE_APP = 1
+    }
+
+    var currentItems: List<WaosListItem> = items
         private set
-    private var apps: List<WebApp> = apps
 
-    override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): WaosAppViewHolder {
-        val view = android.view.LayoutInflater.from(parent.context)
-            .inflate(R.layout.card_waos_app, parent, false)
-        return WaosAppViewHolder(view)
+    override fun getItemViewType(position: Int): Int = when (currentItems[position]) {
+        is WaosListItem.GroupHeader -> TYPE_HEADER
+        is WaosListItem.AppItem -> TYPE_APP
     }
 
-    override fun onBindViewHolder(holder: WaosAppViewHolder, position: Int) {
-        val app = apps[position]
-        holder.title.text = app.getTitle()
-        holder.subtitle.text = app.getBaseUrl()
-        holder.status.text = app.group.ifBlank { "Workspace" }
-        holder.openButton.setOnClickListener { onOpenApp(app) }
-        holder.downloadsButton.setOnClickListener { onShowDownloads(app) }
-        holder.clipboardButton.setOnClickListener { onShowClipboard(app) }
-        holder.credentialsButton.setOnClickListener { onShowCredentials(app) }
-        holder.itemView.setOnLongClickListener {
-            onShowOptions(app)
-            true
-        }
-    }
-
-    override fun getItemCount(): Int = apps.size
-
-    fun updateWebApps(newApps: List<WebApp>) {
-        originalApps = newApps
-        currentApps = newApps
-        filter("")
-    }
-
-    fun filter(query: String) {
-        apps = if (query.isBlank()) {
-            originalApps
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return if (viewType == TYPE_HEADER) {
+            val view = inflater.inflate(R.layout.item_group_header, parent, false)
+            GroupHeaderViewHolder(view)
         } else {
-            originalApps.filter {
-                it.getTitle().contains(query, ignoreCase = true) ||
-                    it.getBaseUrl().contains(query, ignoreCase = true) ||
-                    it.group.contains(query, ignoreCase = true)
-            }
+            val view = inflater.inflate(R.layout.card_waos_app, parent, false)
+            WaosAppViewHolder(view)
         }
-        currentApps = apps
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (val item = currentItems[position]) {
+            is WaosListItem.GroupHeader -> (holder as GroupHeaderViewHolder).bind(item)
+            is WaosListItem.AppItem -> (holder as WaosAppViewHolder).bind(item.app)
+        }
+    }
+
+    override fun getItemCount(): Int = currentItems.size
+
+    fun updateItems(newItems: List<WaosListItem>) {
+        currentItems = newItems
         notifyDataSetChanged()
     }
-}
 
-private class WaosAppViewHolder(view: android.view.View) : RecyclerView.ViewHolder(view) {
-    val title: android.widget.TextView = view.findViewById(R.id.waos_app_title)
-    val subtitle: android.widget.TextView = view.findViewById(R.id.waos_app_subtitle)
-    val status: android.widget.TextView = view.findViewById(R.id.waos_app_status)
-    val openButton: android.widget.Button = view.findViewById(R.id.button_open_app)
-    val downloadsButton: android.widget.Button = view.findViewById(R.id.button_download_history)
-    val clipboardButton: android.widget.Button = view.findViewById(R.id.button_clipboard)
-    val credentialsButton: android.widget.Button = view.findViewById(R.id.button_credentials)
+    private inner class GroupHeaderViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val nameText: TextView = view.findViewById(R.id.group_header_name)
+        val countText: TextView = view.findViewById(R.id.group_header_count)
+
+        fun bind(header: WaosListItem.GroupHeader) {
+            nameText.text = header.name
+            val suffix = if (header.count == 1) "app" else "apps"
+            countText.text = "${header.count} $suffix"
+        }
+    }
+
+    private inner class WaosAppViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val title: TextView = view.findViewById(R.id.waos_app_title)
+        val subtitle: TextView = view.findViewById(R.id.waos_app_subtitle)
+        val groupText: TextView = view.findViewById(R.id.waos_app_group)
+        val status: TextView = view.findViewById(R.id.waos_app_status)
+        val lastUpdated: TextView = view.findViewById(R.id.waos_app_last_updated)
+        val notificationBadge: TextView = view.findViewById(R.id.waos_notification_badge)
+        val openButton: Button = view.findViewById(R.id.button_open_app)
+        val downloadsButton: Button = view.findViewById(R.id.button_download_history)
+        val clipboardButton: Button = view.findViewById(R.id.button_clipboard)
+        val credentialsButton: Button = view.findViewById(R.id.button_credentials)
+
+        fun bind(app: WebApp) {
+            title.text = app.getTitle()
+            subtitle.text = app.getBaseUrl()
+            groupText.text = app.group.ifBlank { "Default" }
+            status.text = app.group.ifBlank { "Active" }
+
+            val lastUsed = try {
+                val field = app.javaClass.getDeclaredField("lastUsed")
+                field.isAccessible = true
+                field.get(app) as? Date
+            } catch (_: Exception) { null }
+
+            if (lastUsed != null) {
+                lastUpdated.visibility = View.VISIBLE
+                val sdf = SimpleDateFormat("MMM d, HH:mm", Locale.getDefault())
+                lastUpdated.text = "Last used: ${sdf.format(lastUsed)}"
+            } else {
+                lastUpdated.visibility = View.GONE
+            }
+
+            val notifCount = try {
+                val field = app.javaClass.getDeclaredField("notificationCount")
+                field.isAccessible = true
+                field.getInt(app)
+            } catch (_: Exception) { 0 }
+
+            if (notifCount > 0) {
+                notificationBadge.visibility = View.VISIBLE
+                notificationBadge.text = if (notifCount > 99) "99+" else notifCount.toString()
+            } else {
+                notificationBadge.visibility = View.GONE
+            }
+
+            openButton.setOnClickListener {
+                animatePress(itemView)
+                onOpenApp(app)
+            }
+            downloadsButton.setOnClickListener { onShowDownloads(app) }
+            clipboardButton.setOnClickListener { onShowClipboard(app) }
+            credentialsButton.setOnClickListener { onShowCredentials(app) }
+            itemView.setOnLongClickListener {
+                onShowOptions(app)
+                true
+            }
+        }
+
+        private fun animatePress(view: View) {
+            val scaleDown = android.animation.AnimatorSet().apply {
+                playTogether(
+                    android.animation.ObjectAnimator.ofFloat(view, "scaleX", 1f, 0.96f),
+                    android.animation.ObjectAnimator.ofFloat(view, "scaleY", 1f, 0.96f)
+                )
+                duration = 80
+            }
+            val scaleUp = android.animation.AnimatorSet().apply {
+                playTogether(
+                    android.animation.ObjectAnimator.ofFloat(view, "scaleX", 0.96f, 1f),
+                    android.animation.ObjectAnimator.ofFloat(view, "scaleY", 0.96f, 1f)
+                )
+                duration = 80
+            }
+            android.animation.AnimatorSet().apply {
+                playSequentially(scaleDown, scaleUp)
+                start()
+            }
+        }
+    }
 }

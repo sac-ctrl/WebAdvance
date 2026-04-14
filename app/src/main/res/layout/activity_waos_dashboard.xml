@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -11,26 +12,55 @@
         android:layout_height="wrap_content"
         android:background="@color/colorSignature"
         android:title="WAOS Dashboard"
-        android:titleTextColor="@android:color/white" />
-
-    <TextView
-        android:id="@+id/waos_subtitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="16dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:text="Secure multi-app workspace with per-app downloads, clipboard, and vault"
-        android:textColor="@color/md_theme_onSurfaceVariant"
-        android:textSize="14sp" />
+        android:titleTextColor="@android:color/white"
+        android:contentDescription="WAOS Dashboard toolbar" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center_vertical"
-        android:background="@drawable/search_background">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="4dp"
+        android:gravity="center_vertical">
+
+        <EditText
+            android:id="@+id/search_input"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="48dp"
+            android:hint="Search apps…"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:imeOptions="actionSearch"
+            android:singleLine="true"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:background="@drawable/search_background"
+            android:textSize="14sp"
+            android:contentDescription="Search web apps" />
+
+        <ImageButton
+            android:id="@+id/button_refresh"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Refresh app list"
+            android:padding="10dp"
+            android:src="@drawable/ic_baseline_refresh_24"
+            android:tint="@color/md_theme_onSurface" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp"
+        android:gravity="center_vertical">
 
         <TextView
             android:id="@+id/waos_app_count"
@@ -39,37 +69,43 @@
             android:layout_height="wrap_content"
             android:text="0 apps"
             android:textColor="@color/md_theme_onSurface"
-            android:textSize="14sp" />
+            android:textSize="13sp"
+            android:contentDescription="Total app count" />
 
         <Button
             android:id="@+id/button_sort_apps"
             android:layout_width="wrap_content"
-            android:layout_height="48dp"
+            android:layout_height="36dp"
             android:text="Sort"
             android:textAllCaps="false"
+            android:textSize="12sp"
             android:backgroundTint="@color/md_theme_primary"
-            android:textColor="@android:color/white" />
+            android:textColor="@android:color/white"
+            android:contentDescription="Sort apps" />
+
+        <Button
+            android:id="@+id/button_group_toggle"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginStart="6dp"
+            android:text="Grouped"
+            android:textAllCaps="false"
+            android:textSize="12sp"
+            android:backgroundTint="@color/md_theme_primary"
+            android:textColor="@android:color/white"
+            android:contentDescription="Toggle folder grouping" />
 
         <Button
             android:id="@+id/button_toggle_layout"
             android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:text="List"
+            android:layout_height="36dp"
+            android:layout_marginStart="6dp"
+            android:text="Grid"
             android:textAllCaps="false"
+            android:textSize="12sp"
             android:backgroundTint="@color/md_theme_primary"
-            android:textColor="@android:color/white" />
-
-        <ImageButton
-            android:id="@+id/button_refresh"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Refresh"
-            android:padding="12dp"
-            android:src="@drawable/ic_baseline_refresh_24"
-            android:tint="@color/md_theme_onSurface" />
+            android:textColor="@android:color/white"
+            android:contentDescription="Toggle grid or list layout" />
     </LinearLayout>
 
     <FrameLayout
@@ -86,10 +122,10 @@
                 android:id="@+id/dashboard_recycler_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="80dp"
                 android:clipToPadding="false"
-                android:layoutAnimation="@anim/layout_slide_in_bottom" />
+                android:contentDescription="Web apps list" />
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -98,7 +134,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
             android:layout_margin="24dp"
-            android:contentDescription="Add web app"
+            android:contentDescription="Add new web app"
             app:srcCompat="@drawable/ic_add_24dp"
             android:tint="@android:color/white"
             android:backgroundTint="@color/colorSignature" />
@@ -110,7 +146,9 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:text="Launch Floating Bubble"
+        android:textAllCaps="false"
         android:backgroundTint="@color/colorSignature"
-        android:textColor="@android:color/white" />
+        android:textColor="@android:color/white"
+        android:contentDescription="Launch floating window bubble" />
 
 </LinearLayout>

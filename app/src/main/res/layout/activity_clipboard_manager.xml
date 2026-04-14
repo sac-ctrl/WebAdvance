@@ -11,43 +11,76 @@
         android:layout_height="wrap_content"
         android:background="@color/colorSignature"
         android:title="Clipboard Manager"
-        android:titleTextColor="@android:color/white" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:text="Saved clipboard items are stored per app for quick reuse."
-        android:textColor="@color/md_theme_onSurfaceVariant"
-        android:textSize="14sp" />
+        android:titleTextColor="@android:color/white"
+        android:contentDescription="Clipboard manager toolbar" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="4dp"
+        android:gravity="center_vertical">
+
+        <EditText
+            android:id="@+id/clipboard_search_input"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="44dp"
+            android:hint="Search clipboard…"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:singleLine="true"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:background="@drawable/search_background"
+            android:textSize="14sp"
+            android:contentDescription="Search clipboard items" />
+
+        <TextView
+            android:id="@+id/clipboard_item_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="0 items"
+            android:textSize="12sp"
+            android:textColor="@color/md_theme_onSurfaceVariant"
+            android:contentDescription="Number of clipboard items" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="8dp"
         android:gravity="center_vertical">
 
         <Button
             android:id="@+id/button_clipboard_export"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="48dp"
-            android:text="Export"
+            android:layout_height="40dp"
+            android:text="Share"
             android:textAllCaps="false"
+            android:textSize="13sp"
             android:backgroundTint="@color/md_theme_primary"
-            android:textColor="@android:color/white" />
+            android:textColor="@android:color/white"
+            android:contentDescription="Share clipboard items" />
 
         <Button
             android:id="@+id/button_clipboard_clear"
             android:layout_width="0dp"
             android:layout_weight="1"
-            android:layout_height="48dp"
+            android:layout_height="40dp"
             android:layout_marginStart="8dp"
-            android:text="Clear"
+            android:text="Clear All"
             android:textAllCaps="false"
-            android:backgroundTint="@color/md_theme_primary"
-            android:textColor="@android:color/white" />
+            android:textSize="13sp"
+            android:contentDescription="Clear clipboard history" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -55,5 +88,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="12dp" />
+        android:padding="8dp"
+        android:clipToPadding="false"
+        android:contentDescription="Clipboard items list" />
 </LinearLayout>
