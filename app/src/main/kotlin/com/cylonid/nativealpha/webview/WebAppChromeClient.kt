@@ -1,5 +1,6 @@
 package com.cylonid.nativealpha.webview
 
+import android.net.Uri
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.JsPromptResult
