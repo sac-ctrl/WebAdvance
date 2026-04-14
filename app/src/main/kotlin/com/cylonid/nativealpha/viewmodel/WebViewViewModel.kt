@@ -44,7 +44,7 @@ class WebViewViewModel @Inject constructor(
     val isAutoClickEnabled: StateFlow<Boolean> = _isAutoClickEnabled.asStateFlow()
 
     init {
-        loadWebApp(webAppId)
+        // Don't load automatically, wait for explicit call
     }
 
     fun loadWebApp(id: Long) {
@@ -287,10 +287,29 @@ class WebViewViewModel @Inject constructor(
         )
     }
 
-    fun takeScreenshot() {
-        _webViewState.value = _webViewState.value.copy(
-            shouldTakeScreenshot = true
-        )
+    fun captureScreenshot(webView: WebView, context: Context) {
+        viewModelScope.launch {
+            try {
+                webView.buildDrawingCache()
+                val bitmap = webView.drawingCache
+                if (bitmap != null) {
+                    // Save bitmap to file
+                    val filename = "screenshot_${System.currentTimeMillis()}.png"
+                    val file = java.io.File(context.getExternalFilesDir(null), filename)
+                    val stream = java.io.FileOutputStream(file)
+                    bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+                    stream.close()
+                    
+                    // Update webApp with thumbnail
+                    webApp.value?.let { app ->
+                        val updatedApp = app.copy(thumbnail = bitmap)
+                        repository.updateWebApp(updatedApp)
+                    }
+                }
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
     }
 
     fun shouldHandleDownload(url: String): Boolean {
@@ -359,22 +378,50 @@ class WebViewViewModel @Inject constructor(
         }
     }
 
-    fun performSmartRefresh() {
+    fun scheduleScreenshotCapture(intervalHours: Int = 24) {
         webApp.value?.let { app ->
-            if (app.isSmartRefreshEnabled) {
-                // Inject JavaScript to check for DOM changes
-                executeJavaScript("""
-                    (function() {
-                        const currentContent = document.body.innerHTML;
-                        if (window.lastContent && window.lastContent !== currentContent) {
-                            // Content changed, notify app
-                            window.waosContentChanged = true;
-                        }
-                        window.lastContent = currentContent;
-                    })();
-                """.trimIndent())
-            }
+            val screenshotWork = PeriodicWorkRequestBuilder<ScreenshotWorker>(
+                intervalHours.toLong(),
+                TimeUnit.HOURS
+            ).setInputData(
+                workDataOf("webAppId" to app.id)
+            ).build()
+
+            workManager.enqueueUniquePeriodicWork(
+                "screenshot_${app.id}",
+                ExistingPeriodicWorkPolicy.REPLACE,
+                screenshotWork
+            )
         }
+    }
+
+    fun cancelScreenshotCapture() {
+        webApp.value?.let { app ->
+            workManager.cancelUniqueWork("screenshot_${app.id}")
+        }
+    }
+
+    fun autoFillCredentials(username: String, password: String) {
+        val js = """
+            (function() {
+                const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input:not([type])');
+                const passwords = document.querySelectorAll('input[type="password"]');
+                
+                if (inputs.length > 0) {
+                    inputs[0].value = '$username';
+                    inputs[0].dispatchEvent(new Event('input', { bubbles: true }));
+                    inputs[0].dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                
+                if (passwords.length > 0) {
+                    passwords[0].value = '$password';
+                    passwords[0].dispatchEvent(new Event('input', { bubbles: true }));
+                    passwords[0].dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            })();
+        """.trimIndent()
+        
+        executeJavaScript(js)
     }
 }
 

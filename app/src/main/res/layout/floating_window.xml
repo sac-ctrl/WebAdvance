@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/card_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Title Bar -->
+        <LinearLayout
+            android:id="@+id/titleBar"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@android:color/black"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/titleText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Web App"
+                android:textColor="@android:color/white"
+                android:textSize="14sp" />
+
+            <ImageButton
+                android:id="@+id/minimizeButton"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:contentDescription="Minimize"
+                android:src="@drawable/ic_baseline_minimize_24" />
+
+            <ImageButton
+                android:id="@+id/maximizeButton"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:contentDescription="Maximize"
+                android:src="@drawable/ic_baseline_fullscreen_24" />
+
+            <ImageButton
+                android:id="@+id/closeButton"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:contentDescription="Close"
+                android:src="@drawable/ic_baseline_close_24" />
+
+        </LinearLayout>
+
+        <!-- WebView Container -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <WebView
+                android:id="@+id/floatingWebView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <!-- Resize Handle (bottom-right corner) -->
+            <View
+                android:id="@+id/resizeHandle"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="bottom|end"
+                android:background="@android:color/transparent" />
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

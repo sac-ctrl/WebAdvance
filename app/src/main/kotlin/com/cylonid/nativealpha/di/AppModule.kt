@@ -66,8 +66,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideDownloadManager(downloadItemDao: DownloadItemDao): DownloadManager {
-        return DownloadManager(downloadItemDao)
+    fun provideDownloadManager(
+        @ApplicationContext context: Context,
+        database: AppDatabase
+    ): DownloadManager {
+        return DownloadManager(context, database)
     }
 
     @Provides
@@ -118,7 +121,12 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideBackupRepository(backupDao: BackupDao): BackupRepository {
-        return BackupRepository(backupDao)
+    fun provideBackupService(
+        @ApplicationContext context: Context,
+        database: AppDatabase,
+        webAppRepository: WebAppRepository,
+        credentialManager: CredentialManager
+    ): BackupService {
+        return BackupService(context, database, webAppRepository, credentialManager)
     }
 }

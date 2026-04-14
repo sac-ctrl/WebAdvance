@@ -7,7 +7,7 @@ import android.os.Build
 import android.os.IBinder
 import android.view.*
 import android.webkit.WebView
-import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.cylonid.nativealpha.R
 import com.cylonid.nativealpha.model.WebApp
@@ -71,10 +71,8 @@ class FloatingWindowService : Service() {
 
         val view = LayoutInflater.from(this).inflate(R.layout.floating_window, null)
         val webView = view.findViewById<WebView>(R.id.floatingWebView)
-        val closeButton = view.findViewById<ImageButton>(R.id.closeButton)
-        val minimizeButton = view.findViewById<ImageButton>(R.id.minimizeButton)
-        val maximizeButton = view.findViewById<ImageButton>(R.id.maximizeButton)
-        val titleBar = view.findViewById<View>(R.id.titleBar)
+        val titleText = view.findViewById<TextView>(R.id.titleText)
+        titleText.text = webAppName
 
         // Configure WebView
         webView.settings.apply {
@@ -101,24 +99,34 @@ class FloatingWindowService : Service() {
             maximizeWindow(webAppId)
         }
 
-        // Add drag functionality to title bar
-        var initialX = 0
-        var initialY = 0
+        val resizeHandle = view.findViewById<View>(R.id.resizeHandle)
+
+        // Add resize functionality
+        var initialWidth = 0
+        var initialHeight = 0
         var initialTouchX = 0f
         var initialTouchY = 0f
 
-        titleBar.setOnTouchListener { _, event ->
+        // Add resize functionality
+        var initialWidth = 0
+        var initialHeight = 0
+        var initialResizeTouchX = 0f
+        var initialResizeTouchY = 0f
+
+        resizeHandle.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    initialX = layoutParams.x
-                    initialY = layoutParams.y
-                    initialTouchX = event.rawX
-                    initialTouchY = event.rawY
+                    initialWidth = layoutParams.width
+                    initialHeight = layoutParams.height
+                    initialResizeTouchX = event.rawX
+                    initialResizeTouchY = event.rawY
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    layoutParams.x = initialX + (event.rawX - initialTouchX).toInt()
-                    layoutParams.y = initialY + (event.rawY - initialTouchY).toInt()
+                    val deltaX = (event.rawX - initialResizeTouchX).toInt()
+                    val deltaY = (event.rawY - initialResizeTouchY).toInt()
+                    layoutParams.width = (initialWidth + deltaX).coerceAtLeast(300)
+                    layoutParams.height = (initialHeight + deltaY).coerceAtLeast(200)
                     windowManager.updateViewLayout(view, layoutParams)
                     true
                 }

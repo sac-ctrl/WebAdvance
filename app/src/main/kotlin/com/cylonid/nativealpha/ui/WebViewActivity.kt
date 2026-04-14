@@ -13,7 +13,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -22,19 +22,50 @@ import com.cylonid.nativealpha.webview.SessionManager
 @AndroidEntryPoint
 class WebViewActivity : ComponentActivity() {
 
+    private lateinit var viewModel: WebViewViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val webAppUrl = intent.getStringExtra("WEB_APP_URL") ?: ""
-        val webAppName = intent.getStringExtra("WEB_APP_NAME") ?: ""
+        val webAppId = intent.getLongExtra("webAppId", 0L)
 
         setContent {
             WebViewScreen(
-                url = webAppUrl,
-                appName = webAppName,
+                webAppId = webAppId,
                 onBackPressed = { finish() }
             )
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == 4231 && resultCode == RESULT_OK && data != null) {
+            val username = data.getStringExtra("CREDENTIAL_USERNAME")
+            val password = data.getStringExtra("CREDENTIAL_PASSWORD")
+            if (username != null && password != null) {
+                // Store for the Composable to handle
+                pendingAutoFill = Pair(username, password)
+            }
+        }
+    }
+
+    companion object {
+        var pendingAutoFill: Pair<String, String>? = null
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == 4231 && resultCode == RESULT_OK && data != null) {
+            val username = data.getStringExtra("CREDENTIAL_USERNAME")
+            val password = data.getStringExtra("CREDENTIAL_PASSWORD")
+            if (username != null && password != null) {
+                // Get the ViewModel and call autoFill
+                // Since ViewModel is created in Composable, we need another way
+                // For now, we'll handle it in the Composable
+            }
         }
     }
 }
@@ -43,8 +74,7 @@ class WebViewActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WebViewScreen(
-    url: String,
-    appName: String,
+    webAppId: Long,
     onBackPressed: () -> Unit,
     viewModel: WebViewViewModel = viewModel()
 ) {
@@ -55,24 +85,57 @@ fun WebViewScreen(
     val isDesktopMode by viewModel.isDesktopMode.collectAsState()
     val isAdblockEnabled by viewModel.isAdblockEnabled.collectAsState()
     val isAutoScrollEnabled by viewModel.isAutoScrollEnabled.collectAsState()
-    var showFindDialog by remember { mutableStateOf(false) }
-    var findQuery by remember { mutableStateOf("") }
-    val linkExample = remember { LinkManagementExample(context, webApp?.id ?: 0L) }
-    val notificationSystem = remember { 
-        webApp?.let { app ->
-            SmartNotificationSystem(context, app.id, app.name)
+    val isAutoClickEnabled by viewModel.isAutoClickEnabled.collectAsState()
+    val webApp by viewModel.webApp.collectAsState()
+
+    LaunchedEffect(webAppId) {
+        viewModel.loadWebApp(webAppId)
+    }
+
+    // Handle pending auto-fill
+    LaunchedEffect(Unit) {
+        val autoFill = pendingAutoFill
+        if (autoFill != null) {
+            viewModel.autoFillCredentials(autoFill.first, autoFill.second)
+            pendingAutoFill = null
         }
     }
-    val sessionManager = remember {
-        webApp?.let { app ->
-            SessionManager(context, app.id, app.name)
+
+    // Handle opening activities
+    LaunchedEffect(webViewState.shouldOpenCredentialKeeper) {
+        if (webViewState.shouldOpenCredentialKeeper) {
+            val intent = Intent(context, CredentialVaultActivity::class.java).apply {
+                putExtra("WEB_APP_ID", webAppId)
+            }
+            (context as? ComponentActivity)?.startActivityForResult(intent, 4231)
+            viewModel.clearActionFlags()
+        }
+    }
+
+    LaunchedEffect(webViewState.shouldOpenClipboardManager) {
+        if (webViewState.shouldOpenClipboardManager) {
+            val intent = Intent(context, ClipboardManagerActivity::class.java).apply {
+                putExtra("WEB_APP_ID", webAppId)
+            }
+            context.startActivity(intent)
+            viewModel.clearActionFlags()
+        }
+    }
+
+    LaunchedEffect(webViewState.shouldOpenDownloadHistory) {
+        if (webViewState.shouldOpenDownloadHistory) {
+            val intent = Intent(context, DownloadHistoryActivity::class.java).apply {
+                putExtra("WEB_APP_ID", webAppId)
+            }
+            context.startActivity(intent)
+            viewModel.clearActionFlags()
         }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(appName) },
+                title = { Text(webApp?.name ?: "Web App") },
                 navigationIcon = {
                     IconButton(onClick = onBackPressed) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -248,18 +311,14 @@ fun WebViewScreen(
                         )
 
                         settings.apply {
-                            javaScriptEnabled = true
+                            javaScriptEnabled = webApp?.isJavaScriptEnabled ?: true
                             domStorageEnabled = true
                             databaseEnabled = true
                             allowFileAccess = true
                             allowContentAccess = true
                             mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                            userAgentString = if (isDesktopMode) {
-                                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-                            } else {
-                                userAgentString
-                            }
-                            builtInZoomControls = true
+                            userAgentString = webApp?.userAgent ?: userAgentString
+                            builtInZoomControls = webApp?.isEnableZooming ?: true
                             displayZoomControls = false
                             setSupportZoom(true)
                         }
@@ -275,6 +334,12 @@ fun WebViewScreen(
                                 linkExample.setupWebViewLinkHandling(webView)
                                 // Setup notification monitoring
                                 notificationSystem?.setupDOMMonitoring(webView)
+                                // Inject dark mode if enabled
+                                webApp?.let { app ->
+                                    if (app.isDarkModeEnabled) {
+                                        injectDarkMode(webView)
+                                    }
+                                }
                             },
                             onDownloadStart = { filename, url ->
                                 // Handle download through our DownloadManager
@@ -327,7 +392,7 @@ fun WebViewScreen(
                         }
 
                         // Load the initial URL
-                        loadUrl(url)
+                        loadUrl(webApp?.url ?: "")
                     }
                 },
                 update = { webView ->
@@ -459,7 +524,25 @@ fun WebViewScreen(
     }
 }
 
-private fun injectAutomationScripts(webView: WebView?) {
+private fun injectDarkMode(webView: WebView?) {
+    webView?.evaluateJavascript("""
+        (function() {
+            const style = document.createElement('style');
+            style.textContent = `
+                html {
+                    filter: invert(1) hue-rotate(180deg);
+                }
+                img, video, canvas, svg {
+                    filter: invert(1) hue-rotate(180deg);
+                }
+                * {
+                    background-color: inherit;
+                }
+            `;
+            document.head.appendChild(style);
+        })();
+    """.trimIndent(), null)
+}
     webView?.evaluateJavascript("""
         // WAOS Automation Scripts
         (function() {

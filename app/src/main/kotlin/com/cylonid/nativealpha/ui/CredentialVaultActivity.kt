@@ -19,7 +19,15 @@ class CredentialVaultActivity : ComponentActivity() {
         setContent {
             CredentialVaultScreen(
                 webAppId = webAppId,
-                onBackPressed = { finish() }
+                onBackPressed = { finish() },
+                onAutoFill = { username, password ->
+                    val resultIntent = android.content.Intent().apply {
+                        putExtra("CREDENTIAL_USERNAME", username)
+                        putExtra("CREDENTIAL_PASSWORD", password)
+                    }
+                    setResult(android.app.Activity.RESULT_OK, resultIntent)
+                    finish()
+                }
             )
         }
     }

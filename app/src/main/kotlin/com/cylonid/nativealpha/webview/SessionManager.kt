@@ -30,14 +30,22 @@ class SessionManager(
      * Create isolated WebView for this app
      */
     fun createIsolatedWebView(context: Context, url: String): WebView {
+        val dataDir = File(context.dataDir, "webview_$appId")
+        if (!dataDir.exists()) {
+            dataDir.mkdirs()
+        }
+
         val webView = WebView(context).apply {
+            // Set data directory for isolation
+            WebView.setDataDirectorySuffix("app_$appId")
+            
             settings.apply {
                 javaScriptEnabled = true
                 domStorageEnabled = true
                 databaseEnabled = true
                 allowFileAccess = true
                 allowContentAccess = true
-                setAppCachePath(sessionDir.absolutePath + "/cache")
+                setAppCachePath(dataDir.absolutePath + "/cache")
                 setAppCacheEnabled(true)
                 cacheMode = android.webkit.WebSettings.LOAD_DEFAULT
                 

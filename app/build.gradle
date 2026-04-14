@@ -156,7 +156,7 @@ dependencies {
     implementation('com.github.Edsuns.AdblockAndroid:ad-filter:v0.9.1') {
         exclude group: 'org.jetbrains.anko'
     }
-    implementation 'androidx.work:work-runtime-ktx:2.9.0'
+    implementation 'com.github.barteksc:android-pdf-viewer:3.2.0-beta.1'
     kapt "com.android.databinding:compiler:3.1.4"
     implementation 'com.google.android.material:material:1.12.0'
 

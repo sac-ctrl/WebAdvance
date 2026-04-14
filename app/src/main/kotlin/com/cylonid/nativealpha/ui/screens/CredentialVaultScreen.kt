@@ -8,9 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.input.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cylonid.nativealpha.manager.Credential
 import com.cylonid.nativealpha.viewmodel.CredentialViewModel
@@ -20,18 +19,61 @@ import com.cylonid.nativealpha.viewmodel.CredentialViewModel
 fun CredentialVaultScreen(
     webAppId: Long,
     onBackPressed: () -> Unit,
+    onAutoFill: ((String, String) -> Unit)? = null,
     viewModel: CredentialViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val credentials by viewModel.credentials.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
-    val showAddDialog by viewModel.showAddDialog.collectAsState()
+    val showBiometricButton by viewModel.showBiometricButton.collectAsState()
+    val isAuthenticated by viewModel.isAuthenticated.collectAsState()
 
     LaunchedEffect(webAppId) {
         viewModel.loadCredentials(webAppId)
+        viewModel.checkAuthentication(webAppId)
     }
 
-    Scaffold(
+    if (!isAuthenticated) {
+        // Show authentication required screen
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Credential Vault") },
+                    navigationIcon = {
+                        IconButton(onClick = onBackPressed) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
+                    }
+                )
+            }
+        ) { padding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("Authentication required")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    if (showBiometricButton) {
+                        Button(onClick = {
+                            val activity = context as? androidx.activity.ComponentActivity
+                            activity?.let { viewModel.authenticateWithBiometric(it as androidx.fragment.app.FragmentActivity) }
+                        }) {
+                            Text("Unlock with Biometric")
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("or")
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    Button(onClick = { viewModel.showPinDialog() }) {
+                        Text("Unlock with PIN")
+                    }
+                }
+            }
+        }
+    } else {
         topBar = {
             TopAppBar(
                 title = { Text("Credential Vault") },
@@ -84,6 +126,9 @@ fun CredentialVaultScreen(
                             credential = credential,
                             onCopyUsername = { viewModel.copyUsername(credential, context) },
                             onCopyPassword = { viewModel.copyPassword(credential, context) },
+                            onAutoFill = {
+                                onAutoFill?.invoke(credential.username, credential.password)
+                            },
                             onEdit = { viewModel.editCredential(credential) },
                             onDelete = { viewModel.deleteCredential(credential) }
                         )
@@ -102,6 +147,14 @@ fun CredentialVaultScreen(
                 }
             )
         }
+
+        // PIN Dialog
+        if (showPinDialog) {
+            PinDialog(
+                onDismiss = { viewModel.hidePinDialog() },
+                onAuthenticate = { pin -> viewModel.authenticateWithPin(pin) }
+            )
+        }
     }
 }
 
@@ -111,6 +164,7 @@ fun CredentialCard(
     credential: Credential,
     onCopyUsername: () -> Unit,
     onCopyPassword: () -> Unit,
+    onAutoFill: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -200,18 +254,25 @@ fun CredentialCard(
             // Action buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = null)
+                TextButton(onClick = onAutoFill) {
+                    Icon(Icons.Default.Login, contentDescription = null)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Edit")
+                    Text("Auto-fill")
                 }
-                TextButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, contentDescription = null)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Delete")
+                Row {
+                    TextButton(onClick = onEdit) {
+                        Icon(Icons.Default.Edit, contentDescription = null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Edit")
+                    }
+                    TextButton(onClick = onDelete) {
+                        Icon(Icons.Default.Delete, contentDescription = null)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Delete")
+                    }
                 }
             }
         }
@@ -263,11 +324,16 @@ fun AddCredentialDialog(
                     modifier = Modifier.fillMaxWidth(),
                     visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
-                        IconButton(onClick = { showPassword = !showPassword }) {
-                            Icon(
-                                if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                contentDescription = if (showPassword) "Hide password" else "Show password"
-                            )
+                        Row {
+                            IconButton(onClick = { password = generatePassword() }) {
+                                Icon(Icons.Default.Refresh, contentDescription = "Generate password")
+                            }
+                            IconButton(onClick = { showPassword = !showPassword }) {
+                                Icon(
+                                    if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = if (showPassword) "Hide password" else "Show password"
+                                )
+                            }
                         }
                     }
                 )
@@ -315,4 +381,51 @@ fun AddCredentialDialog(
             }
         }
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PinDialog(
+    onDismiss: () -> Unit,
+    onAuthenticate: (String) -> Unit
+) {
+    var pin by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Enter PIN") },
+        text = {
+            OutlinedTextField(
+                value = pin,
+                onValueChange = { pin = it },
+                label = { Text("PIN") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (pin.isNotBlank()) {
+                        onAuthenticate(pin)
+                    }
+                }
+            ) {
+                Text("Unlock")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+private fun generatePassword(): String {
+    val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*"
+    return (1..12)
+        .map { chars.random() }
+        .joinToString("")
 }
