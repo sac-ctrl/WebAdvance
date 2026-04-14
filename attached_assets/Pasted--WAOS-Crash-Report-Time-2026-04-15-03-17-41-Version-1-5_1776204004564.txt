@@ -1,0 +1,33 @@
+=== WAOS Crash Report ===
+Time: 2026-04-15 03:17:41
+Version: 1.5.2 (1520)
+Thread: main
+Error: Unable to create service com.cylonid.nativealpha.waos.service.FloatingWindowService: android.app.MissingForegroundServiceTypeException: Starting FGS without a type  callerApp=ProcessRecord{c0b88bc 23818:com.cylonid.nativealpha.debug/u0a570} targetSDK=35
+
+Stack Trace:
+java.lang.RuntimeException: Unable to create service com.cylonid.nativealpha.waos.service.FloatingWindowService: android.app.MissingForegroundServiceTypeException: Starting FGS without a type  callerApp=ProcessRecord{c0b88bc 23818:com.cylonid.nativealpha.debug/u0a570} targetSDK=35
+	at android.app.ActivityThread.handleCreateService(ActivityThread.java:5263)
+	at android.app.ActivityThread.-$$Nest$mhandleCreateService(Unknown Source:0)
+	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2594)
+	at android.os.Handler.dispatchMessage(Handler.java:107)
+	at android.os.Looper.loopOnce(Looper.java:311)
+	at android.os.Looper.loop(Looper.java:408)
+	at android.app.ActivityThread.main(ActivityThread.java:9119)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:627)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:970)
+Caused by: android.app.MissingForegroundServiceTypeException: Starting FGS without a type  callerApp=ProcessRecord{c0b88bc 23818:com.cylonid.nativealpha.debug/u0a570} targetSDK=35
+	at android.app.MissingForegroundServiceTypeException$1.createFromParcel(MissingForegroundServiceTypeException.java:53)
+	at android.app.MissingForegroundServiceTypeException$1.createFromParcel(MissingForegroundServiceTypeException.java:49)
+	at android.os.Parcel.readParcelableInternal(Parcel.java:5084)
+	at android.os.Parcel.readParcelable(Parcel.java:5066)
+	at android.os.Parcel.createExceptionOrNull(Parcel.java:3246)
+	at android.os.Parcel.createException(Parcel.java:3235)
+	at android.os.Parcel.readException(Parcel.java:3218)
+	at android.os.Parcel.readException(Parcel.java:3160)
+	at android.app.IActivityManager$Stub$Proxy.setServiceForeground(IActivityManager.java:7691)
+	at android.app.Service.startForeground(Service.java:776)
+	at com.cylonid.nativealpha.waos.service.FloatingWindowService.startForegroundServiceWithNotification(FloatingWindowService.kt:113)
+	at com.cylonid.nativealpha.waos.service.FloatingWindowService.onCreate(FloatingWindowService.kt:37)
+	at android.app.ActivityThread.handleCreateService(ActivityThread.java:5250)
+	... 9 more
