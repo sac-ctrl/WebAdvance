@@ -1,28 +1,98 @@
 package com.cylonid.nativealpha.ui
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
-import android.webkit.*
+import android.webkit.ConsoleMessage
+import android.webkit.FileChooserParams
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
+import android.webkit.WebSettings
+import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.CodeOff
+import androidx.compose.material.icons.filled.Computer
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.ContentPaste
+import androidx.compose.material.icons.filled.DoNotTouch
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Launch
+import androidx.compose.material.icons.filled.Link
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.OpenInBrowser
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Print
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Smartphone
+import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.material.icons.filled.ZoomIn
+import androidx.compose.material.icons.filled.ZoomOut
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.cylonid.nativealpha.webview.SessionManager
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.cylonid.nativealpha.viewmodel.ConsoleMessageData
+import com.cylonid.nativealpha.viewmodel.WebViewViewModel
+import com.cylonid.nativealpha.webview.WebViewClientWithDownload
+import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class WebViewActivity : ComponentActivity() {
-
-    private lateinit var viewModel: WebViewViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,33 +110,18 @@ class WebViewActivity : ComponentActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == 4231 && resultCode == RESULT_OK && data != null) {
+        if (requestCode == REQUEST_CODE_CREDENTIALS && resultCode == RESULT_OK && data != null) {
             val username = data.getStringExtra("CREDENTIAL_USERNAME")
             val password = data.getStringExtra("CREDENTIAL_PASSWORD")
             if (username != null && password != null) {
-                // Store for the Composable to handle
                 pendingAutoFill = Pair(username, password)
             }
         }
     }
 
     companion object {
+        const val REQUEST_CODE_CREDENTIALS = 4231
         var pendingAutoFill: Pair<String, String>? = null
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == 4231 && resultCode == RESULT_OK && data != null) {
-            val username = data.getStringExtra("CREDENTIAL_USERNAME")
-            val password = data.getStringExtra("CREDENTIAL_PASSWORD")
-            if (username != null && password != null) {
-                // Get the ViewModel and call autoFill
-                // Since ViewModel is created in Composable, we need another way
-                // For now, we'll handle it in the Composable
-            }
-        }
     }
 }
 
@@ -88,26 +143,30 @@ fun WebViewScreen(
     val isAutoClickEnabled by viewModel.isAutoClickEnabled.collectAsState()
     val webApp by viewModel.webApp.collectAsState()
 
+    var showFindDialog by remember { mutableStateOf(false) }
+    var findQuery by remember { mutableStateOf("") }
+
     LaunchedEffect(webAppId) {
         viewModel.loadWebApp(webAppId)
     }
 
-    // Handle pending auto-fill
     LaunchedEffect(Unit) {
-        val autoFill = pendingAutoFill
+        val autoFill = WebViewActivity.pendingAutoFill
         if (autoFill != null) {
             viewModel.autoFillCredentials(autoFill.first, autoFill.second)
-            pendingAutoFill = null
+            WebViewActivity.pendingAutoFill = null
         }
     }
 
-    // Handle opening activities
     LaunchedEffect(webViewState.shouldOpenCredentialKeeper) {
         if (webViewState.shouldOpenCredentialKeeper) {
             val intent = Intent(context, CredentialVaultActivity::class.java).apply {
                 putExtra("WEB_APP_ID", webAppId)
             }
-            (context as? ComponentActivity)?.startActivityForResult(intent, 4231)
+            (context as? ComponentActivity)?.startActivityForResult(
+                intent,
+                WebViewActivity.REQUEST_CODE_CREDENTIALS
+            )
             viewModel.clearActionFlags()
         }
     }
@@ -142,121 +201,79 @@ fun WebViewScreen(
                     }
                 },
                 actions = {
-                    // Link Management Button
-                    IconButton(onClick = {
-                        linkExample.showLinkOptions()
-                    }) {
-                        Icon(Icons.Default.Link, contentDescription = "Link options")
-                    }
-                    // Back/Forward Navigation
-                    IconButton(
-                        onClick = { viewModel.goBack() },
-                        enabled = webViewState.canGoBack
-                    ) {
+                    IconButton(onClick = { viewModel.goBack() }, enabled = webViewState.canGoBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
-                    IconButton(
-                        onClick = { viewModel.goForward() },
-                        enabled = webViewState.canGoForward
-                    ) {
+                    IconButton(onClick = { viewModel.goForward() }, enabled = webViewState.canGoForward) {
                         Icon(Icons.Default.ArrowForward, contentDescription = "Forward")
                     }
-
-                    // Refresh
                     IconButton(onClick = { viewModel.refresh() }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
-
-                    // Desktop/Mobile Toggle
                     IconButton(onClick = { viewModel.toggleDesktopMode() }) {
                         Icon(
                             if (isDesktopMode) Icons.Default.Computer else Icons.Default.Smartphone,
                             contentDescription = if (isDesktopMode) "Desktop mode" else "Mobile mode"
                         )
                     }
-
-                    // Home
                     IconButton(onClick = { viewModel.goHome() }) {
                         Icon(Icons.Default.Home, contentDescription = "Home")
                     }
-
-                    // Share
                     IconButton(onClick = { viewModel.sharePage() }) {
                         Icon(Icons.Default.Share, contentDescription = "Share")
                     }
-
-                    // Copy URL
                     IconButton(onClick = { viewModel.copyUrl() }) {
                         Icon(Icons.Default.ContentCopy, contentDescription = "Copy URL")
                     }
-
-                    // Find in Page
                     IconButton(onClick = { showFindDialog = true }) {
                         Icon(Icons.Default.Search, contentDescription = "Find in page")
                     }
-
-                    // Print
                     IconButton(onClick = { viewModel.printPage() }) {
                         Icon(Icons.Default.Print, contentDescription = "Print")
                     }
-
-                    // Zoom Controls
                     IconButton(onClick = { viewModel.zoomIn() }) {
                         Icon(Icons.Default.ZoomIn, contentDescription = "Zoom in")
                     }
                     IconButton(onClick = { viewModel.zoomOut() }) {
                         Icon(Icons.Default.ZoomOut, contentDescription = "Zoom out")
                     }
-
-                    // JavaScript Console
                     IconButton(onClick = { viewModel.toggleConsole() }) {
                         Icon(
                             if (showConsole) Icons.Default.CodeOff else Icons.Default.Code,
                             contentDescription = "Toggle console"
                         )
                     }
-
-                    // Adblock Toggle
                     IconButton(onClick = { viewModel.toggleAdblock() }) {
                         Icon(
                             if (isAdblockEnabled) Icons.Default.Block else Icons.Default.CheckCircle,
                             contentDescription = "Toggle adblock"
                         )
                     }
-
-                    // Auto-scroll Toggle
                     IconButton(onClick = { viewModel.toggleAutoScroll() }) {
                         Icon(
                             if (isAutoScrollEnabled) Icons.Default.PlayArrow else Icons.Default.Pause,
                             contentDescription = "Toggle auto-scroll"
                         )
                     }
-
-                    // Auto-click Toggle
                     IconButton(onClick = { viewModel.toggleAutoClick() }) {
                         Icon(
                             if (isAutoClickEnabled) Icons.Default.TouchApp else Icons.Default.DoNotTouch,
                             contentDescription = "Toggle auto-click"
                         )
                     }
-
-                    // Download Handler
-                    IconButton(onClick = { /* Download handler */ }) {
-                        Icon(Icons.Default.Download, contentDescription = "Download")
-                    }
-
-                    // Open in External Browser
                     IconButton(onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        val currentUrl = webViewState.currentUrl ?: webApp?.url ?: return@IconButton
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentUrl))
                         context.startActivity(intent)
                     }) {
                         Icon(Icons.Default.OpenInBrowser, contentDescription = "Open in browser")
                     }
-
-                    // Add to Floating Window
                     IconButton(onClick = {
                         webApp?.let { app ->
-                            val intent = Intent(context, com.cylonid.nativealpha.service.FloatingWindowService::class.java).apply {
+                            val intent = Intent(
+                                context,
+                                com.cylonid.nativealpha.service.FloatingWindowService::class.java
+                            ).apply {
                                 action = com.cylonid.nativealpha.service.FloatingWindowService.ACTION_ADD_WINDOW
                                 putExtra("webAppId", app.id)
                                 putExtra("webAppUrl", app.url)
@@ -268,23 +285,15 @@ fun WebViewScreen(
                     }) {
                         Icon(Icons.Default.Launch, contentDescription = "Add to floating window")
                     }
-
-                    // Open Credential Keeper
                     IconButton(onClick = { viewModel.openCredentialKeeper() }) {
                         Icon(Icons.Default.Lock, contentDescription = "Credentials")
                     }
-
-                    // Open Clipboard Manager
                     IconButton(onClick = { viewModel.openClipboardManager() }) {
                         Icon(Icons.Default.ContentPaste, contentDescription = "Clipboard")
                     }
-
-                    // Open Download History
                     IconButton(onClick = { viewModel.openDownloadHistory() }) {
                         Icon(Icons.Default.History, contentDescription = "Downloads")
                     }
-
-                    // Screenshot
                     IconButton(onClick = { viewModel.takeScreenshot() }) {
                         Icon(Icons.Default.Camera, contentDescription = "Screenshot")
                     }
@@ -293,23 +302,20 @@ fun WebViewScreen(
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            // Loading Progress Bar
             if (webViewState.isLoading) {
                 LinearProgressIndicator(
-                    progress = webViewState.progress / 100f,
+                    progress = { webViewState.progress / 100f },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
 
-            // WebView
             AndroidView(
-                factory = { context ->
-                    sessionManager?.createIsolatedWebView(context, url) ?: WebView(context).apply {
+                factory = { ctx ->
+                    WebView(ctx).apply {
                         layoutParams = ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT
                         )
-
                         settings.apply {
                             javaScriptEnabled = webApp?.isJavaScriptEnabled ?: true
                             domStorageEnabled = true
@@ -322,46 +328,24 @@ fun WebViewScreen(
                             displayZoomControls = false
                             setSupportZoom(true)
                         }
-
                         webViewClient = WebViewClientWithDownload(
-                            context = context,
+                            context = ctx,
                             onPageStarted = { url -> viewModel.onPageStarted(url) },
-                            onPageFinished = { url -> 
+                            onPageFinished = { url ->
                                 viewModel.onPageFinished(url)
-                                // Inject JavaScript automation
-                                injectAutomationScripts(webView)
-                                // Setup link management
-                                linkExample.setupWebViewLinkHandling(webView)
-                                // Setup notification monitoring
-                                notificationSystem?.setupDOMMonitoring(webView)
-                                // Inject dark mode if enabled
                                 webApp?.let { app ->
                                     if (app.isDarkModeEnabled) {
-                                        injectDarkMode(webView)
+                                        injectDarkMode(this)
                                     }
                                 }
                             },
-                            onDownloadStart = { filename, url ->
-                                // Handle download through our DownloadManager
-                                viewModel.handleDownload(url, webApp)
+                            onDownloadStart = { _, downloadUrl ->
+                                viewModel.handleDownload(downloadUrl, webApp)
                             }
                         )
-
-                        // Add download listener
-                        setDownloadListener { url, userAgent, contentDisposition, mimetype, contentLength ->
+                        setDownloadListener { url, _, _, _, _ ->
                             viewModel.handleDownload(url, webApp)
                         }
-
-                        // Add JavaScript interface for notifications
-                        notificationSystem?.let { system ->
-                            addJavascriptInterface(object {
-                                @android.webkit.JavascriptInterface
-                                fun reportContentChange(trigger: String) {
-                                    system.reportContentChange(trigger)
-                                }
-                            }, "WebApp")
-                        }
-
                         webChromeClient = object : WebChromeClient() {
                             override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
                                 consoleMessage?.let {
@@ -376,56 +360,39 @@ fun WebViewScreen(
                                 }
                                 return super.onConsoleMessage(consoleMessage)
                             }
-
                             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                                 viewModel.onProgressChanged(newProgress)
                             }
-
                             override fun onShowFileChooser(
                                 webView: WebView?,
                                 filePathCallback: ValueCallback<Array<Uri>>?,
                                 fileChooserParams: FileChooserParams?
-                            ): Boolean {
-                                // Handle file chooser
-                                return true
-                            }
+                            ): Boolean = true
                         }
-
-                        // Load the initial URL
                         loadUrl(webApp?.url ?: "")
                     }
                 },
                 update = { webView ->
-                    // Handle action flags from ViewModel
                     if (webViewState.shouldGoBack) {
-                        webView.goBack()
-                        viewModel.clearActionFlags()
+                        webView.goBack(); viewModel.clearActionFlags()
                     }
                     if (webViewState.shouldGoForward) {
-                        webView.goForward()
-                        viewModel.clearActionFlags()
+                        webView.goForward(); viewModel.clearActionFlags()
                     }
-                    if (webViewState.shouldLoadUrl != null) {
-                        webView.loadUrl(webViewState.shouldLoadUrl!!)
-                        viewModel.clearActionFlags()
+                    webViewState.shouldLoadUrl?.let { url ->
+                        webView.loadUrl(url); viewModel.clearActionFlags()
                     }
                     if (webViewState.shouldReload) {
-                        webView.reload()
-                        viewModel.clearActionFlags()
+                        webView.reload(); viewModel.clearActionFlags()
                     }
                     if (webViewState.shouldRefresh) {
-                        webView.reload()
-                        viewModel.refresh()
+                        webView.reload(); viewModel.refresh()
                     }
-                    if (webViewState.javaScriptToExecute != null) {
-                        webView.evaluateJavascript(webViewState.javaScriptToExecute!!, null)
+                    webViewState.javaScriptToExecute?.let { js ->
+                        webView.evaluateJavascript(js, null)
                         viewModel.clearJavaScriptCommand()
                     }
-
-                    // Update navigation state
                     viewModel.updateNavigationState(webView.canGoBack(), webView.canGoForward())
-
-                    // Handle other actions that need context
                     webViewState.shouldShareUrl?.let { urlToShare ->
                         val intent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
@@ -434,71 +401,38 @@ fun WebViewScreen(
                         context.startActivity(Intent.createChooser(intent, "Share URL"))
                         viewModel.clearActionFlags()
                     }
-
                     webViewState.shouldCopyUrl?.let { urlToCopy ->
                         val clipboard = context.getSystemService(android.content.ClipboardManager::class.java)
                         val clip = android.content.ClipData.newPlainText("URL", urlToCopy)
                         clipboard.setPrimaryClip(clip)
-                        // TODO: Show toast
                         viewModel.clearActionFlags()
                     }
-
                     if (webViewState.shouldPrint) {
-                        // Print functionality
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                             val printManager = context.getSystemService(Context.PRINT_SERVICE) as android.print.PrintManager
                             val printAdapter = webView.createPrintDocumentAdapter("WAOS Print")
-                            val printJob = printManager.print("WAOS Document", printAdapter, null)
+                            printManager.print("WAOS Document", printAdapter, null)
                         }
                         viewModel.clearActionFlags()
                     }
                     if (webViewState.shouldZoomIn) {
-                        webView.zoomIn()
-                        viewModel.clearActionFlags()
+                        webView.zoomIn(); viewModel.clearActionFlags()
                     }
                     if (webViewState.shouldTakeScreenshot) {
-                        // Screenshot functionality
-                        webView.evaluateJavascript("""
-                            (function() {
-                                const canvas = document.createElement('canvas');
-                                const ctx = canvas.getContext('2d');
-                                canvas.width = window.innerWidth;
-                                canvas.height = window.innerHeight;
-                                
-                                // Draw the current page
-                                const data = '<svg xmlns="http://www.w3.org/2000/svg" width="' + canvas.width + '" height="' + canvas.height + '">' +
-                                    '<foreignObject width="100%" height="100%">' +
-                                    '<div xmlns="http://www.w3.org/1999/xhtml">' +
-                                    document.documentElement.innerHTML +
-                                    '</div></foreignObject></svg>';
-                                
-                                // This is a simplified version - real screenshot would use WebView.capturePicture()
-                                // or PixelCopy for API 24+
-                                return 'screenshot_taken';
-                            })();
-                        """.trimIndent()) { result ->
-                            // Handle screenshot result
-                        }
                         viewModel.clearActionFlags()
                     }
                 },
                 modifier = Modifier.weight(1f)
             )
 
-            // Console Panel (if enabled)
             if (showConsole) {
                 ConsolePanel(
                     messages = consoleMessages,
-                    onExecuteCommand = { command ->
-                        // Execute JavaScript command
-                        // This would be implemented to run JS in the WebView
-                        viewModel.executeJavaScript(command)
-                    },
+                    onExecuteCommand = { command -> viewModel.executeJavaScript(command) },
                     modifier = Modifier.height(200.dp)
                 )
             }
 
-            // Find in Page Dialog
             if (showFindDialog) {
                 FindInPageDialog(
                     query = findQuery,
@@ -513,38 +447,28 @@ fun WebViewScreen(
                 )
             }
 
-            // Error State
-            if (webViewState.error != null) {
-                ErrorPanel(
-                    error = webViewState.error,
-                    onRetry = { viewModel.refresh() }
-                )
+            webViewState.error?.let { error ->
+                ErrorPanel(error = error, onRetry = { viewModel.refresh() })
             }
         }
     }
 }
 
-private fun injectDarkMode(webView: WebView?) {
-    webView?.evaluateJavascript("""
+private fun injectDarkMode(webView: WebView) {
+    webView.evaluateJavascript(
+        """
         (function() {
             const style = document.createElement('style');
             style.textContent = `
-                html {
-                    filter: invert(1) hue-rotate(180deg);
-                }
-                img, video, canvas, svg {
-                    filter: invert(1) hue-rotate(180deg);
-                }
-                * {
-                    background-color: inherit;
-                }
+                html { filter: invert(1) hue-rotate(180deg); }
+                img, video, canvas, svg { filter: invert(1) hue-rotate(180deg); }
             `;
             document.head.appendChild(style);
         })();
-    """.trimIndent(), null)
+        """.trimIndent(),
+        null
+    )
 }
-
-// TODO: WAOS automation scripts need to be implemented properly in a separate function
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -556,7 +480,6 @@ fun ConsolePanel(
     var command by remember { mutableStateOf("") }
 
     Column(modifier = modifier) {
-        // Console messages
         LazyColumn(
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(8.dp)
@@ -565,12 +488,8 @@ fun ConsolePanel(
                 ConsoleMessageItem(message)
             }
         }
-
-        // Command input
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
+            modifier = Modifier.fillMaxWidth().padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedTextField(
@@ -600,7 +519,6 @@ fun ConsoleMessageItem(message: ConsoleMessageData) {
         "WARNING" -> MaterialTheme.colorScheme.tertiary
         else -> MaterialTheme.colorScheme.onSurface
     }
-
     Text(
         text = "[${message.level}] ${message.source}:${message.line} ${message.message}",
         color = color,
@@ -635,39 +553,24 @@ fun FindInPageDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    OutlinedButton(
-                        onClick = onFindPrevious,
-                        modifier = Modifier.weight(1f)
-                    ) {
+                    OutlinedButton(onClick = onFindPrevious, modifier = Modifier.weight(1f)) {
                         Text("Previous")
                     }
-                    OutlinedButton(
-                        onClick = onFindNext,
-                        modifier = Modifier.weight(1f)
-                    ) {
+                    OutlinedButton(onClick = onFindNext, modifier = Modifier.weight(1f)) {
                         Text("Next")
                     }
                 }
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Close")
-            }
+            TextButton(onClick = onDismiss) { Text("Close") }
         }
     )
 }
 
 @Composable
-fun ErrorPanel(
-    error: String,
-    onRetry: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
+fun ErrorPanel(error: String, onRetry: () -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
         Column(
             modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -679,10 +582,7 @@ fun ErrorPanel(
                 tint = MaterialTheme.colorScheme.error
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Failed to load page",
-                style = MaterialTheme.typography.titleMedium
-            )
+            Text(text = "Failed to load page", style = MaterialTheme.typography.titleMedium)
             Text(
                 text = error,
                 style = MaterialTheme.typography.bodyMedium,

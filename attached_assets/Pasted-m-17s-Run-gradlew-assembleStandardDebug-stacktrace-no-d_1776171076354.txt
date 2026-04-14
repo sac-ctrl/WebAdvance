@@ -1,0 +1,100 @@
+m 17s
+Run ./gradlew assembleStandardDebug --stacktrace --no-daemon
+  
+Downloading https://services.gradle.org/distributions/gradle-8.10.2-all.zip
+.........................................................................................................................................................................................................................
+Unzipping /home/runner/.gradle/wrapper/dists/gradle-8.10.2-all/7iv73wktx1xtkvlq19urqw1wm/gradle-8.10.2-all.zip to /home/runner/.gradle/wrapper/dists/gradle-8.10.2-all/7iv73wktx1xtkvlq19urqw1wm
+Set executable permissions for: /home/runner/.gradle/wrapper/dists/gradle-8.10.2-all/7iv73wktx1xtkvlq19urqw1wm/gradle-8.10.2/bin/gradle
+Welcome to Gradle 8.10.2!
+Here are the highlights of this release:
+ - Support for Java 23
+ - Faster configuration cache
+ - Better configuration cache reports
+For more details see https://docs.gradle.org/8.10.2/release-notes.html
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Configure project :app
+WARNING: The option setting 'android.defaults.buildfeatures.buildconfig=true' is deprecated.
+The current default is 'false'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+To keep using this feature, add the following to your module-level build.gradle files:
+    android.buildFeatures.buildConfig = true
+or from Android Studio, click: `Refactor` > `Migrate BuildConfig to Gradle Build Files`.
+> Task :app:renameManifest
+> Task :app:extendAndroidManifest
+> Task :app:createWebViewclass0 NO-SOURCE
+> Task :app:createWebViewclass1 NO-SOURCE
+> Task :app:createWebViewclass2 NO-SOURCE
+> Task :app:createWebViewclass3 NO-SOURCE
+> Task :app:createWebViewclass4 NO-SOURCE
+> Task :app:createWebViewclass5 NO-SOURCE
+> Task :app:createWebViewclass6 NO-SOURCE
+> Task :app:createWebViewclass7 NO-SOURCE
+> Task :app:preBuild
+> Task :app:preStandardDebugBuild
+> Task :app:mergeStandardDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:dataBindingMergeDependencyArtifactsStandardDebug
+> Task :app:generateStandardDebugResValues
+> Task :app:generateStandardDebugResources
+> Task :app:collectDependenciesStandardDebug
+> Task :app:prepareLibraryDefinitionsStandardDebug
+> Task :app:dataBindingTriggerStandardDebug
+> Task :app:generateStandardDebugBuildConfig
+> Task :app:mapStandardDebugSourceSetPaths
+> Task :app:checkStandardDebugAarMetadata
+> Task :app:createStandardDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksStandardDebug
+> Task :app:mergeStandardDebugResources
+> Task :app:processStandardDebugMainManifest
+> Task :app:dataBindingGenBaseClassesStandardDebug
+> Task :app:processStandardDebugManifest
+> Task :app:javaPreCompileStandardDebug
+> Task :app:mergeStandardDebugShaders
+> Task :app:processStandardDebugManifestForPackage
+> Task :app:compileStandardDebugShaders NO-SOURCE
+> Task :app:generateStandardDebugAssets UP-TO-DATE
+> Task :app:mergeStandardDebugAssets
+> Task :app:compressStandardDebugAssets
+> Task :app:desugarStandardDebugFileDependencies
+> Task :app:mergeStandardDebugJniLibFolders
+> Task :app:checkStandardDebugDuplicateClasses
+> Task :app:mergeStandardDebugNativeLibs
+> Task :app:processStandardDebugResources
+> Task :app:mergeExtDexStandardDebug
+> Task :app:mergeLibDexStandardDebug
+> Task :app:stripStandardDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libadblock-client.so, libandroidx.graphics.path.so, libc++_shared.so, libjniPdfium.so, libmodft2.so, libmodpdfium.so, libmodpng.so.
+> Task :app:validateSigningStandardDebug
+> Task :app:writeStandardDebugAppMetadata
+> Task :app:writeStandardDebugSigningConfigVersions
+> Task :app:kaptGenerateStubsStandardDebugKotlin
+/home/runner/work/WebAdvance/WebAdvance/app/build/tmp/kapt3/stubs/standardDebug/com/cylonid/nativealpha/ui/WebViewActivity.java:3: error: incompatible types: NonExistentClass cannot be converted to Annotation
+@error.NonExistentClass()
+      ^
+/home/runner/work/WebAdvance/WebAdvance/app/build/tmp/kapt3/stubs/standardDebug/com/cylonid/nativealpha/ui/WebViewActivityKt.java:6: error: incompatible types: NonExistentClass cannot be converted to Annotation
+    @error.NonExistentClass()
+          ^
+/home/runner/work/WebAdvance/WebAdvance/app/build/tmp/kapt3/stubs/standardDebug/com/cylonid/nativealpha/ui/WebViewActivityKt.java:17: error: incompatible types: NonExistentClass cannot be converted to Annotation
+    @error.NonExistentClass()
+          ^
+/home/runner/work/WebAdvance/WebAdvance/app/build/tmp/kapt3/stubs/standardDebug/com/cylonid/nativealpha/ui/WebViewActivityKt.java:25: error: incompatible types: NonExistentClass cannot be converted to Annotation
+    @error.NonExistentClass()
+          ^
+/home/runner/work/WebAdvance/WebAdvance/app/build/tmp/kapt3/stubs/standardDebug/com/cylonid/nativealpha/ui/WebViewActivityKt.java:30: error: incompatible types: NonExistentClass cannot be converted to Annotation
+    @error.NonExistentClass()
+          ^
+/home/runner/work/WebAdvance/WebAdvance/app/build/tmp/kapt3/stubs/standardDebug/com/cylonid/nativealpha/ui/WebViewActivityKt.java:40: error: incompatible types: NonExistentClass cannot be converted to Annotation
+> Task :app:kaptStandardDebugKotlin FAILED
+    @error.NonExistentClass()
+          ^
+FAILURE: Build failed with an exception.
+* What went wrong:
+Execution failed for task ':app:kaptStandardDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.gradle.internal.KaptWithoutKotlincTask$KaptExecutionWorkAction
+* Try:
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+* Exception is:
+org
