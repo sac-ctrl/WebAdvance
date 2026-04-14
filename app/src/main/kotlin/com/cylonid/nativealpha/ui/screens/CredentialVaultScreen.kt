@@ -429,3 +429,4 @@ private fun generatePassword(): String {
         .map { chars.random() }
         .joinToString("")
 }
+}

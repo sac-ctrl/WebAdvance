@@ -56,7 +56,7 @@ data class WebApp(
         BACKGROUND,
         ERROR
     }
-}
+
     var isBiometricProtection = false
     var isAllowMediaPlaybackInBackground = false
     var order = 0

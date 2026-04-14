@@ -543,7 +543,10 @@ private fun injectDarkMode(webView: WebView?) {
         })();
     """.trimIndent(), null)
 }
-    webView?.evaluateJavascript("""
+
+/* TODO: This JavaScript code needs to be wrapped in a proper function
+private fun injectWAOSAutomationScripts(webView: WebView?) {
+    webView?.evaluateJavascript(\"\"\"
         // WAOS Automation Scripts
         (function() {
             // Auto-scroll functionality
@@ -716,6 +719,7 @@ private fun injectDarkMode(webView: WebView?) {
                 }
             };
 }
+*/
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

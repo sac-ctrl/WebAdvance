@@ -7,22 +7,6 @@ import android.os.Environment
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.cylonid.nativealpha.data.AppDatabase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.io.File
-import javax.inject.Inject
-import javax.inject.Singleton
-
-package com.cylonid.nativealpha.manager
-
-import android.app.DownloadManager
-import android.content.Context
-import android.net.Uri
-import android.os.Environment
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import com.cylonid.nativealpha.data.AppDatabase
 import com.cylonid.nativealpha.model.WebApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
