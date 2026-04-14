@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.room.TypeConverter
 import com.cylonid.nativealpha.manager.ClipboardItem
+import com.cylonid.nativealpha.model.AdblockConfig
 import com.cylonid.nativealpha.model.WindowEntity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -83,5 +84,16 @@ class Converters {
     fun toStringMap(json: String): Map<String, String> {
         val type = object : TypeToken<Map<String, String>>() {}.type
         return gson.fromJson(json, type) ?: emptyMap()
+    }
+
+    @TypeConverter
+    fun fromAdblockConfigList(list: List<AdblockConfig>): String {
+        return gson.toJson(list)
+    }
+
+    @TypeConverter
+    fun toAdblockConfigList(json: String): List<AdblockConfig> {
+        val type = object : TypeToken<List<AdblockConfig>>() {}.type
+        return gson.fromJson(json, type) ?: emptyList()
     }
 }

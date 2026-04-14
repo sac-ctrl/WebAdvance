@@ -62,6 +62,7 @@ data class WebApp(
     var isAllowMediaPlaybackInBackground = false
     var order = 0
     var alwaysUseFallbackContextMenu = false
+    @Ignore
     var adBlockSettings = mutableListOf<AdblockConfig>()
 
     var iconUri: String? = null
