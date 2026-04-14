@@ -65,7 +65,7 @@ android {
     }
     buildFeatures {
         buildConfig true
-        dataBinding true
+        dataBinding false
         viewBinding true
     }
     kotlinOptions {
@@ -154,7 +154,6 @@ dependencies {
         exclude group: 'org.jetbrains.anko'
     }
     implementation 'com.github.barteksc:androidpdfviewer:3.1.0-beta.1'
-    kapt "com.android.databinding:compiler:3.1.4"
     implementation 'com.google.android.material:material:1.12.0'
 
     // Link Management System dependencies
