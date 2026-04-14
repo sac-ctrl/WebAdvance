@@ -192,14 +192,14 @@
                                 android:id="@+id/switchCameraAccess"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.cameraPermission}"
+                                android:checked="@{webapp.isCameraPermission}"
                                 android:text="@string/allow_camera_access" />
 
                             <com.google.android.material.materialswitch.MaterialSwitch
                                 android:id="@+id/switchMicrophoneAccess"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.microphonePermission}"
+                                android:checked="@{webapp.isMicrophonePermission}"
                                 android:text="@string/allow_microphone_access" />
                         </LinearLayout>
                         <LinearLayout
