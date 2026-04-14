@@ -1,401 +1,45 @@
 package com.cylonid.nativealpha.ui.screens
 
+import android.content.Intent
 import androidx.compose.animation.*
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.*
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import android.content.Intent
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.ui.WebViewActivity
+import com.cylonid.nativealpha.ui.theme.*
 import com.cylonid.nativealpha.viewmodel.MainViewModel
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MainDashboardScreen(
-    viewModel: MainViewModel = hiltViewModel()
-) {
-    val context = LocalContext.current
-    val webApps by viewModel.filteredWebApps.collectAsState()
-    val isGridView by viewModel.isGridView.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val sortBy by viewModel.sortBy.collectAsState()
-    val groupBy by viewModel.groupBy.collectAsState()
-    val groupedWebApps by viewModel.groupedWebApps.collectAsState()
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("WAOS Dashboard") },
-                actions = {
-                    IconButton(onClick = { viewModel.toggleViewMode() }) {
-                        Icon(
-                            imageVector = if (isGridView) Icons.Default.List else Icons.Default.GridView,
-                            contentDescription = "Toggle view"
-                        )
-                    }
-                    IconButton(onClick = { /* TODO: Open settings */ }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
-                    }
-                }
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { /* TODO: Add new webapp */ }) {
-                Icon(Icons.Default.Add, contentDescription = "Add webapp")
-            }
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            // Search Bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { viewModel.updateSearchQuery(it) },
-                placeholder = { Text("Search web apps...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                singleLine = true
-            )
-
-            // Sort and Group Controls
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                var sortExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(
-                    expanded = sortExpanded,
-                    onExpandedChange = { sortExpanded = it }
-                ) {
-                    OutlinedTextField(
-                        value = sortBy.displayName,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Sort by") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(sortExpanded) },
-                        modifier = Modifier.menuAnchor().weight(1f)
-                    )
-                    ExposedDropdownMenu(
-                        expanded = sortExpanded,
-                        onDismissRequest = { sortExpanded = false }
-                    ) {
-                        SortOption.values().forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(option.displayName) },
-                                onClick = {
-                                    viewModel.updateSortBy(option)
-                                    sortExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                var groupExpanded by remember { mutableStateOf(false) }
-                ExposedDropdownMenuBox(
-                    expanded = groupExpanded,
-                    onExpandedChange = { groupExpanded = it }
-                ) {
-                    OutlinedTextField(
-                        value = groupBy.displayName,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Group by") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(groupExpanded) },
-                        modifier = Modifier.menuAnchor().weight(1f)
-                    )
-                    ExposedDropdownMenu(
-                        expanded = groupExpanded,
-                        onDismissRequest = { groupExpanded = false }
-                    ) {
-                        GroupOption.values().forEach { option ->
-                            DropdownMenuItem(
-                                text = { Text(option.displayName) },
-                                onClick = {
-                                    viewModel.updateGroupBy(option)
-                                    groupExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Web Apps List/Grid
-            if (groupBy == GroupOption.NONE) {
-                // Ungrouped view
-                AnimatedContent(
-                    targetState = isGridView,
-                    transitionSpec = {
-                        fadeIn(animationSpec = tween(300)) + scaleIn() togetherWith
-                        fadeOut(animationSpec = tween(300)) + scaleOut()
-                    }
-                ) { gridView ->
-                    if (gridView) {
-                        LazyVerticalGrid(
-                            columns = GridCells.Adaptive(minSize = 150.dp),
-                            contentPadding = PaddingValues(16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(webApps, key = { it.id }) { webApp ->
-                                AnimatedWebAppCard(
-                                    webApp = webApp,
-                                    onClick = {
-                                        val intent = Intent(context, WebViewActivity::class.java).apply {
-                                            putExtra("webAppId", webApp.id)
-                                        }
-                                        context.startActivity(intent)
-                                    },
-                                    onLongClick = { /* TODO: Show context menu */ }
-                                )
-                            }
-                        }
-                    } else {
-                        LazyColumn(
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(webApps, key = { it.id }) { webApp ->
-                                AnimatedWebAppListItem(
-                                    webApp = webApp,
-                                    onClick = {
-                                        val intent = Intent(context, WebViewActivity::class.java).apply {
-                                            putExtra("webAppId", webApp.id)
-                                        }
-                                        context.startActivity(intent)
-                                    },
-                                    onLongClick = { /* TODO: Show context menu */ }
-                                )
-                            }
-                        }
-                    }
-                }
-            } else {
-                // Grouped view
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    groupedWebApps.forEach { (groupName, apps) ->
-                        item {
-                            Text(
-                                text = groupName,
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.padding(vertical = 8.dp)
-                            )
-                        }
-                        if (isGridView) {
-                            item {
-                                LazyVerticalGrid(
-                                    columns = GridCells.Adaptive(minSize = 120.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                                    userScrollEnabled = false
-                                ) {
-                                    items(apps, key = { it.id }) { webApp ->
-                                        AnimatedWebAppCard(
-                                            webApp = webApp,
-                                            onClick = { /* TODO: Open webapp */ },
-                                            onLongClick = { /* TODO: Show context menu */ },
-                                            modifier = Modifier.aspectRatio(1f)
-                                        )
-                                    }
-                                }
-                            }
-                        } else {
-                            items(apps, key = { it.id }) { webApp ->
-                                AnimatedWebAppListItem(
-                                    webApp = webApp,
-                                    onClick = { /* TODO: Open webapp */ },
-                                    onLongClick = { /* TODO: Show context menu */ }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
-@Composable
-fun AnimatedWebAppCard(
-    webApp: WebApp,
-    onClick: () -> Unit,
-    onLongClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.95f else 1f,
-        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
-    )
-
-    Card(
-        modifier = modifier
-            .scale(scale)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null, // We'll handle the animation ourselves
-                onClick = onClick
-            )
-            .combinedClickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick,
-                onLongClick = onLongClick
-            ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp,
-            pressedElevation = if (isPressed) 8.dp else 4.dp
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // App Icon (placeholder)
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color.Gray),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = webApp.name.first().toString(),
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = Color.White
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = webApp.name,
-                style = MaterialTheme.typography.titleSmall,
-                textAlign = TextAlign.Center,
-                maxLines = 2
-            )
-
-            // Status indicator
-            Row(
-                modifier = Modifier.padding(top = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(Color.Green) // TODO: Dynamic status
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "Active", // TODO: Dynamic status
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Green
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AnimatedWebAppListItem(
-    webApp: WebApp,
-    onClick: () -> Unit,
-    onLongClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClick
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // App Icon
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(Color.Gray),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = webApp.name.first().toString(),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.White
-                )
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = webApp.name,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    text = webApp.url,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            // Status indicator
-            Box(
-                modifier = Modifier
-                    .size(12.dp)
-                    .clip(RoundedCornerShape(50))
-                    .background(Color.Green) // TODO: Dynamic status
-            )
-        }
-    }
-}
 
 enum class SortOption(val displayName: String) {
     NAME("Name"),
@@ -411,46 +55,962 @@ enum class GroupOption(val displayName: String) {
     CUSTOM("Custom Groups")
 }
 
+private val categoryColors = mapOf(
+    "Social" to Pair(GradPinkStart, GradPinkEnd),
+    "Work" to Pair(GradBlueStart, GradBlueEnd),
+    "News" to Pair(GradOrangeStart, GradOrangeEnd),
+    "Entertainment" to Pair(GradVioletStart, GradVioletEnd),
+    "Tools" to Pair(GradCyanStart, GradCyanEnd),
+    "Shopping" to Pair(GradYellowStart, GradYellowEnd),
+    "Finance" to Pair(GradGreenStart, GradGreenEnd),
+    "General" to Pair(GradBlueStart, GradVioletEnd)
+)
+
+private fun getAppGradient(webApp: WebApp): Pair<Color, Color> {
+    val cat = webApp.category ?: "General"
+    return categoryColors[cat] ?: (GradCyanStart to GradCyanEnd)
+}
+
+private fun getAppEmoji(webApp: WebApp): String {
+    val url = webApp.url.lowercase()
+    return when {
+        url.contains("google") -> "G"
+        url.contains("youtube") -> "▶"
+        url.contains("twitter") || url.contains("x.com") -> "𝕏"
+        url.contains("facebook") -> "f"
+        url.contains("instagram") -> "◉"
+        url.contains("reddit") -> "R"
+        url.contains("gmail") || url.contains("mail") -> "✉"
+        url.contains("whatsapp") -> "W"
+        url.contains("telegram") -> "✈"
+        url.contains("github") -> "⌨"
+        url.contains("linkedin") -> "in"
+        url.contains("netflix") -> "N"
+        url.contains("spotify") -> "♪"
+        url.contains("amazon") -> "A"
+        else -> webApp.name.take(1).uppercase()
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun WebAppListItem(
-    webApp: WebApp,
-    onClick: () -> Unit,
-    onLongClick: () -> Unit
+fun MainDashboardScreen(
+    navController: NavController,
+    viewModel: MainViewModel = hiltViewModel()
 ) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Icon
-            Icon(
-                imageVector = Icons.Default.Web,
-                contentDescription = null,
-                modifier = Modifier.size(40.dp)
+    val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
+    val webApps by viewModel.filteredWebApps.collectAsState()
+    val isGridView by viewModel.isGridView.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val sortBy by viewModel.sortBy.collectAsState()
+    val groupBy by viewModel.groupBy.collectAsState()
+    val groupedWebApps by viewModel.groupedWebApps.collectAsState()
+
+    var selectedCategory by remember { mutableStateOf("All") }
+    var fabExpanded by remember { mutableStateOf(false) }
+    var showSortSheet by remember { mutableStateOf(false) }
+    var contextMenuApp by remember { mutableStateOf<WebApp?>(null) }
+    var showDeleteDialog by remember { mutableStateOf<WebApp?>(null) }
+
+    val categories = listOf("All") + listOf("Social", "Work", "News", "Entertainment", "Tools", "Shopping", "Finance", "General")
+
+    val filteredByCategory = if (selectedCategory == "All") webApps
+    else webApps.filter { (it.category ?: "General") == selectedCategory }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "bg")
+    val bgShift by infiniteTransition.animateFloat(
+        initialValue = 0f, targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(8000, easing = LinearEasing), RepeatMode.Reverse),
+        label = "bgShift"
+    )
+
+    Box(modifier = Modifier.fillMaxSize().background(BgDeep)) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawCircle(
+                brush = Brush.radialGradient(
+                    listOf(CyanPrimary.copy(alpha = 0.08f), Color.Transparent),
+                    center = Offset(size.width * 0.2f, size.height * 0.1f * bgShift),
+                    radius = size.width * 0.7f
+                )
             )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = webApp.name, style = MaterialTheme.typography.titleMedium)
-                Text(text = webApp.url, style = MaterialTheme.typography.bodySmall)
+            drawCircle(
+                brush = Brush.radialGradient(
+                    listOf(VioletSecondary.copy(alpha = 0.06f), Color.Transparent),
+                    center = Offset(size.width * 0.9f, size.height * 0.4f + size.height * 0.2f * bgShift),
+                    radius = size.width * 0.6f
+                )
+            )
+        }
+
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                Column(
+                    modifier = Modifier
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(BgDeep, BgDeep.copy(alpha = 0.95f), Color.Transparent)
+                            )
+                        )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .statusBarsPadding()
+                            .padding(horizontal = 20.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "WAOS",
+                                color = CyanPrimary,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 4.sp
+                            )
+                            Text(
+                                "Dashboard",
+                                color = TextPrimary,
+                                fontSize = 24.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            IconButton(
+                                onClick = { viewModel.toggleViewMode() },
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(CardSurface, CircleShape)
+                            ) {
+                                Icon(
+                                    imageVector = if (isGridView) Icons.Rounded.ViewList else Icons.Rounded.GridView,
+                                    contentDescription = "Toggle view",
+                                    tint = CyanPrimary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            IconButton(
+                                onClick = { showSortSheet = true },
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(CardSurface, CircleShape)
+                            ) {
+                                Icon(
+                                    Icons.Rounded.Sort,
+                                    contentDescription = "Sort",
+                                    tint = TextSecondary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            IconButton(
+                                onClick = { navController.navigate("settings") },
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(CardSurface, CircleShape)
+                            ) {
+                                Icon(
+                                    Icons.Rounded.Settings,
+                                    contentDescription = "Settings",
+                                    tint = TextSecondary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { viewModel.updateSearchQuery(it) },
+                        placeholder = {
+                            Text(
+                                "Search web apps...",
+                                color = TextMuted,
+                                fontSize = 14.sp
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(Icons.Rounded.Search, null, tint = TextSecondary, modifier = Modifier.size(18.dp))
+                        },
+                        trailingIcon = {
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { viewModel.updateSearchQuery("") }) {
+                                    Icon(Icons.Rounded.Close, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp)
+                            .padding(bottom = 8.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = CyanPrimary.copy(alpha = 0.6f),
+                            unfocusedBorderColor = CardBorder,
+                            focusedContainerColor = CardSurface,
+                            unfocusedContainerColor = CardSurface,
+                            cursorColor = CyanPrimary,
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary
+                        ),
+                        singleLine = true
+                    )
+
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 20.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    ) {
+                        items(categories) { cat ->
+                            val selected = selectedCategory == cat
+                            val bgColor by animateColorAsState(
+                                if (selected) CyanPrimary else CardSurface, label = "cat$cat"
+                            )
+                            val textColor by animateColorAsState(
+                                if (selected) BgDeep else TextSecondary, label = "catTxt$cat"
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .height(32.dp)
+                                    .background(bgColor, RoundedCornerShape(50))
+                                    .border(
+                                        1.dp,
+                                        if (selected) CyanPrimary else CardBorder,
+                                        RoundedCornerShape(50)
+                                    )
+                                    .clickable { selectedCategory = cat }
+                                    .padding(horizontal = 16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    cat,
+                                    color = textColor,
+                                    fontSize = 12.sp,
+                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            floatingActionButton = {
+                Column(horizontalAlignment = Alignment.End) {
+                    AnimatedVisibility(
+                        visible = fabExpanded,
+                        enter = fadeIn() + slideInVertically { it },
+                        exit = fadeOut() + slideOutVertically { it }
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.End,
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        ) {
+                            ExtendedFloatingActionButton(
+                                onClick = {
+                                    fabExpanded = false
+                                    navController.navigate("add_webapp")
+                                },
+                                containerColor = CyanPrimary,
+                                contentColor = BgDeep,
+                                modifier = Modifier.height(44.dp)
+                            ) {
+                                Icon(Icons.Rounded.Add, null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text("New Web App", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            }
+                        }
+                    }
+
+                    FloatingActionButton(
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            fabExpanded = !fabExpanded
+                        },
+                        containerColor = CyanPrimary,
+                        contentColor = BgDeep,
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        val rotation by animateFloatAsState(
+                            if (fabExpanded) 45f else 0f,
+                            animationSpec = spring(stiffness = Spring.StiffnessMedium),
+                            label = "fabRot"
+                        )
+                        Icon(
+                            Icons.Rounded.Add,
+                            contentDescription = "Add",
+                            modifier = Modifier.rotate(rotation)
+                        )
+                    }
+                }
             }
-            // Status indicator
+        ) { padding ->
             Box(
                 modifier = Modifier
-                    .size(12.dp)
-                    .background(
-                        color = when (webApp.status) {
-                            WebApp.Status.ACTIVE -> Color.Green
-                            WebApp.Status.BACKGROUND -> Color.Yellow
-                            WebApp.Status.ERROR -> Color.Red
-                        },
-                        shape = CircleShape
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                if (fabExpanded) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(BgDeep.copy(alpha = 0.6f))
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) { fabExpanded = false }
                     )
+                }
+
+                if (filteredByCategory.isEmpty() && groupedWebApps.isEmpty()) {
+                    EmptyStateView(onAdd = { navController.navigate("add_webapp") })
+                } else {
+                    if (groupBy == GroupOption.NONE) {
+                        AnimatedContent(
+                            targetState = isGridView,
+                            transitionSpec = {
+                                fadeIn(tween(250)) + scaleIn(tween(250), initialScale = 0.95f) togetherWith
+                                        fadeOut(tween(200))
+                            },
+                            label = "viewToggle"
+                        ) { gridView ->
+                            if (gridView) {
+                                LazyVerticalGrid(
+                                    columns = GridCells.Fixed(2),
+                                    contentPadding = PaddingValues(
+                                        start = 16.dp, end = 16.dp, top = 8.dp, bottom = 100.dp
+                                    ),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    items(filteredByCategory, key = { it.id }) { webApp ->
+                                        AppGridCard(
+                                            webApp = webApp,
+                                            onClick = {
+                                                val intent = Intent(context, WebViewActivity::class.java)
+                                                    .apply { putExtra("webAppId", webApp.id) }
+                                                context.startActivity(intent)
+                                            },
+                                            onLongClick = {
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                contextMenuApp = webApp
+                                            }
+                                        )
+                                    }
+                                }
+                            } else {
+                                LazyColumn(
+                                    contentPadding = PaddingValues(
+                                        start = 16.dp, end = 16.dp, top = 8.dp, bottom = 100.dp
+                                    ),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    items(filteredByCategory, key = { it.id }) { webApp ->
+                                        AppListCard(
+                                            webApp = webApp,
+                                            onClick = {
+                                                val intent = Intent(context, WebViewActivity::class.java)
+                                                    .apply { putExtra("webAppId", webApp.id) }
+                                                context.startActivity(intent)
+                                            },
+                                            onLongClick = {
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                contextMenuApp = webApp
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            contentPadding = PaddingValues(
+                                start = 16.dp, end = 16.dp, top = 8.dp, bottom = 100.dp
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            groupedWebApps.forEach { (groupName, apps) ->
+                                item(key = "header_$groupName") {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(vertical = 4.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .width(3.dp)
+                                                .height(20.dp)
+                                                .background(CyanPrimary, RoundedCornerShape(2.dp))
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(
+                                            groupName,
+                                            color = TextPrimary,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 15.sp
+                                        )
+                                        Spacer(Modifier.width(8.dp))
+                                        Text(
+                                            "${apps.size}",
+                                            color = TextMuted,
+                                            fontSize = 12.sp
+                                        )
+                                    }
+                                }
+                                items(apps, key = { it.id }) { webApp ->
+                                    AppListCard(
+                                        webApp = webApp,
+                                        onClick = {
+                                            val intent = Intent(context, WebViewActivity::class.java)
+                                                .apply { putExtra("webAppId", webApp.id) }
+                                            context.startActivity(intent)
+                                        },
+                                        onLongClick = {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            contextMenuApp = webApp
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        contextMenuApp?.let { app ->
+            AppContextMenu(
+                webApp = app,
+                onDismiss = { contextMenuApp = null },
+                onOpen = {
+                    contextMenuApp = null
+                    val intent = Intent(context, WebViewActivity::class.java)
+                        .apply { putExtra("webAppId", app.id) }
+                    context.startActivity(intent)
+                },
+                onEdit = {
+                    contextMenuApp = null
+                    navController.navigate("edit_webapp/${app.id}")
+                },
+                onDelete = {
+                    contextMenuApp = null
+                    showDeleteDialog = app
+                }
             )
+        }
+
+        showDeleteDialog?.let { app ->
+            DeleteConfirmDialog(
+                appName = app.name,
+                onConfirm = {
+                    viewModel.deleteWebApp(app)
+                    showDeleteDialog = null
+                },
+                onDismiss = { showDeleteDialog = null }
+            )
+        }
+
+        if (showSortSheet) {
+            SortGroupSheet(
+                currentSort = sortBy,
+                currentGroup = groupBy,
+                onSortChange = { viewModel.updateSortBy(it); showSortSheet = false },
+                onGroupChange = { viewModel.updateGroupBy(it) },
+                onDismiss = { showSortSheet = false }
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyStateView(onAdd: () -> Unit) {
+    val infiniteTransition = rememberInfiniteTransition(label = "empty")
+    val pulse by infiniteTransition.animateFloat(
+        0.95f, 1.05f,
+        infiniteRepeatable(tween(2000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "pulse"
+    )
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .scale(pulse)
+                .background(
+                    Brush.radialGradient(listOf(CyanPrimary.copy(0.2f), Color.Transparent)),
+                    CircleShape
+                )
+                .border(2.dp, CyanPrimary.copy(0.3f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                Icons.Rounded.Web,
+                contentDescription = null,
+                tint = CyanPrimary,
+                modifier = Modifier.size(48.dp)
+            )
+        }
+        Spacer(Modifier.height(24.dp))
+        Text("No Web Apps Yet", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "Add your first web app to get started",
+            color = TextSecondary,
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(32.dp))
+        Button(
+            onClick = onAdd,
+            colors = ButtonDefaults.buttonColors(containerColor = CyanPrimary, contentColor = BgDeep),
+            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier.height(48.dp)
+        ) {
+            Icon(Icons.Rounded.Add, null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("Add Web App", fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun AppGridCard(
+    webApp: WebApp,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        if (isPressed) 0.93f else 1f,
+        spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessHigh),
+        label = "cardScale"
+    )
+    val (gradStart, gradEnd) = getAppGradient(webApp)
+    val emoji = getAppEmoji(webApp)
+    val statusColor = when (webApp.status) {
+        WebApp.Status.ACTIVE -> StatusActive
+        WebApp.Status.BACKGROUND -> StatusBg
+        WebApp.Status.ERROR -> StatusError
+    }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "status${webApp.id}")
+    val glowAlpha by infiniteTransition.animateFloat(
+        0.4f, 1f,
+        infiniteRepeatable(tween(1500, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "glow${webApp.id}"
+    )
+
+    Box(
+        modifier = modifier
+            .scale(scale)
+            .aspectRatio(0.85f)
+            .clip(RoundedCornerShape(20.dp))
+            .background(CardSurface)
+            .border(1.dp, CardBorder, RoundedCornerShape(20.dp))
+            .combinedClickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp)
+                .background(
+                    Brush.linearGradient(
+                        listOf(gradStart.copy(0.3f), gradEnd.copy(0.15f))
+                    )
+                )
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(Modifier.height(8.dp))
+
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .shadow(12.dp, CircleShape, spotColor = gradEnd.copy(0.4f))
+                    .background(
+                        Brush.linearGradient(listOf(gradStart, gradEnd)),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    emoji,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            Text(
+                webApp.name,
+                color = TextPrimary,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Spacer(Modifier.height(4.dp))
+
+            Text(
+                webApp.url.replace("https://", "").replace("http://", "").replace("www.", ""),
+                color = TextMuted,
+                fontSize = 10.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(Modifier.weight(1f))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .background(statusColor.copy(alpha = glowAlpha), CircleShape)
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = when (webApp.status) {
+                        WebApp.Status.ACTIVE -> "Active"
+                        WebApp.Status.BACKGROUND -> "Background"
+                        WebApp.Status.ERROR -> "Error"
+                    },
+                    color = statusColor,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                if (webApp.notificationCount > 0) {
+                    Spacer(Modifier.width(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .background(ErrorRed, RoundedCornerShape(50))
+                            .padding(horizontal = 5.dp, vertical = 1.dp)
+                    ) {
+                        Text(
+                            "${webApp.notificationCount}",
+                            color = Color.White,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun AppListCard(
+    webApp: WebApp,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        if (isPressed) 0.97f else 1f,
+        spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        label = "listScale"
+    )
+    val (gradStart, gradEnd) = getAppGradient(webApp)
+    val emoji = getAppEmoji(webApp)
+    val statusColor = when (webApp.status) {
+        WebApp.Status.ACTIVE -> StatusActive
+        WebApp.Status.BACKGROUND -> StatusBg
+        WebApp.Status.ERROR -> StatusError
+    }
+    val statusLabel = when (webApp.status) {
+        WebApp.Status.ACTIVE -> "Active"
+        WebApp.Status.BACKGROUND -> "Bg"
+        WebApp.Status.ERROR -> "Error"
+    }
+
+    val infiniteTransition = rememberInfiniteTransition(label = "listStatus${webApp.id}")
+    val glowAlpha by infiniteTransition.animateFloat(
+        0.5f, 1f,
+        infiniteRepeatable(tween(2000, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "listGlow${webApp.id}"
+    )
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .scale(scale)
+            .clip(RoundedCornerShape(18.dp))
+            .background(CardSurface)
+            .border(1.dp, CardBorder, RoundedCornerShape(18.dp))
+            .combinedClickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(50.dp)
+                .shadow(8.dp, RoundedCornerShape(14.dp), spotColor = gradEnd.copy(0.5f))
+                .background(
+                    Brush.linearGradient(listOf(gradStart, gradEnd)),
+                    RoundedCornerShape(14.dp)
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(emoji, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        }
+
+        Spacer(Modifier.width(14.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                webApp.name,
+                color = TextPrimary,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(Modifier.height(2.dp))
+            Text(
+                webApp.url.replace("https://", "").replace("http://", "").replace("www.", ""),
+                color = TextMuted,
+                fontSize = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+
+        Spacer(Modifier.width(8.dp))
+
+        Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            if (webApp.notificationCount > 0) {
+                Box(
+                    modifier = Modifier
+                        .background(ErrorRed, RoundedCornerShape(50))
+                        .padding(horizontal = 7.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        "${webApp.notificationCount}",
+                        color = Color.White,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(7.dp)
+                        .background(statusColor.copy(alpha = glowAlpha), CircleShape)
+                )
+                Spacer(Modifier.width(4.dp))
+                Text(statusLabel, color = statusColor, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+            }
+        }
+
+        Spacer(Modifier.width(4.dp))
+        Icon(
+            Icons.Rounded.ChevronRight,
+            contentDescription = null,
+            tint = TextMuted,
+            modifier = Modifier.size(16.dp)
+        )
+    }
+}
+
+@Composable
+private fun AppContextMenu(
+    webApp: WebApp,
+    onDismiss: () -> Unit,
+    onOpen: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .background(CardSurface)
+                .border(1.dp, CardBorder, RoundedCornerShape(24.dp))
+                .padding(20.dp)
+        ) {
+            val (gradStart, gradEnd) = getAppGradient(webApp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(
+                            Brush.linearGradient(listOf(gradStart, gradEnd)),
+                            RoundedCornerShape(12.dp)
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(getAppEmoji(webApp), fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                }
+                Spacer(Modifier.width(12.dp))
+                Column {
+                    Text(webApp.name, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text(
+                        webApp.url.replace("https://", "").replace("http://", ""),
+                        color = TextMuted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
+            HorizontalDivider(color = CardBorder)
+            Spacer(Modifier.height(8.dp))
+
+            listOf(
+                Triple(Icons.Rounded.OpenInNew, "Open", onOpen),
+                Triple(Icons.Rounded.Edit, "Edit App", onEdit),
+                Triple(Icons.Rounded.Delete, "Delete", onDelete)
+            ).forEachIndexed { idx, (icon, label, action) ->
+                val isDelete = idx == 2
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { action() }
+                        .padding(vertical = 14.dp, horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(icon, null, tint = if (isDelete) ErrorRed else TextSecondary, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(12.dp))
+                    Text(label, color = if (isDelete) ErrorRed else TextPrimary, fontSize = 15.sp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DeleteConfirmDialog(
+    appName: String,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = CardSurface,
+        titleContentColor = TextPrimary,
+        textContentColor = TextSecondary,
+        title = { Text("Delete $appName?", fontWeight = FontWeight.Bold) },
+        text = { Text("This will permanently remove this web app and all its data.") },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("Delete", color = ErrorRed, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", color = TextSecondary)
+            }
+        },
+        shape = RoundedCornerShape(20.dp)
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SortGroupSheet(
+    currentSort: SortOption,
+    currentGroup: GroupOption,
+    onSortChange: (SortOption) -> Unit,
+    onGroupChange: (GroupOption) -> Unit,
+    onDismiss: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(24.dp))
+                .background(CardSurface)
+                .border(1.dp, CardBorder, RoundedCornerShape(24.dp))
+                .padding(20.dp)
+        ) {
+            Text("Sort & Group", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Spacer(Modifier.height(16.dp))
+
+            Text("Sort by", color = TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Medium, letterSpacing = 1.sp)
+            Spacer(Modifier.height(8.dp))
+            SortOption.values().forEach { opt ->
+                val selected = opt == currentSort
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (selected) CyanPrimary.copy(0.1f) else Color.Transparent)
+                        .clickable { onSortChange(opt) }
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(opt.displayName, color = if (selected) CyanPrimary else TextPrimary, modifier = Modifier.weight(1f))
+                    if (selected) Icon(Icons.Rounded.Check, null, tint = CyanPrimary, modifier = Modifier.size(16.dp))
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+            HorizontalDivider(color = CardBorder)
+            Spacer(Modifier.height(16.dp))
+
+            Text("Group by", color = TextSecondary, fontSize = 12.sp, fontWeight = FontWeight.Medium, letterSpacing = 1.sp)
+            Spacer(Modifier.height(8.dp))
+            GroupOption.values().forEach { opt ->
+                val selected = opt == currentGroup
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (selected) VioletSecondary.copy(0.1f) else Color.Transparent)
+                        .clickable { onGroupChange(opt) }
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(opt.displayName, color = if (selected) VioletSecondary else TextPrimary, modifier = Modifier.weight(1f))
+                    if (selected) Icon(Icons.Rounded.Check, null, tint = VioletSecondary, modifier = Modifier.size(16.dp))
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+            Button(
+                onClick = onDismiss,
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = CyanPrimary, contentColor = BgDeep),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Text("Done", fontWeight = FontWeight.Bold)
+            }
         }
     }
 }

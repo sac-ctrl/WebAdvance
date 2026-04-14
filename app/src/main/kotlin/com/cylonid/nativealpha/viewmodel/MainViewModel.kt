@@ -47,6 +47,8 @@ class MainViewModel @Inject constructor(
         if (group == GroupOption.NONE) emptyMap() else groupWebApps(apps, group)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
+    private var hasSeeded = false
+
     init {
         loadWebApps()
     }
@@ -55,7 +57,35 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             repository.getAllWebApps().collect { apps ->
                 _webApps.value = apps
+                if (apps.isEmpty() && !hasSeeded) {
+                    hasSeeded = true
+                    seedSampleApps()
+                }
             }
+        }
+    }
+
+    private fun seedSampleApps() {
+        viewModelScope.launch {
+            val samples = listOf(
+                WebApp(name = "Google", url = "https://www.google.com", category = "Tools",
+                    status = WebApp.Status.ACTIVE, isJavaScriptEnabled = true),
+                WebApp(name = "YouTube", url = "https://m.youtube.com", category = "Entertainment",
+                    status = WebApp.Status.ACTIVE, isJavaScriptEnabled = true),
+                WebApp(name = "Gmail", url = "https://mail.google.com", category = "Work",
+                    status = WebApp.Status.BACKGROUND, isJavaScriptEnabled = true),
+                WebApp(name = "WhatsApp", url = "https://web.whatsapp.com", category = "Social",
+                    status = WebApp.Status.ACTIVE, isJavaScriptEnabled = true, notificationCount = 3),
+                WebApp(name = "Reddit", url = "https://www.reddit.com", category = "Social",
+                    status = WebApp.Status.ACTIVE, isJavaScriptEnabled = true),
+                WebApp(name = "GitHub", url = "https://github.com", category = "Work",
+                    status = WebApp.Status.ACTIVE, isJavaScriptEnabled = true),
+                WebApp(name = "Twitter / X", url = "https://twitter.com", category = "Social",
+                    status = WebApp.Status.BACKGROUND, isJavaScriptEnabled = true, notificationCount = 7),
+                WebApp(name = "LinkedIn", url = "https://www.linkedin.com", category = "Work",
+                    status = WebApp.Status.ACTIVE, isJavaScriptEnabled = true)
+            )
+            samples.forEach { repository.insertWebApp(it) }
         }
     }
 

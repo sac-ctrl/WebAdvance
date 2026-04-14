@@ -16,6 +16,7 @@ class AddWebAppViewModel @Inject constructor(
     private val repository: WebAppRepository
 ) : ViewModel() {
 
+    var editId by mutableStateOf(0L)
     var url by mutableStateOf("")
     var name by mutableStateOf("")
     var category by mutableStateOf("General")
@@ -45,6 +46,49 @@ class AddWebAppViewModel @Inject constructor(
     var isMicrophonePermission by mutableStateOf(false)
     var isEnableZooming by mutableStateOf(false)
 
+    fun loadForEdit(id: Long) {
+        viewModelScope.launch {
+            repository.getWebAppById(id).collect { app ->
+                app?.let {
+                    editId = it.id
+                    url = it.url
+                    name = it.name
+                    category = it.category ?: "General"
+                    customGroup = it.customGroup ?: ""
+                    isJavaScriptEnabled = it.isJavaScriptEnabled
+                    isAdblockEnabled = it.isAdblockEnabled
+                    isDarkModeEnabled = it.isDarkModeEnabled
+                    isSmartRefreshEnabled = it.isSmartRefreshEnabled
+                    isLocked = it.isLocked
+                    pin = it.pin ?: ""
+                    customDownloadFolder = it.customDownloadFolder ?: ""
+                    clipboardMaxItems = it.clipboardMaxItems
+                    credentialAutoLockTimeout = it.credentialAutoLockTimeout
+                    floatingWindowDefaultWidth = it.floatingWindowDefaultWidth
+                    floatingWindowDefaultHeight = it.floatingWindowDefaultHeight
+                    floatingWindowDefaultOpacity = it.floatingWindowDefaultOpacity
+                    screenshotSaveLocation = it.screenshotSaveLocation
+                    linkCopierDefaultFormat = it.linkCopierDefaultFormat
+                    userAgentOverride = it.userAgentOverride
+                    cacheMode = it.cacheMode
+                    isKeepAwake = it.isKeepAwake
+                    isCameraPermission = it.isCameraPermission
+                    isMicrophonePermission = it.isMicrophonePermission
+                    isEnableZooming = it.isEnableZooming
+                    refreshIntervalText = when (it.refreshInterval) {
+                        0L -> "Manual"
+                        5000L -> "5s"
+                        15000L -> "15s"
+                        30000L -> "30s"
+                        60000L -> "1min"
+                        300000L -> "5min"
+                        else -> "Manual"
+                    }
+                }
+            }
+        }
+    }
+
     fun saveWebApp() {
         val refreshInterval = when (refreshIntervalText) {
             "Manual" -> 0L
@@ -57,7 +101,10 @@ class AddWebAppViewModel @Inject constructor(
         }
 
         val webApp = WebApp(
-            name = name.ifBlank { url.replace("https://", "").replace("http://", "").replace("www.", "") },
+            id = if (editId > 0L) editId else 0L,
+            name = name.ifBlank {
+                url.replace("https://", "").replace("http://", "").replace("www.", "").substringBefore("/")
+            },
             url = url,
             category = category,
             customGroup = customGroup.takeIf { it.isNotBlank() },
@@ -86,7 +133,11 @@ class AddWebAppViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            repository.insertWebApp(webApp)
+            if (editId > 0L) {
+                repository.updateWebApp(webApp)
+            } else {
+                repository.insertWebApp(webApp)
+            }
         }
     }
 }
