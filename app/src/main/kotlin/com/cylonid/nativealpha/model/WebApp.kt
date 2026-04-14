@@ -147,7 +147,10 @@ data class WebApp(
 
     var iconUri: String? = null
     var group: String = "Default"
-    var clipboardSyncEnabled: Boolean = true
+    private var _clipboardSyncEnabled: Boolean = true
+    var clipboardSyncEnabled: Boolean
+        get() = _clipboardSyncEnabled
+        set(value) { _clipboardSyncEnabled = value }
     var floatingWindowWidth: Int = 360
     var floatingWindowHeight: Int = 640
     var floatingWindowOpacity: Int = 100
@@ -248,7 +251,7 @@ data class WebApp(
         group = other.group
         customDownloadFolder = other.customDownloadFolder
         clipboardMaxItems = other.clipboardMaxItems
-        clipboardSyncEnabled = other.clipboardSyncEnabled
+        _clipboardSyncEnabled = other._clipboardSyncEnabled
         floatingWindowWidth = other.floatingWindowWidth
         floatingWindowHeight = other.floatingWindowHeight
         floatingWindowOpacity = other.floatingWindowOpacity
@@ -434,6 +437,10 @@ data class WebApp(
     }
 
     fun isClipboardSyncEnabled(): Boolean {
-        return clipboardSyncEnabled
+        return _clipboardSyncEnabled
+    }
+
+    fun setClipboardSyncEnabled(enabled: Boolean) {
+        _clipboardSyncEnabled = enabled
     }
 }
