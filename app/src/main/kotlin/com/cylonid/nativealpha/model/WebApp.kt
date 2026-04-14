@@ -14,6 +14,7 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.cylonid.nativealpha.R
+import com.cylonid.nativealpha.WebAppSettingsActivity
 import com.cylonid.nativealpha.data.Converters
 import com.cylonid.nativealpha.model.SandboxManager
 import com.cylonid.nativealpha.util.Const
@@ -31,7 +32,7 @@ data class WebApp(
     val url: String,
     val iconUrl: String? = null,
     val category: String? = null,
-    val userAgent: String? = null,
+    var userAgent: String? = null,
     val isJavaScriptEnabled: Boolean = true,
     val isAdblockEnabled: Boolean = false,
     val isDarkModeEnabled: Boolean = false,
@@ -39,8 +40,8 @@ data class WebApp(
     val isSmartRefreshEnabled: Boolean = false,
     val isLocked: Boolean = false,
     val pin: String? = null,
-    val customDownloadFolder: String? = null,
-    val clipboardMaxItems: Int = 50,
+    var customDownloadFolder: String? = null,
+    var clipboardMaxItems: Int = 50,
     val credentialAutoLockTimeout: Long = 300000, // 5 min
     val floatingWindowDefaultWidth: Int = 800,
     val floatingWindowDefaultHeight: Int = 600,
@@ -61,10 +62,10 @@ data class WebApp(
     val customGroup: String? = null,
     val isActive: Boolean = true,
     val isBackground: Boolean = false,
-    val isKeepAwake: Boolean = false,
-    val isCameraPermission: Boolean = false,
-    val isMicrophonePermission: Boolean = false,
-    val isEnableZooming: Boolean = false
+    var isKeepAwake: Boolean = false,
+    var isCameraPermission: Boolean = false,
+    var isMicrophonePermission: Boolean = false,
+    var isEnableZooming: Boolean = false
 ) {
     enum class Status {
         ACTIVE,
@@ -420,9 +421,9 @@ data class WebApp(
     public fun onSwitchSandboxChanged(mSwitch: CompoundButton, isChecked: Boolean) {
         isUseContainer = isChecked
         containerId = if (isChecked) {
-            SandboxManager.getInstance().calculateNextFreeContainerId()
+            SandboxManager.getInstance().calculateNextFreeContainerId().toString()
         } else {
-            Const.NO_CONTAINER
+            Const.NO_CONTAINER.toString()
         }
     }
 

@@ -68,7 +68,7 @@ class ClipboardManager @Inject constructor(
 
     fun deleteItem(itemId: Long) {
         scope.launch {
-            dao.deleteItem(itemId)
+            dao.deleteItemById(itemId)
         }
     }
 

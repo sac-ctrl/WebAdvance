@@ -150,8 +150,8 @@ class WaosDashboardActivity : AppCompatActivity() {
         }
 
         val filtered = if (query.isBlank()) allApps else allApps.filter {
-            it.getTitle().contains(query, ignoreCase = true) ||
-                it.getBaseUrl().contains(query, ignoreCase = true) ||
+            it.title.contains(query, ignoreCase = true) ||
+                it.baseUrl.contains(query, ignoreCase = true) ||
                 it.group.contains(query, ignoreCase = true)
         }
 
@@ -317,7 +317,7 @@ class WaosDashboardActivity : AppCompatActivity() {
         val lockLabel = if (app.isBiometricProtection) "Unlock" else "Lock"
         val actions = arrayOf("Open", "Settings", "Download History", "Clipboard", "Vault", "Clone", "Delete", lockLabel, "Copy URL", "Launch Floating Bubble")
         AlertDialog.Builder(this)
-            .setTitle(app.getTitle())
+            .setTitle(app.title)
             .setItems(actions) { _, which ->
                 when (which) {
                     0 -> { hapticTap(); openWebApp(app) }
@@ -337,7 +337,7 @@ class WaosDashboardActivity : AppCompatActivity() {
 
     private fun copyAppUrl(app: WebApp) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        clipboard.setPrimaryClip(ClipData.newPlainText("WAOS App URL", app.getBaseUrl()))
+        clipboard.setPrimaryClip(ClipData.newPlainText("WAOS App URL", app.baseUrl))
         Toast.makeText(this, "App URL copied", Toast.LENGTH_SHORT).show()
     }
 
@@ -376,7 +376,7 @@ class WaosDashboardActivity : AppCompatActivity() {
     private fun confirmDeleteWebApp(app: WebApp) {
         AlertDialog.Builder(this)
             .setTitle("Delete Web App")
-            .setMessage("Are you sure you want to delete ${app.getTitle()}?")
+            .setMessage("Are you sure you want to delete ${app.title}?")
             .setPositiveButton("Delete") { _, _ ->
                 DataManager.getInstance().deleteWebApp(app.ID)
                 loadApps()
@@ -471,8 +471,8 @@ class WaosGroupedAdapter(
         val credentialsButton: Button = view.findViewById(R.id.button_credentials)
 
         fun bind(app: WebApp) {
-            title.text = app.getTitle()
-            subtitle.text = app.getBaseUrl()
+            title.text = app.title
+            subtitle.text = app.baseUrl
             groupText.text = app.group.ifBlank { "Default" }
             status.text = app.group.ifBlank { "Active" }
 

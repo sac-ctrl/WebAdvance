@@ -163,7 +163,7 @@ class SmartNotificationSystem(
         )
 
         val builder = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(R.drawable.ic_baseline_notifications_24)
+            .setSmallIcon(android.R.drawable.ic_popup_reminder)
             .setContentTitle(notification.title)
             .setContentText(notification.message)
             .setContentIntent(pendingIntent)

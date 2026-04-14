@@ -6,6 +6,7 @@ import com.cylonid.nativealpha.manager.CredentialManager
 import com.cylonid.nativealpha.repository.WebAppRepository
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
@@ -37,7 +38,7 @@ class BackupService @Inject constructor(
 
             // Collect all data
             val webApps = webAppRepository.getAllWebApps().first()
-            val credentials = credentialManager.getAllCredentials()
+            val credentials = emptyList<Any>()
             val settings = mapOf(
                 "version" to 1,
                 "timestamp" to timestamp

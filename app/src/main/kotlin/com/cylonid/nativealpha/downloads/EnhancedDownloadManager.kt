@@ -76,15 +76,12 @@ class EnhancedDownloadManager(
         
         // Record in our database
         val record = DownloadRecord(
-            appId = appId,
-            filename = finalFilename,
-            url = url,
+            appId = appId.toInt(),
+            fileName = finalFilename,
             mimeType = mimeType,
-            size = 0L,
+            sizeBytes = 0L,
             timestamp = System.currentTimeMillis(),
             status = "downloading",
-            progress = 0,
-            downloadId = downloadId,
             uriPath = File(appDownloadDir, finalFilename).absolutePath
         )
         DownloadRepository.saveDownload(context, record)
@@ -213,7 +210,7 @@ class EnhancedDownloadManager(
         val downloads = _downloads.value
         return DownloadStatistics(
             totalDownloads = downloads.size,
-            totalSize = downloads.sumOf { it.size },
+            totalSize = downloads.sumOf { it.sizeBytes },
             successCount = downloads.count { it.status == "completed" },
             failedCount = downloads.count { it.status == "failed" },
             pendingCount = downloads.count { it.status == "downloading" }
@@ -222,7 +219,7 @@ class EnhancedDownloadManager(
 
     private fun loadDownloads() {
         val records = DownloadRepository.loadDownloads(context)
-            .filter { it.appId == appId }
+            .filter { it.appId.toLong() == appId }
             .sortedByDescending { it.timestamp }
         _downloads.value = records
     }
@@ -250,13 +247,12 @@ class EnhancedDownloadManager(
                 
                 // Update in database
                 val records = DownloadRepository.loadDownloads(context).toMutableList()
-                val record = records.find { it.downloadId == downloadId }
+                val record = records.find { it.status == "downloading" && it.fileName == title }
                 if (record != null) {
                     val index = records.indexOf(record)
                     records[index] = record.copy(
                         status = statusString,
-                        progress = progress,
-                        size = total
+                        sizeBytes = total
                     )
                     DownloadRepository.saveDownloads(context, records)
                 }

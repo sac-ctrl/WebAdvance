@@ -45,7 +45,7 @@ object WebViewLauncher {
         val packageName = "com.cylonid.nativealpha"
         var webview_class: Class<*>? = null
         try {
-            webview_class = if (webapp.containerId != Const.NO_CONTAINER) {
+            webview_class = if (webapp.containerId != Const.NO_CONTAINER.toString()) {
                 Class.forName(packageName + ".__WebViewActivity_" + webapp.containerId)
             } else {
                 Class.forName("$packageName.WebViewActivity")

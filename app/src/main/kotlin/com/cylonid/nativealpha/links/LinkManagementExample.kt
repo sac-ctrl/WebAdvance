@@ -262,7 +262,7 @@ class LinkManagementExample(
     /**
      * Export statistics
      */
-    private fun exportStatistics(report: LinkHistoryTracker.LinkHisticsReport) {
+    private fun exportStatistics(report: LinkHisticsReport) {
         val json = buildString {
             appendLine("{")
             appendLine("  \"generatedAt\": \"${formatDate(report.generatedAt)}\",")

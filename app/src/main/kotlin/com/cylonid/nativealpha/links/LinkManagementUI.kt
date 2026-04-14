@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
@@ -132,7 +133,7 @@ class LinkManagementDialog(
 
         override fun getItem(position: Int) = links[position]
 
-        override fun getItemId(position: Long) = position
+        override fun getItemId(position: Int): Long = position.toLong()
 
         override fun getView(position: Int, convertView: android.view.View?, parent: ViewGroup?): android.view.View {
             val view = convertView ?: inflater.inflate(
@@ -160,7 +161,7 @@ class LinkManagementDialog(
 class LinkPickerBottomSheet(
     private val linkSystem: LinkManagementSystem,
     private val onLinkSelected: (String, LinkManagementSystem.LinkFormat) -> Unit
-) : androidx.fragment.app.BottomSheetDialogFragment() {
+) : com.google.android.material.bottomsheet.BottomSheetDialogFragment() {
 
     override fun onCreateView(
         inflater: LayoutInflater,

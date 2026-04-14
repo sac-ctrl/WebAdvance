@@ -45,8 +45,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideClipboardManager(clipboardItemDao: ClipboardItemDao): ClipboardManager {
-        return ClipboardManager(clipboardItemDao)
+    fun provideClipboardManager(@ApplicationContext context: Context, database: AppDatabase): ClipboardManager {
+        return ClipboardManager(context, database)
     }
 
     @Provides

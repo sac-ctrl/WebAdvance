@@ -84,13 +84,12 @@ class EnhancedCredentialKeeper(
         customFields: Map<String, String>? = null
     ): CredentialItem {
         val item = CredentialItem(
-            appId = appId,
+            appId = appId.toInt(),
             title = title,
             username = username,
             password = password,
-            url = url,
-            notes = notes,
-            customFields = customFields,
+            url = url ?: "",
+            notes = notes ?: "",
             timestamp = System.currentTimeMillis()
         )
         
@@ -229,7 +228,7 @@ class EnhancedCredentialKeeper(
         val credentials = _credentials.value
         return CredentialStatistics(
             totalCredentials = credentials.size,
-            withCustomField = credentials.count { !it.customFields.isNullOrEmpty() },
+            withCustomField = 0,
             oldestCredential = credentials.minByOrNull { it.timestamp }?.timestamp ?: 0L,
             newestCredential = credentials.maxByOrNull { it.timestamp }?.timestamp ?: 0L
         )

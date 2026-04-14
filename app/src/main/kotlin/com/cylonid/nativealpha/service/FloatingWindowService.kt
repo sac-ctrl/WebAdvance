@@ -87,25 +87,23 @@ class FloatingWindowService : Service() {
         // TODO: Load actual web app URL
         webView.loadUrl(webAppUrl)
 
-        closeButton.setOnClickListener {
+        val closeButton = view.findViewById<android.widget.Button>(R.id.closeButton)
+        val minimizeButton = view.findViewById<android.widget.Button>(R.id.minimizeButton)
+        val maximizeButton = view.findViewById<android.widget.Button>(R.id.maximizeButton)
+
+        closeButton?.setOnClickListener {
             removeFloatingWindow(webAppId)
         }
 
-        minimizeButton.setOnClickListener {
+        minimizeButton?.setOnClickListener {
             minimizeWindow(webAppId)
         }
 
-        maximizeButton.setOnClickListener {
+        maximizeButton?.setOnClickListener {
             maximizeWindow(webAppId)
         }
 
         val resizeHandle = view.findViewById<View>(R.id.resizeHandle)
-
-        // Add resize functionality
-        var initialWidth = 0
-        var initialHeight = 0
-        var initialTouchX = 0f
-        var initialTouchY = 0f
 
         // Add resize functionality
         var initialWidth = 0

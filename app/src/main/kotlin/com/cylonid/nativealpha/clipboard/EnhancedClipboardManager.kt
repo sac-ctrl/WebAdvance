@@ -12,9 +12,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import java.io.ByteArrayOutputStream
 
-/**
- * Enhanced clipboard manager with per-app history, sync, and advanced features
- */
 class EnhancedClipboardManager(
     private val context: Context,
     private val appId: Long
@@ -35,20 +32,15 @@ class EnhancedClipboardManager(
         startMonitoringSystemClipboard()
     }
 
-    /**
-     * Copy text to system clipboard and store in history
-     */
     fun copyToClipboard(text: String): Boolean {
         return try {
             val clip = ClipData.newPlainText("clipboard", text)
             clipboardManager.setPrimaryClip(clip)
             
-            // Store in app history
             val item = ClipboardItem(
-                appId = appId,
+                appId = appId.toInt(),
                 text = text,
-                imageData = null,
-                isPinned = false,
+                pinned = false,
                 timestamp = System.currentTimeMillis()
             )
             ClipboardRepository.saveClipboardItem(context, item)
@@ -59,25 +51,19 @@ class EnhancedClipboardManager(
         }
     }
 
-    /**
-     * Copy image to system clipboard and store in history
-     */
     fun copyImageToClipboard(bitmap: Bitmap): Boolean {
         return try {
             val stream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
             val imageData = Base64.encodeToString(stream.toByteArray(), Base64.DEFAULT)
             
-            // Store as MIME data
             val clip = ClipData.newPlainText("image", imageData)
             clipboardManager.setPrimaryClip(clip)
             
-            // Store in history
             val item = ClipboardItem(
-                appId = appId,
-                text = null,
-                imageData = imageData,
-                isPinned = false,
+                appId = appId.toInt(),
+                text = imageData,
+                pinned = false,
                 timestamp = System.currentTimeMillis()
             )
             ClipboardRepository.saveClipboardItem(context, item)
@@ -88,52 +74,34 @@ class EnhancedClipboardManager(
         }
     }
 
-    /**
-     * Insert item from clipboard history
-     */
     fun insertClipboardItem(item: ClipboardItem) {
-        val clip = ClipData.newPlainText("clipboard", item.text ?: "")
+        val clip = ClipData.newPlainText("clipboard", item.text)
         clipboardManager.setPrimaryClip(clip)
     }
 
-    /**
-     * Delete clipboard item
-     */
     fun deleteClipboardItem(item: ClipboardItem) {
         ClipboardRepository.deleteClipboardItem(context, item)
         loadClipboardItems()
     }
 
-    /**
-     * Pin/unpin clipboard item
-     */
     fun togglePinItem(item: ClipboardItem) {
-        val updated = item.copy(isPinned = !item.isPinned)
+        val updated = item.copy(pinned = !item.pinned)
         ClipboardRepository.updateClipboardItem(context, updated)
         loadClipboardItems()
     }
 
-    /**
-     * Search in clipboard history
-     */
     fun searchClipboard(query: String): List<ClipboardItem> {
         return _clipboardItems.value.filter { item ->
-            item.text?.contains(query, ignoreCase = true) == true
+            item.text.contains(query, ignoreCase = true)
         }
     }
 
-    /**
-     * Clear all clipboard history
-     */
     fun clearAllHistory() {
         val items = _clipboardItems.value
         items.forEach { ClipboardRepository.deleteClipboardItem(context, it) }
         loadClipboardItems()
     }
 
-    /**
-     * Clear old items (older than days)
-     */
     fun clearOldItems(daysOld: Int) {
         val cutoffTime = System.currentTimeMillis() - (daysOld * 24 * 60 * 60 * 1000L)
         val itemsToDelete = _clipboardItems.value.filter { it.timestamp < cutoffTime }
@@ -141,9 +109,6 @@ class EnhancedClipboardManager(
         loadClipboardItems()
     }
 
-    /**
-     * Export clipboard as JSON
-     */
     fun exportAsJson(): String {
         val gson = com.google.gson.Gson()
         return gson.toJson(mapOf(
@@ -153,39 +118,26 @@ class EnhancedClipboardManager(
         ))
     }
 
-    /**
-     * Export clipboard as text file
-     */
     fun exportAsText(): String {
         return _clipboardItems.value.joinToString("\n\n---\n\n") { item ->
-            item.text ?: "[Image item]"
+            item.text
         }
     }
 
-    /**
-     * Select multiple items for operations
-     */
     fun selectItem(itemId: Long) {
         _selectedItemId.value = itemId
     }
 
-    /**
-     * Merge selected items
-     */
     fun mergeItems(items: List<ClipboardItem>): ClipboardItem {
-        val merged = items.mapNotNull { it.text }.joinToString("\n---\n")
+        val merged = items.joinToString("\n---\n") { it.text }
         return ClipboardItem(
-            appId = appId,
+            appId = appId.toInt(),
             text = merged,
-            imageData = null,
-            isPinned = false,
+            pinned = false,
             timestamp = System.currentTimeMillis()
         )
     }
 
-    /**
-     * Edit clipboard item
-     */
     fun editClipboardItem(item: ClipboardItem, newText: String): ClipboardItem {
         val updated = item.copy(text = newText)
         ClipboardRepository.updateClipboardItem(context, updated)
@@ -193,24 +145,18 @@ class EnhancedClipboardManager(
         return updated
     }
 
-    /**
-     * Get clipboard statistics
-     */
     fun getStatistics(): ClipboardStatistics {
         val items = _clipboardItems.value
         return ClipboardStatistics(
             totalItems = items.size,
-            textItems = items.count { it.text != null },
-            imageItems = items.count { it.imageData != null },
-            pinnedItems = items.count { it.isPinned },
+            textItems = items.size,
+            imageItems = 0,
+            pinnedItems = items.count { it.pinned },
             oldestItem = items.minByOrNull { it.timestamp }?.timestamp ?: 0L,
             newestItem = items.maxByOrNull { it.timestamp }?.timestamp ?: 0L
         )
     }
 
-    /**
-     * Sync with system clipboard if enabled
-     */
     fun syncWithSystemClipboard(enabled: Boolean) {
         _isSynced.value = enabled
         if (enabled) {
@@ -220,9 +166,6 @@ class EnhancedClipboardManager(
         }
     }
 
-    /**
-     * Get system clipboard content
-     */
     fun getSystemClipboardContent(): String? {
         return try {
             clipboardManager.primaryClip?.getItemAt(0)?.text?.toString()
@@ -231,9 +174,6 @@ class EnhancedClipboardManager(
         }
     }
 
-    /**
-     * Monitor system clipboard for changes
-     */
     private fun startMonitoringSystemClipboard() {
         clipboardManager.addPrimaryClipChangedListener {
             if (_isSynced.value) {

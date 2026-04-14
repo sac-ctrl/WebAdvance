@@ -18,6 +18,9 @@ interface ClipboardItemDao {
     @Delete
     suspend fun deleteItem(item: ClipboardItem)
 
+    @Query("DELETE FROM clipboard_items WHERE id = :itemId")
+    suspend fun deleteItemById(itemId: Long)
+
     @Query("DELETE FROM clipboard_items WHERE webAppId = :webAppId")
     suspend fun clearAppItems(webAppId: Long)
 }

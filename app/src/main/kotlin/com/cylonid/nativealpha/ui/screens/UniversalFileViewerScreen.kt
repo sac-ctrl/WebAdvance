@@ -5,8 +5,11 @@ import android.media.MediaPlayer
 import android.widget.MediaController
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,6 +21,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.FileProvider
+import com.cylonid.nativealpha.manager.FileViewerManager
 import com.github.barteksc.pdfviewer.PDFView
 import dagger.hilt.android.lifecycle.HiltViewModel
 import androidx.lifecycle.ViewModel
@@ -134,7 +139,14 @@ fun UniversalFileViewerScreen(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = {
-                            FileViewerManager(context).openWithExternalApp(file, mimeType)
+                            try {
+                                val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+                                val openIntent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                                    setDataAndType(uri, mimeType ?: "*/*")
+                                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+                                context.startActivity(openIntent)
+                            } catch (e: Exception) { e.printStackTrace() }
                         }) {
                             Text("Open with External App")
                         }

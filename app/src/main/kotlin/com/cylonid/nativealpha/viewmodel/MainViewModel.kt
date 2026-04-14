@@ -8,8 +8,10 @@ import com.cylonid.nativealpha.ui.screens.GroupOption
 import com.cylonid.nativealpha.ui.screens.SortOption
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
@@ -34,17 +36,16 @@ class MainViewModel @Inject constructor(
     private val _groupBy = MutableStateFlow(GroupOption.NONE)
     val groupBy: StateFlow<GroupOption> = _groupBy
 
-    private val _filteredWebApps = combine(_webApps, _searchQuery, _sortBy) { apps, query, sort ->
+    val filteredWebApps: StateFlow<List<WebApp>> = combine(_webApps, _searchQuery, _sortBy) { apps, query, sort ->
         val filtered = if (query.isBlank()) apps else apps.filter {
             it.name.contains(query, ignoreCase = true) || it.url.contains(query, ignoreCase = true)
         }
         sortWebApps(filtered, sort)
-    }
-    val filteredWebApps: StateFlow<List<WebApp>> = _filteredWebApps
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    val groupedWebApps: StateFlow<Map<String, List<WebApp>>> = combine(_filteredWebApps, _groupBy) { apps, group ->
+    val groupedWebApps: StateFlow<Map<String, List<WebApp>>> = combine(filteredWebApps, _groupBy) { apps, group ->
         if (group == GroupOption.NONE) emptyMap() else groupWebApps(apps, group)
-    }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
     init {
         loadWebApps()

@@ -110,7 +110,7 @@ class EnhancedFloatingWindowService : Service() {
         }
     }
 
-    private fun createWindowView(webApp: WebApp, layoutParams: WindowManager.LayoutParams): View {
+    private fun createWindowView(webApp: WebApp, windowParams: WindowManager.LayoutParams): View {
         return FrameLayout(this).apply {
             setBackgroundColor(android.graphics.Color.WHITE)
 
@@ -123,7 +123,7 @@ class EnhancedFloatingWindowService : Service() {
                 )
                 orientation = LinearLayout.HORIZONTAL
                 setBackgroundColor(ContextCompat.getColor(this@EnhancedFloatingWindowService, R.color.md_theme_primary))
-                setOnTouchListener(createWindowTouchListener(layoutParams))
+                setOnTouchListener(createWindowTouchListener(windowParams))
 
                 // Title text
                 val titleText = android.widget.TextView(this@EnhancedFloatingWindowService).apply {
@@ -199,7 +199,7 @@ class EnhancedFloatingWindowService : Service() {
             val resizeHandle = View(this@EnhancedFloatingWindowService).apply {
                 layoutParams = FrameLayout.LayoutParams(30, 30, Gravity.BOTTOM or Gravity.END)
                 setBackgroundColor(ContextCompat.getColor(this@EnhancedFloatingWindowService, R.color.md_theme_primary))
-                setOnTouchListener(createResizeTouchListener(layoutParams))
+                setOnTouchListener(createResizeTouchListener(windowParams))
             }
             addView(resizeHandle)
         }

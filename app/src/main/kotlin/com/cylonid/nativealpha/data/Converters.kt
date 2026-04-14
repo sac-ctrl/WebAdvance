@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import androidx.room.TypeConverter
 import com.cylonid.nativealpha.manager.ClipboardItem
 import com.cylonid.nativealpha.model.AdblockConfig
+import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.model.WindowEntity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
