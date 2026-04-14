@@ -223,7 +223,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:checked="@{webapp.isBiometricProtection}"
-                                android:onCheckedChanged="@{(switch, checked) -> webapp.onSwitchBiometricAccessChanged(switch, checked, activity)}"
+                                android:onCheckedChanged="@{(switch, checked) -> webapp.onSwitchBiometricAccessChanged(switch, checked)}"
                                 android:text="@string/enable_access_restriction" />
 
 

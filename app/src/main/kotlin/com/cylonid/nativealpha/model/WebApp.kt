@@ -299,8 +299,7 @@ data class WebApp(
         switchBiometricAccess.setOnCheckedChangeListener { switch, checked ->
             onSwitchBiometricAccessChanged(
                 switch,
-                checked,
-                activity
+                checked
             )
         }
     }
@@ -315,11 +314,15 @@ data class WebApp(
 
     fun onSwitchBiometricAccessChanged(
         mSwitch: CompoundButton,
-        isChecked: Boolean,
-        activity: WebAppSettingsActivity
+        isChecked: Boolean
     ) {
         val switchBiometricAccess =
             mSwitch.rootView.findViewById<SwitchCompat>(R.id.switchBiometricAccess)
+        
+        // Get activity from the view's context
+        val activity = (switchBiometricAccess.context as? WebAppSettingsActivity) 
+            ?: (switchBiometricAccess.context as? android.app.Activity)?.let { it as? WebAppSettingsActivity }
+            ?: return
 
         // reset to value before user toggled, actual setting of value is done by prompt success callback
         setSwitchBiometricAccessSilently(!switchBiometricAccess.isChecked, switchBiometricAccess, activity)
