@@ -147,6 +147,7 @@ data class WebApp(
 
     var iconUri: String? = null
     var group: String = "Default"
+    @Ignore
     private var _clipboardSyncEnabled: Boolean = true
     var clipboardSyncEnabled: Boolean
         get() = _clipboardSyncEnabled
