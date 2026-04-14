@@ -2,6 +2,7 @@ package com.cylonid.nativealpha.data
 
 import androidx.room.*
 import com.cylonid.nativealpha.model.NotificationEntity
+import com.cylonid.nativealpha.model.NotificationSettingsEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

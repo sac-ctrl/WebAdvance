@@ -18,6 +18,7 @@ data class NotificationEntity(
 )
 
 @Entity(tableName = "notification_settings")
+@TypeConverters(Converters::class)
 data class NotificationSettingsEntity(
     @PrimaryKey
     val id: Int = 1,
