@@ -1,0 +1,684 @@
+
+2026-04-14T16:35:31.0181230Z > Task :app:processStandardDebugResources
+2026-04-14T16:36:01.0183741Z > Task :app:kaptGenerateStubsStandardDebugKotlin
+2026-04-14T16:36:17.8176808Z > Task :app:kaptStandardDebugKotlin
+2026-04-14T16:36:26.5255000Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/WebAppSettingsActivity.kt:239:28 'val' cannot be reassigned.
+2026-04-14T16:36:26.5255942Z 
+2026-04-14T16:36:26.5257271Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/WebAppSettingsActivity.kt:240:28 'val' cannot be reassigned.
+2026-04-14T16:36:26.5258498Z > Task :app:compileStandardDebugKotlin
+2026-04-14T16:36:26.5269927Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/util/WebViewLauncher.kt:48:33 Operator '!=' cannot be applied to 'String' and 'Int'.
+2026-04-14T16:36:26.5273000Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:153:16 Unresolved reference 'getTitle'.
+2026-04-14T16:36:26.5275685Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:154:20 Unresolved reference 'getBaseUrl'.
+2026-04-14T16:36:26.5278245Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:320:27 Unresolved reference 'getTitle'.
+2026-04-14T16:36:26.5281063Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:321:14 Unresolved reference 'setItems'.
+2026-04-14T16:36:26.5284033Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:321:34 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.5286957Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:321:37 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.5289634Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:340:76 Unresolved reference 'getBaseUrl'.
+2026-04-14T16:36:26.5292241Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:379:64 Unresolved reference 'getTitle'.
+2026-04-14T16:36:26.5294884Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:474:30 Unresolved reference 'getTitle'.
+2026-04-14T16:36:26.5297432Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:475:33 Unresolved reference 'getBaseUrl'.
+2026-04-14T16:36:26.5300040Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/activities/AdblockConfigActivity.kt:66:113 Unresolved reference 'value'.
+2026-04-14T16:36:26.5303023Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:48:25 Argument type mismatch: actual type is 'Long', but 'Int' was expected.
+2026-04-14T16:36:26.5306053Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:50:17 No parameter with name 'imageData' found.
+2026-04-14T16:36:26.5308847Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:51:17 No parameter with name 'isPinned' found.
+2026-04-14T16:36:26.5311853Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:77:25 Argument type mismatch: actual type is 'Long', but 'Int' was expected.
+2026-04-14T16:36:26.5344623Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:78:24 Null cannot be a value of a non-null type 'String'.
+2026-04-14T16:36:26.5374434Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:79:17 No parameter with name 'imageData' found.
+2026-04-14T16:36:26.5385902Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:80:17 No parameter with name 'isPinned' found.
+2026-04-14T16:36:26.5389050Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:111:33 No parameter with name 'isPinned' found.
+2026-04-14T16:36:26.5391888Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:111:50 Unresolved reference 'isPinned'.
+2026-04-14T16:36:26.5395220Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:178:21 Argument type mismatch: actual type is 'Long', but 'Int' was expected.
+2026-04-14T16:36:26.5398397Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:180:13 No parameter with name 'imageData' found.
+2026-04-14T16:36:26.5401599Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:181:13 No parameter with name 'isPinned' found.
+2026-04-14T16:36:26.5418584Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:204:43 Unresolved reference 'imageData'.
+2026-04-14T16:36:26.5444238Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:205:44 Unresolved reference 'isPinned'.
+2026-04-14T16:36:26.5475252Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/credentials/EnhancedCredentialKeeper.kt:87:21 Argument type mismatch: actual type is 'Long', but 'Int' was expected.
+2026-04-14T16:36:26.5504603Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/credentials/EnhancedCredentialKeeper.kt:91:19 Argument type mismatch: actual type is 'String?', but 'String' was expected.
+2026-04-14T16:36:26.5510752Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/credentials/EnhancedCredentialKeeper.kt:92:21 Argument type mismatch: actual type is 'String?', but 'String' was expected.
+2026-04-14T16:36:26.5538613Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/credentials/EnhancedCredentialKeeper.kt:93:13 No parameter with name 'customFields' found.
+2026-04-14T16:36:26.5541687Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/credentials/EnhancedCredentialKeeper.kt:232:51 Unresolved reference 'not' for operator '!'.
+2026-04-14T16:36:26.5544495Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/credentials/EnhancedCredentialKeeper.kt:232:55 Unresolved reference 'customFields'.
+2026-04-14T16:36:26.5547379Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/data/Converters.kt:28:28 Unresolved reference 'WebApp'.
+2026-04-14T16:36:26.5549953Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/data/Converters.kt:29:23 Unresolved reference 'name'.
+2026-04-14T16:36:26.5552950Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/di/AppModule.kt:49:33 Argument type mismatch: actual type is 'ClipboardItemDao', but 'Context' was expected.
+2026-04-14T16:36:26.5555599Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/di/AppModule.kt:49:33 No value passed for parameter 'database'.
+2026-04-14T16:36:26.5558728Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:79:21 Argument type mismatch: actual type is 'Long', but 'Int' was expected.
+2026-04-14T16:36:26.5561765Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:80:13 No parameter with name 'filename' found.
+2026-04-14T16:36:26.5564653Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:81:13 No parameter with name 'url' found.
+2026-04-14T16:36:26.5567411Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:83:13 No parameter with name 'size' found.
+2026-04-14T16:36:26.5570112Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:86:13 No parameter with name 'progress' found.
+2026-04-14T16:36:26.5573159Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:87:13 No parameter with name 'downloadId' found.
+2026-04-14T16:36:26.5576142Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:88:13 No value passed for parameter 'fileName'.
+2026-04-14T16:36:26.5579349Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:88:13 No value passed for parameter 'sizeBytes'.
+2026-04-14T16:36:26.5582589Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:216:35 Overload resolution ambiguity between candidates:
+2026-04-14T16:36:26.5584511Z fun <T> Iterable<T>.sumOf(selector: (T) -> BigDecimal): BigDecimal
+2026-04-14T16:36:26.5585547Z fun <T> Iterable<T>.sumOf(selector: (T) -> BigInteger): BigInteger
+2026-04-14T16:36:26.5586523Z fun <T> Iterable<T>.sumOf(selector: (T) -> Double): Double
+2026-04-14T16:36:26.5587371Z fun <T> Iterable<T>.sumOf(selector: (T) -> Int): Int
+2026-04-14T16:36:26.5588227Z fun <T> Iterable<T>.sumOf(selector: (T) -> Long): Long
+2026-04-14T16:36:26.5589094Z fun <T> Iterable<T>.sumOf(selector: (T) -> UInt): UInt
+2026-04-14T16:36:26.5589910Z fun <T> Iterable<T>.sumOf(selector: (T) -> ULong): ULong
+2026-04-14T16:36:26.5591885Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:216:46 Unresolved reference 'size'.
+2026-04-14T16:36:26.5594939Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:225:23 Operator '==' cannot be applied to 'Int' and 'Long'.
+2026-04-14T16:36:26.5597745Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:253:48 Unresolved reference 'downloadId'.
+2026-04-14T16:36:26.5600500Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:258:25 No parameter with name 'progress' found.
+2026-04-14T16:36:26.5603354Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:259:25 No parameter with name 'size' found.
+2026-04-14T16:36:26.5606110Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/fragments/adblocklist/AdblockListAdapter.kt:25:45 Unresolved reference 'value'.
+2026-04-14T16:36:26.5608776Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/helper/AdblockProviderApiHelper.kt:13:40 Unresolved reference 'value'.
+2026-04-14T16:36:26.5611378Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/helper/AdblockProviderApiHelper.kt:15:87 Unresolved reference 'value'.
+2026-04-14T16:36:26.5614508Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/helper/AdblockProviderApiHelper.kt:23:53 Unresolved reference 'value'.
+2026-04-14T16:36:26.5617222Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementExample.kt:265:61 Unresolved reference 'LinkHisticsReport'.
+2026-04-14T16:36:26.5619939Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementExample.kt:268:66 Unresolved reference 'generatedAt'.
+2026-04-14T16:36:26.5622740Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementExample.kt:269:54 Unresolved reference 'totalActions'.
+2026-04-14T16:36:26.5625488Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementExample.kt:271:20 Unresolved reference 'actionBreakdown'.
+2026-04-14T16:36:26.5628004Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementExample.kt:271:46 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.5631042Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementExample.kt:271:46 Function 'component1()' is ambiguous for this expression: 
+2026-04-14T16:36:26.5632944Z fun <T> Array<out T>.component1(): T
+2026-04-14T16:36:26.5633579Z fun ByteArray.component1(): Byte
+2026-04-14T16:36:26.5634195Z fun ShortArray.component1(): Short
+2026-04-14T16:36:26.5634805Z fun IntArray.component1(): Int
+2026-04-14T16:36:26.5635394Z fun LongArray.component1(): Long
+2026-04-14T16:36:26.5635982Z fun FloatArray.component1(): Float
+2026-04-14T16:36:26.5636607Z fun DoubleArray.component1(): Double
+2026-04-14T16:36:26.5637223Z fun BooleanArray.component1(): Boolean
+2026-04-14T16:36:26.5637824Z fun CharArray.component1(): Char
+2026-04-14T16:36:26.5638434Z fun <T> List<T>.component1(): T
+2026-04-14T16:36:26.5639067Z fun <K, V> Map.Entry<K, V>.component1(): K
+2026-04-14T16:36:26.5639733Z fun UIntArray.component1(): UInt
+2026-04-14T16:36:26.5640326Z fun ULongArray.component1(): ULong
+2026-04-14T16:36:26.5640939Z fun UByteArray.component1(): UByte
+2026-04-14T16:36:26.5641583Z fun UShortArray.component1(): UShort.
+2026-04-14T16:36:26.5643696Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementExample.kt:271:46 Function 'component2()' is ambiguous for this expression: 
+2026-04-14T16:36:26.5645302Z fun <T> Array<out T>.component2(): T
+2026-04-14T16:36:26.5645894Z fun ByteArray.component2(): Byte
+2026-04-14T16:36:26.5646483Z fun ShortArray.component2(): Short
+2026-04-14T16:36:26.5647090Z fun IntArray.component2(): Int
+2026-04-14T16:36:26.5647682Z fun LongArray.component2(): Long
+2026-04-14T16:36:26.5648249Z fun FloatArray.component2(): Float
+2026-04-14T16:36:26.5648864Z fun DoubleArray.component2(): Double
+2026-04-14T16:36:26.5649493Z fun BooleanArray.component2(): Boolean
+2026-04-14T16:36:26.5650270Z fun CharArray.component2(): Char
+2026-04-14T16:36:26.5650898Z fun <T> List<T>.component2(): T
+2026-04-14T16:36:26.5651510Z fun <K, V> Map.Entry<K, V>.component2(): V
+2026-04-14T16:36:26.5652148Z fun UIntArray.component2(): UInt
+2026-04-14T16:36:26.5652878Z fun ULongArray.component2(): ULong
+2026-04-14T16:36:26.5653485Z fun UByteArray.component2(): UByte
+2026-04-14T16:36:26.5654076Z fun UShortArray.component2(): UShort.
+2026-04-14T16:36:26.5656319Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementUI.kt:123:19 Class 'LinkManagementDialog.LinkListAdapter' is not abstract and does not implement abstract members:
+2026-04-14T16:36:26.5658578Z fun getItemId(p0: Int): Long
+2026-04-14T16:36:26.5659343Z fun getView(p0: Int, p1: View!, p2: ViewGroup!): View!
+2026-04-14T16:36:26.5661509Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementUI.kt:135:9 'getItemId' overrides nothing. Potential signatures for overriding:
+2026-04-14T16:36:26.5663501Z fun getItemId(p0: Int): Long
+2026-04-14T16:36:26.5665479Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementUI.kt:137:9 'getView' overrides nothing. Potential signatures for overriding:
+2026-04-14T16:36:26.5667271Z fun getView(p0: Int, p1: View!, p2: ViewGroup!): View!
+2026-04-14T16:36:26.5669146Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementUI.kt:137:86 Unresolved reference 'ViewGroup'.
+2026-04-14T16:36:26.5671876Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementUI.kt:163:27 Unresolved reference 'BottomSheetDialogFragment'.
+2026-04-14T16:36:26.5674600Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementUI.kt:165:5 'onCreateView' overrides nothing.
+2026-04-14T16:36:26.5677189Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementUI.kt:170:29 Unresolved reference 'requireContext'.
+2026-04-14T16:36:26.5679653Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementUI.kt:189:23 Unresolved reference 'requireContext'.
+2026-04-14T16:36:26.5682707Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementUI.kt:199:17 Unresolved reference 'dismiss'.
+2026-04-14T16:36:26.5685783Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/manager/ClipboardManager.kt:71:28 Argument type mismatch: actual type is 'Long', but 'ClipboardItem' was expected.
+2026-04-14T16:36:26.5688383Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/model/WebApp.kt:223:9 'val' cannot be reassigned.
+2026-04-14T16:36:26.5690630Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/model/WebApp.kt:237:9 'val' cannot be reassigned.
+2026-04-14T16:36:26.5693065Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/model/WebApp.kt:238:9 'val' cannot be reassigned.
+2026-04-14T16:36:26.5695360Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/model/WebApp.kt:239:9 'val' cannot be reassigned.
+2026-04-14T16:36:26.5697655Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/model/WebApp.kt:240:9 'val' cannot be reassigned.
+2026-04-14T16:36:26.5699924Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/model/WebApp.kt:248:9 'val' cannot be reassigned.
+2026-04-14T16:36:26.5702151Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/model/WebApp.kt:249:9 'val' cannot be reassigned.
+2026-04-14T16:36:26.5704601Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/model/WebApp.kt:259:13 'val' cannot be reassigned.
+2026-04-14T16:36:26.5707057Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/model/WebApp.kt:297:69 Unresolved reference 'WebAppSettingsActivity'.
+2026-04-14T16:36:26.5709660Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/model/WebApp.kt:308:60 Unresolved reference 'WebAppSettingsActivity'.
+2026-04-14T16:36:26.5712235Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/model/WebApp.kt:322:59 Unresolved reference 'WebAppSettingsActivity'.
+2026-04-14T16:36:26.5714921Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/model/WebApp.kt:323:87 Unresolved reference 'WebAppSettingsActivity'.
+2026-04-14T16:36:26.5717690Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/model/WebApp.kt:335:30 Unresolved reference 'getString'.
+2026-04-14T16:36:26.5720169Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/model/WebApp.kt:342:29 Unresolved reference 'getString'.
+2026-04-14T16:36:26.5723049Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/model/WebApp.kt:422:23 Assignment type mismatch: actual type is 'Int', but 'String' was expected.
+2026-04-14T16:36:26.5726162Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/notifications/SmartNotificationSystem.kt:166:38 Unresolved reference 'ic_baseline_notifications_24'.
+2026-04-14T16:36:26.5729260Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/notifications/SmartNotificationSystem.kt:167:14 Unresolved reference 'setContentTitle'.
+2026-04-14T16:36:26.5732022Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/BackupService.kt:39:60 Unresolved reference 'first'.
+2026-04-14T16:36:26.5734725Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/BackupService.kt:40:49 Unresolved reference 'getAllCredentials'.
+2026-04-14T16:36:26.5737608Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/EnhancedFloatingWindowService.kt:119:17 'val' cannot be reassigned.
+2026-04-14T16:36:26.5741098Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/EnhancedFloatingWindowService.kt:119:32 Assignment type mismatch: actual type is 'FrameLayout.LayoutParams', but 'WindowManager.LayoutParams' was expected.
+2026-04-14T16:36:26.5744553Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/EnhancedFloatingWindowService.kt:132:21 'val' cannot be reassigned.
+2026-04-14T16:36:26.5748053Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/EnhancedFloatingWindowService.kt:132:36 Assignment type mismatch: actual type is 'LinearLayout.LayoutParams', but 'WindowManager.LayoutParams' was expected.
+2026-04-14T16:36:26.5751213Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/EnhancedFloatingWindowService.kt:142:21 'val' cannot be reassigned.
+2026-04-14T16:36:26.5754348Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/EnhancedFloatingWindowService.kt:142:36 Assignment type mismatch: actual type is 'LinearLayout.LayoutParams', but 'WindowManager.LayoutParams' was expected.
+2026-04-14T16:36:26.5757329Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/EnhancedFloatingWindowService.kt:153:21 'val' cannot be reassigned.
+2026-04-14T16:36:26.5760376Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/EnhancedFloatingWindowService.kt:153:36 Assignment type mismatch: actual type is 'LinearLayout.LayoutParams', but 'WindowManager.LayoutParams' was expected.
+2026-04-14T16:36:26.5763555Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/EnhancedFloatingWindowService.kt:164:21 'val' cannot be reassigned.
+2026-04-14T16:36:26.5767315Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/EnhancedFloatingWindowService.kt:164:36 Assignment type mismatch: actual type is 'LinearLayout.LayoutParams', but 'WindowManager.LayoutParams' was expected.
+2026-04-14T16:36:26.5770844Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/EnhancedFloatingWindowService.kt:175:17 'val' cannot be reassigned.
+2026-04-14T16:36:26.5774516Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/EnhancedFloatingWindowService.kt:175:32 Assignment type mismatch: actual type is 'FrameLayout.LayoutParams', but 'WindowManager.LayoutParams' was expected.
+2026-04-14T16:36:26.5778160Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/EnhancedFloatingWindowService.kt:200:17 'val' cannot be reassigned.
+2026-04-14T16:36:26.5781765Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/EnhancedFloatingWindowService.kt:200:32 Assignment type mismatch: actual type is 'FrameLayout.LayoutParams', but 'WindowManager.LayoutParams' was expected.
+2026-04-14T16:36:26.5785328Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/FloatingWindowService.kt:90:9 Unresolved reference 'closeButton'.
+2026-04-14T16:36:26.5788136Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/FloatingWindowService.kt:94:9 Unresolved reference 'minimizeButton'.
+2026-04-14T16:36:26.5790978Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/FloatingWindowService.kt:98:9 Unresolved reference 'maximizeButton'.
+2026-04-14T16:36:26.5793856Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/FloatingWindowService.kt:105:13 Conflicting declarations:
+2026-04-14T16:36:26.5795412Z local var initialWidth: Int
+2026-04-14T16:36:26.5796189Z local var initialWidth: Int
+2026-04-14T16:36:26.5805083Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/FloatingWindowService.kt:106:13 Conflicting declarations:
+2026-04-14T16:36:26.5806657Z local var initialHeight: Int
+2026-04-14T16:36:26.5807223Z local var initialHeight: Int
+2026-04-14T16:36:26.5808808Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/FloatingWindowService.kt:111:13 Conflicting declarations:
+2026-04-14T16:36:26.5810160Z local var initialWidth: Int
+2026-04-14T16:36:26.5810672Z local var initialWidth: Int
+2026-04-14T16:36:26.5812237Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/service/FloatingWindowService.kt:112:13 Conflicting declarations:
+2026-04-14T16:36:26.5813695Z local var initialHeight: Int
+2026-04-14T16:36:26.5814692Z local var initialHeight: Int
+2026-04-14T16:36:26.5816302Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:11:23 Unresolved reference 'FileChooserParams'.
+2026-04-14T16:36:26.5818864Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:186:42 Unresolved reference 'DownloadHistoryActivity'.
+2026-04-14T16:36:26.5821582Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:186:73 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.5824981Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:186:73 Unresolved reference. None of the following candidates is applicable because of a receiver type mismatch:
+2026-04-14T16:36:26.5826847Z val <T> KClass<T>.java: Class<T>
+2026-04-14T16:36:26.5828745Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:186:79 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.5831881Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:186:79 Unresolved reference. None of the following candidates is applicable because of a receiver type mismatch:
+2026-04-14T16:36:26.5833782Z fun <T> T.apply(block: T.() -> Unit): T
+2026-04-14T16:36:26.5834380Z     [R|Contract description]
+2026-04-14T16:36:26.5834864Z      <
+2026-04-14T16:36:26.5835372Z         CallsInPlace(block, EXACTLY_ONCE)
+2026-04-14T16:36:26.5836099Z     >
+2026-04-14T16:36:26.5837874Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:186:85 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.5840455Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:187:17 Unresolved reference 'putExtra'.
+2026-04-14T16:36:26.5846411Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:297:54 Unresolved reference 'takeScreenshot'.
+2026-04-14T16:36:26.5849250Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:355:53 Argument type mismatch: actual type is 'String', but 'Int' was expected.
+2026-04-14T16:36:26.5851964Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:356:45 No parameter with name 'source' found.
+2026-04-14T16:36:26.5855679Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:357:45 No parameter with name 'line' found.
+2026-04-14T16:36:26.5858261Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:357:45 No value passed for parameter 'sourceId'.
+2026-04-14T16:36:26.5861100Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:357:45 No value passed for parameter 'lineNumber'.
+2026-04-14T16:36:26.5863746Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:395:31 Unresolved reference 'updateNavigationState'.
+2026-04-14T16:36:26.5866311Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:518:9 Incompatible types 'Int' and 'String'.
+2026-04-14T16:36:26.5868804Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:519:9 Incompatible types 'Int' and 'String'.
+2026-04-14T16:36:26.5871224Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:523:46 Unresolved reference 'source'.
+2026-04-14T16:36:26.5873687Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:523:64 Unresolved reference 'line'.
+2026-04-14T16:36:26.5876159Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/components/WebAppCard.kt:52:30 Unresolved reference 'background'.
+2026-04-14T16:36:26.5878703Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/components/WebAppCard.kt:56:43 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5881201Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/components/WebAppCard.kt:70:26 Unresolved reference 'background'.
+2026-04-14T16:36:26.5883755Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/components/WebAppCard.kt:72:57 Unresolved reference 'Color'.
+2026-04-14T16:36:26.5886209Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/components/WebAppCard.kt:73:61 Unresolved reference 'Color'.
+2026-04-14T16:36:26.5888672Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/components/WebAppCard.kt:74:56 Unresolved reference 'Color'.
+2026-04-14T16:36:26.5891133Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/components/WebAppCard.kt:76:37 Unresolved reference 'CircleShape'.
+2026-04-14T16:36:26.5893794Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/AddWebAppScreen.kt:29:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5896510Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/BackupRestoreScreen.kt:29:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5899153Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/BackupRestoreScreen.kt:37:17 No parameter with name 'enabled' found.
+2026-04-14T16:36:26.5901771Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/BackupRestoreScreen.kt:45:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5904425Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/BackupRestoreScreen.kt:95:38 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5906869Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/BackupRestoreScreen.kt:222:34 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5909411Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/BackupRestoreScreen.kt:233:34 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5911948Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/BackupRestoreScreen.kt:285:22 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5914913Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardManagerScreen.kt:39:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5917708Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardManagerScreen.kt:47:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5920449Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardManagerScreen.kt:67:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5923288Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardManagerScreen.kt:120:51 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5926026Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardManagerScreen.kt:121:53 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5928779Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardManagerScreen.kt:122:33 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5931457Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardManagerScreen.kt:142:25 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5934179Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardManagerScreen.kt:173:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5936901Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardManagerScreen.kt:179:44 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5939541Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardManagerScreen.kt:179:71 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5942150Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardManagerScreen.kt:184:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5944985Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardScreen.kt:34:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5947533Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardScreen.kt:39:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5950082Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardScreen.kt:46:22 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5953005Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardScreen.kt:64:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5955584Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardScreen.kt:128:62 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5958212Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardScreen.kt:128:89 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5960867Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardScreen.kt:133:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5963495Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialScreen.kt:37:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5966113Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialScreen.kt:44:22 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5968750Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialScreen.kt:62:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5971509Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialScreen.kt:81:71 No value passed for parameter 'context'.
+2026-04-14T16:36:26.5974582Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialScreen.kt:82:71 No value passed for parameter 'context'.
+2026-04-14T16:36:26.5977582Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialScreen.kt:95:46 Argument type mismatch: actual type is 'String', but 'Long' was expected.
+2026-04-14T16:36:26.5980878Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialScreen.kt:95:53 Argument type mismatch: actual type is 'String', but 'Credential' was expected.
+2026-04-14T16:36:26.5984412Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialScreen.kt:95:63 Too many arguments for 'fun saveCredential(webAppId: Long, credential: Credential): Unit'.
+2026-04-14T16:36:26.5987880Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialScreen.kt:95:73 Too many arguments for 'fun saveCredential(webAppId: Long, credential: Credential): Unit'.
+2026-04-14T16:36:26.5991246Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialScreen.kt:95:78 Too many arguments for 'fun saveCredential(webAppId: Long, credential: Credential): Unit'.
+2026-04-14T16:36:26.5994368Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialScreen.kt:135:34 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5996939Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialScreen.kt:151:69 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.5999495Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialScreen.kt:151:102 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6002077Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialScreen.kt:156:38 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6004953Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:11:39 Unresolved reference 'KeyboardOptions'.
+2026-04-14T16:36:26.6007789Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:44:34 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6010626Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:58:58 Unresolved reference 'dp'.
+2026-04-14T16:36:26.6013244Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:66:61 Unresolved reference 'dp'.
+2026-04-14T16:36:26.6015871Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:68:61 Unresolved reference 'dp'.
+2026-04-14T16:36:26.6018703Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:83:34 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6021523Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:89:34 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6024408Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:107:33 Unresolved reference 'dp'.
+2026-04-14T16:36:26.6027203Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:109:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6030187Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:122:55 Unresolved reference 'dp'.
+2026-04-14T16:36:26.6033051Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:123:66 Unresolved reference 'dp'.
+2026-04-14T16:36:26.6035832Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:130:29 No parameter with name 'onAutoFill' found.
+2026-04-14T16:36:26.6038836Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:142:13 Unresolved reference 'showAddDialog'.
+2026-04-14T16:36:26.6041863Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:144:17 No parameter with name 'credential' found.
+2026-04-14T16:36:26.6045646Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:146:26 Argument type mismatch: actual type is 'Function1<String, Unit>', but 'Function5<String, String, String, String?, String?, Unit>' was expected.
+2026-04-14T16:36:26.6049813Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:147:56 Argument type mismatch: actual type is 'String', but 'Credential' was expected.
+2026-04-14T16:36:26.6052987Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:153:13 Unresolved reference 'showPinDialog'.
+2026-04-14T16:36:26.6055799Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:154:13 Unresolved reference 'PinDialog'.
+2026-04-14T16:36:26.6058717Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:155:41 Unresolved reference 'hidePinDialog'.
+2026-04-14T16:36:26.6061864Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:156:36 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6064872Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:175:47 Unresolved reference 'dp'.
+2026-04-14T16:36:26.6067578Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:189:49 Unresolved reference 'dp'.
+2026-04-14T16:36:26.6070534Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:209:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6073371Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:213:49 Unresolved reference 'dp'.
+2026-04-14T16:36:26.6076158Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:233:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6078837Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:240:57 Unresolved reference 'dp'.
+2026-04-14T16:36:26.6081624Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:253:49 Unresolved reference 'dp'.
+2026-04-14T16:36:26.6084521Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:262:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6087265Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:263:56 Unresolved reference 'dp'.
+2026-04-14T16:36:26.6090136Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:268:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6092972Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:269:60 Unresolved reference 'dp'.
+2026-04-14T16:36:26.6095695Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:273:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6098511Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:274:60 Unresolved reference 'dp'.
+2026-04-14T16:36:26.6101298Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:304:43 Unresolved reference 'dp'.
+2026-04-14T16:36:26.6104057Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:305:62 Unresolved reference 'dp'.
+2026-04-14T16:36:26.6106850Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:326:62 Unresolved reference 'VisualTransformation'.
+2026-04-14T16:36:26.6109946Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:326:93 Unresolved reference 'PasswordVisualTransformation'.
+2026-04-14T16:36:26.6113114Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:329:63 Unresolved reference 'generatePassword'.
+2026-04-14T16:36:26.6116018Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:330:38 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6118823Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:334:55 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6121564Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:334:88 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6124498Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:403:35 Unresolved reference 'KeyboardOptions'.
+2026-04-14T16:36:26.6127487Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:404:40 Unresolved reference 'PasswordVisualTransformation'.
+2026-04-14T16:36:26.6130713Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:427:1 Modifier 'private' is not applicable to 'local function'.
+2026-04-14T16:36:26.6133653Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:39:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6136413Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:58:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6139294Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:279:39 Unresolved reference 'rememberAsyncImagePainter'.
+2026-04-14T16:36:26.6142162Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:336:33 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6145008Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:346:33 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6147933Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:353:33 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6150493Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:360:33 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6153204Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:380:34 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6155761Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:385:34 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6158505Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:392:34 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6161104Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:397:34 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6163792Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:404:34 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6166328Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:409:34 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6168846Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:416:34 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6171417Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:424:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6174107Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:440:62 Unresolved reference 'ic_image'.
+2026-04-14T16:36:26.6176604Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:441:62 Unresolved reference 'ic_video'.
+2026-04-14T16:36:26.6177648Z 
+2026-04-14T16:36:26.6179200Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:442:62 Unresolved reference 'ic_audio'.
+2026-04-14T16:36:26.6181755Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:443:53 Unresolved reference 'ic_pdf'.
+2026-04-14T16:36:26.6184570Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:444:61 Unresolved reference 'ic_text'.
+2026-04-14T16:36:26.6187035Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:445:77 Unresolved reference 'ic_apk'.
+2026-04-14T16:36:26.6189518Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:446:28 Unresolved reference 'ic_file'.
+2026-04-14T16:36:26.6192567Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/EnhancedWebViewScreen.kt:108:99 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6195855Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/EnhancedWebViewScreen.kt:355:5 This material API is experimental and is likely to change or to be removed in the future.
+2026-04-14T16:36:26.6198654Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FileViewerScreen.kt:29:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6201266Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FileViewerScreen.kt:34:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6203781Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FileViewerScreen.kt:123:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6206197Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FileViewerScreen.kt:126:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6208563Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FileViewerScreen.kt:144:74 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6211035Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FileViewerScreen.kt:145:65 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6213637Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FileViewerScreen.kt:146:72 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6216019Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FileViewerScreen.kt:147:57 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6218193Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FileViewerScreen.kt:148:67 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6220508Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FileViewerScreen.kt:149:35 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6223223Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FloatingWindowManagerScreen.kt:28:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6225723Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FloatingWindowManagerScreen.kt:33:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6228150Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FloatingWindowManagerScreen.kt:40:22 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6230728Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FloatingWindowManagerScreen.kt:137:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6243885Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FloatingWindowManagerScreen.kt:140:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6247249Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FloatingWindowManagerScreen.kt:143:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6250147Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/FloatingWindowManagerScreen.kt:181:22 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6273181Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:35:16 Unresolved reference 'MainViewModel'.
+2026-04-14T16:36:26.6276094Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:35:32 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6280185Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:38:17 Property delegate must have a 'getValue(Nothing?, KProperty0<ERROR CLASS: Cannot infer argument for type parameter T>)' method. None of the following functions is applicable:
+2026-04-14T16:36:26.6282852Z fun <T> State<T>.getValue(thisObj: Any?, property: KProperty<*>): T
+2026-04-14T16:36:26.6285056Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:38:20 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6288240Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:38:30 Unresolved reference 'filteredWebApps'.
+2026-04-14T16:36:26.6291273Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:38:46 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6325700Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:39:20 Property delegate must have a 'getValue(Nothing?, KProperty0<ERROR CLASS: Cannot infer argument for type parameter T>)' method. None of the following functions is applicable:
+2026-04-14T16:36:26.6328138Z fun <T> State<T>.getValue(thisObj: Any?, property: KProperty<*>): T
+2026-04-14T16:36:26.6330270Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:39:23 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6333176Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:39:33 Unresolved reference 'isGridView'.
+2026-04-14T16:36:26.6335991Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:39:44 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6339909Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:40:21 Property delegate must have a 'getValue(Nothing?, KProperty0<ERROR CLASS: Cannot infer argument for type parameter T>)' method. None of the following functions is applicable:
+2026-04-14T16:36:26.6342503Z fun <T> State<T>.getValue(thisObj: Any?, property: KProperty<*>): T
+2026-04-14T16:36:26.6344594Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:40:24 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6347347Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:40:34 Unresolved reference 'searchQuery'.
+2026-04-14T16:36:26.6350173Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:40:46 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6360980Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:41:16 Property delegate must have a 'getValue(Nothing?, KProperty0<ERROR CLASS: Cannot infer argument for type parameter T>)' method. None of the following functions is applicable:
+2026-04-14T16:36:26.6363732Z fun <T> State<T>.getValue(thisObj: Any?, property: KProperty<*>): T
+2026-04-14T16:36:26.6365866Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:41:19 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6368781Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:41:19 Not enough information to infer type argument for 'T'.
+2026-04-14T16:36:26.6371583Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:41:29 Function invocation 'sortBy(...)' expected.
+2026-04-14T16:36:26.6374753Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:41:36 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6377633Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:41:36 Not enough information to infer type argument for 'T'.
+2026-04-14T16:36:26.6381394Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:42:17 Property delegate must have a 'getValue(Nothing?, KProperty0<ERROR CLASS: Cannot infer argument for type parameter T>)' method. None of the following functions is applicable:
+2026-04-14T16:36:26.6384244Z fun <T> State<T>.getValue(thisObj: Any?, property: KProperty<*>): T
+2026-04-14T16:36:26.6386384Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:42:20 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6389352Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:42:20 Not enough information to infer type argument for 'T'.
+2026-04-14T16:36:26.6392145Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:42:30 Function invocation 'groupBy(...)' expected.
+2026-04-14T16:36:26.6395065Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:42:38 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6398006Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:42:38 Not enough information to infer type argument for 'T'.
+2026-04-14T16:36:26.6401752Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:43:24 Property delegate must have a 'getValue(Nothing?, KProperty0<ERROR CLASS: Cannot infer argument for type parameter T>)' method. None of the following functions is applicable:
+2026-04-14T16:36:26.6404303Z fun <T> State<T>.getValue(thisObj: Any?, property: KProperty<*>): T
+2026-04-14T16:36:26.6406302Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:43:27 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6409113Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:43:37 Unresolved reference 'groupedWebApps'.
+2026-04-14T16:36:26.6412002Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:43:52 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6445609Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:50:54 Unresolved reference 'toggleViewMode'.
+2026-04-14T16:36:26.6448404Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:76:45 Unresolved reference 'updateSearchQuery'.
+2026-04-14T16:36:26.6450757Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:76:63 Unresolved reference 'it'.
+2026-04-14T16:36:26.6453611Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:77:33 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6456449Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:78:33 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6461210Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:98:40 Unresolved reference 'displayName'.
+2026-04-14T16:36:26.6464405Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:101:35 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6467961Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:102:70 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6470839Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:113:47 Unresolved reference 'updateSortBy'.
+2026-04-14T16:36:26.6473719Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:127:41 Unresolved reference 'displayName'.
+2026-04-14T16:36:26.6476699Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:130:35 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6479974Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:131:70 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6482907Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:142:47 Unresolved reference 'updateGroupBy'.
+2026-04-14T16:36:26.6485694Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:154:17 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6488569Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:154:17 Not enough information to infer type argument for 'S'.
+2026-04-14T16:36:26.6491256Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:157:48 Unresolved reference 'tween'.
+2026-04-14T16:36:26.6493924Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:158:49 Unresolved reference 'tween'.
+2026-04-14T16:36:26.6496703Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:160:21 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6499340Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:168:55 Unresolved reference 'id'.
+2026-04-14T16:36:26.6502301Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:170:46 Argument type mismatch: actual type is 'Int', but 'WebApp' was expected.
+2026-04-14T16:36:26.6535417Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:173:73 Unresolved reference 'id'.
+2026-04-14T16:36:26.6538028Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:186:55 Unresolved reference 'id'.
+2026-04-14T16:36:26.6540868Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:188:46 Argument type mismatch: actual type is 'Int', but 'WebApp' was expected.
+2026-04-14T16:36:26.6543702Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:191:73 Unresolved reference 'id'.
+2026-04-14T16:36:26.6546451Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:207:46 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6549390Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:207:46 Function 'component1()' is ambiguous for this expression: 
+2026-04-14T16:36:26.6551203Z fun <T> Array<out T>.component1(): T
+2026-04-14T16:36:26.6551769Z fun ByteArray.component1(): Byte
+2026-04-14T16:36:26.6552284Z fun ShortArray.component1(): Short
+2026-04-14T16:36:26.6552967Z fun IntArray.component1(): Int
+2026-04-14T16:36:26.6553465Z fun LongArray.component1(): Long
+2026-04-14T16:36:26.6553992Z fun FloatArray.component1(): Float
+2026-04-14T16:36:26.6554503Z fun DoubleArray.component1(): Double
+2026-04-14T16:36:26.6555040Z fun BooleanArray.component1(): Boolean
+2026-04-14T16:36:26.6555547Z fun CharArray.component1(): Char
+2026-04-14T16:36:26.6556013Z fun <T> List<T>.component1(): T
+2026-04-14T16:36:26.6556478Z fun <K, V> Map.Entry<K, V>.component1(): K
+2026-04-14T16:36:26.6557025Z fun UIntArray.component1(): UInt
+2026-04-14T16:36:26.6557531Z fun ULongArray.component1(): ULong
+2026-04-14T16:36:26.6558021Z fun UByteArray.component1(): UByte
+2026-04-14T16:36:26.6558554Z fun UShortArray.component1(): UShort.
+2026-04-14T16:36:26.6560556Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:207:46 Function 'component2()' is ambiguous for this expression: 
+2026-04-14T16:36:26.6561929Z fun <T> Array<out T>.component2(): T
+2026-04-14T16:36:26.6592749Z fun ByteArray.component2(): Byte
+2026-04-14T16:36:26.6593377Z fun ShortArray.component2(): Short
+2026-04-14T16:36:26.6593922Z fun IntArray.component2(): Int
+2026-04-14T16:36:26.6594413Z fun LongArray.component2(): Long
+2026-04-14T16:36:26.6594919Z fun FloatArray.component2(): Float
+2026-04-14T16:36:26.6595482Z fun DoubleArray.component2(): Double
+2026-04-14T16:36:26.6596029Z fun BooleanArray.component2(): Boolean
+2026-04-14T16:36:26.6596569Z fun CharArray.component2(): Char
+2026-04-14T16:36:26.6597061Z fun <T> List<T>.component2(): T
+2026-04-14T16:36:26.6597582Z fun <K, V> Map.Entry<K, V>.component2(): V
+2026-04-14T16:36:26.6598124Z fun UIntArray.component2(): UInt
+2026-04-14T16:36:26.6598628Z fun ULongArray.component2(): ULong
+2026-04-14T16:36:26.6599166Z fun UByteArray.component2(): UByte
+2026-04-14T16:36:26.6599698Z fun UShortArray.component2(): UShort.
+2026-04-14T16:36:26.6601387Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:223:60 Unresolved reference 'id'.
+2026-04-14T16:36:26.6604337Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:225:54 Argument type mismatch: actual type is 'Int', but 'WebApp' was expected.
+2026-04-14T16:36:26.6607196Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:234:52 Unresolved reference 'id'.
+2026-04-14T16:36:26.6609964Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:236:46 Argument type mismatch: actual type is 'Int', but 'WebApp' was expected.
+2026-04-14T16:36:26.6612953Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:259:18 Unresolved reference 'animateFloatAsState'.
+2026-04-14T16:36:26.6615684Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:261:25 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.6618399Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:261:47 Unresolved reference 'Spring'.
+2026-04-14T16:36:26.6620578Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:267:14 Unresolved reference 'clickable'.
+2026-04-14T16:36:26.6653461Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/MainDashboardScreen.kt:309:29 Unresolved reference 'TextAlign'.
+2026-04-14T16:36:26.6656200Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/SecuritySettingsScreen.kt:28:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6658692Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/SettingsScreen.kt:27:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6661117Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:50:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6663918Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:56:35 Unresolved reference 'FileProvider'.
+2026-04-14T16:36:26.6666679Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:68:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6669527Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:73:25 Unresolved reference 'FileViewerManager'.
+2026-04-14T16:36:26.6672252Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:75:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6674941Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:81:9 Unresolved reference 'Box'.
+2026-04-14T16:36:26.6702841Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:83:18 Unresolved reference 'fillMaxSize'.
+2026-04-14T16:36:26.6706048Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:88:21 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6709558Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:91:21 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6713090Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:94:21 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6716405Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:97:21 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6720108Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:100:21 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6723644Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:102:21 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6727006Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:105:21 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6730369Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:108:21 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6763686Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:111:21 Unresolved reference 'Column'.
+2026-04-14T16:36:26.6766614Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:113:30 Unresolved reference 'fillMaxSize'.
+2026-04-14T16:36:26.6769351Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:116:47 Unresolved reference 'Arrangement'.
+2026-04-14T16:36:26.6772039Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:119:29 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6774732Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:121:49 Unresolved reference 'size'.
+2026-04-14T16:36:26.6777841Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:122:50 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6780934Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:124:25 Unresolved reference 'Spacer'.
+2026-04-14T16:36:26.6783638Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:124:52 Unresolved reference 'height'.
+2026-04-14T16:36:26.6786713Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:125:25 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6790122Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:127:51 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6823504Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:129:25 Unresolved reference 'Spacer'.
+2026-04-14T16:36:26.6826212Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:129:52 Unresolved reference 'height'.
+2026-04-14T16:36:26.6829213Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:130:25 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6832607Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:132:51 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6836118Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:133:51 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6839042Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:135:25 Unresolved reference 'Spacer'.
+2026-04-14T16:36:26.6841626Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:135:52 Unresolved reference 'height'.
+2026-04-14T16:36:26.6844732Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:136:25 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6847735Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:137:29 Unresolved reference 'FileViewerManager'.
+2026-04-14T16:36:26.6850360Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:158:9 Unresolved reference 'Box'.
+2026-04-14T16:36:26.6883552Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:160:18 Unresolved reference 'fillMaxSize'.
+2026-04-14T16:36:26.6886865Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:168:13 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6889869Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:172:22 Unresolved reference 'fillMaxSize'.
+2026-04-14T16:36:26.6892692Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:182:13 Unresolved reference 'Column'.
+2026-04-14T16:36:26.6895342Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:184:22 Unresolved reference 'align'.
+2026-04-14T16:36:26.6898521Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:187:17 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6901707Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:189:41 Unresolved reference 'size'.
+2026-04-14T16:36:26.6904907Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:190:52 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6907977Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:192:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6910641Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:194:17 Unresolved reference 'Spacer'.
+2026-04-14T16:36:26.6943620Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:194:44 Unresolved reference 'height'.
+2026-04-14T16:36:26.6946757Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:195:17 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6949813Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:197:41 Unresolved reference 'size'.
+2026-04-14T16:36:26.6952873Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:198:52 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6955859Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:200:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.6958653Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:202:17 Unresolved reference 'Spacer'.
+2026-04-14T16:36:26.6961614Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:202:44 Unresolved reference 'height'.
+2026-04-14T16:36:26.6964886Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:203:17 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.6968012Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:208:41 Unresolved reference 'size'.
+2026-04-14T16:36:26.6971193Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:209:52 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7004678Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:211:26 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.7007458Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:216:9 Unresolved reference 'Column'.
+2026-04-14T16:36:26.7010147Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:218:18 Unresolved reference 'fillMaxSize'.
+2026-04-14T16:36:26.7012952Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:221:35 Unresolved reference 'Arrangement'.
+2026-04-14T16:36:26.7015687Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:224:17 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.7018396Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:226:37 Unresolved reference 'size'.
+2026-04-14T16:36:26.7021508Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:227:38 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7024645Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:229:13 Unresolved reference 'Spacer'.
+2026-04-14T16:36:26.7027246Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:229:40 Unresolved reference 'height'.
+2026-04-14T16:36:26.7030416Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:230:13 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7064213Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:232:39 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7067524Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:233:39 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7070464Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:247:5 Unresolved reference 'Box'.
+2026-04-14T16:36:26.7073370Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:247:29 Unresolved reference 'fillMaxSize'.
+2026-04-14T16:36:26.7076562Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:248:9 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7079599Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:251:38 Unresolved reference 'toUri'.
+2026-04-14T16:36:26.7082494Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:265:33 Unresolved reference 'fillMaxSize'.
+2026-04-14T16:36:26.7085409Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:269:9 Unresolved reference 'Column'.
+2026-04-14T16:36:26.7088088Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:271:18 Unresolved reference 'align'.
+2026-04-14T16:36:26.7090173Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:274:13 Unresolved reference 'Row'.
+2026-04-14T16:36:26.7123046Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:276:22 Unresolved reference 'fillMaxWidth'.
+2026-04-14T16:36:26.7126380Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:278:39 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7129914Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:279:47 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7133173Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:282:41 Unresolved reference 'Arrangement'.
+2026-04-14T16:36:26.7136438Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:285:17 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7139536Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:289:40 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.7142294Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:289:65 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.7145570Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:294:17 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7149058Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:296:43 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7152762Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:299:17 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7156021Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:303:41 Unresolved reference 'weight'.
+2026-04-14T16:36:26.7159226Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:306:17 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7162877Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:308:43 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7166334Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:311:17 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7169159Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:313:43 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.7172107Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:313:77 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.7175064Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:337:41 Unresolved reference 'toUri'.
+2026-04-14T16:36:26.7177733Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:349:5 Unresolved reference 'Column'.
+2026-04-14T16:36:26.7180770Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:351:14 Unresolved reference 'fillMaxSize'.
+2026-04-14T16:36:26.7183634Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:354:31 Unresolved reference 'Arrangement'.
+2026-04-14T16:36:26.7186407Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:357:13 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.7189126Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:359:33 Unresolved reference 'size'.
+2026-04-14T16:36:26.7192310Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:360:34 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7195471Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:362:9 Unresolved reference 'Spacer'.
+2026-04-14T16:36:26.7198246Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:362:36 Unresolved reference 'height'.
+2026-04-14T16:36:26.7201410Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:363:9 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7204734Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:365:35 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7207814Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:367:9 Unresolved reference 'Spacer'.
+2026-04-14T16:36:26.7210445Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:367:36 Unresolved reference 'height'.
+2026-04-14T16:36:26.7213341Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:368:9 Unresolved reference 'Row'.
+2026-04-14T16:36:26.7216084Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:369:37 Unresolved reference 'Arrangement'.
+2026-04-14T16:36:26.7219359Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:372:13 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7222612Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:385:36 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.7225398Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:385:61 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.7228014Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:387:41 Unresolved reference 'size'.
+2026-04-14T16:36:26.7230841Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:407:29 Unresolved reference 'fillMaxSize'.
+2026-04-14T16:36:26.7233723Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:421:5 Unresolved reference 'Column'.
+2026-04-14T16:36:26.7236556Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:423:14 Unresolved reference 'fillMaxSize'.
+2026-04-14T16:36:26.7239730Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:426:9 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7243322Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:428:35 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7246306Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:429:33 Unresolved reference 'padding'.
+2026-04-14T16:36:26.7249449Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:432:9 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7252987Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:434:35 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7256126Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:436:18 Unresolved reference 'fillMaxSize'.
+2026-04-14T16:36:26.7258940Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:437:33 Unresolved reference 'rememberScrollState'.
+2026-04-14T16:36:26.7261724Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:461:29 Unresolved reference 'fillMaxSize'.
+2026-04-14T16:36:26.7264641Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:476:5 Unresolved reference 'Column'.
+2026-04-14T16:36:26.7267421Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:478:14 Unresolved reference 'fillMaxSize'.
+2026-04-14T16:36:26.7270328Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:481:9 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7273693Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:483:35 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7276629Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:484:33 Unresolved reference 'padding'.
+2026-04-14T16:36:26.7279720Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:488:13 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7283259Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:490:13 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7286419Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:492:21 Unresolved reference 'Row'.
+2026-04-14T16:36:26.7289143Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:494:30 Unresolved reference 'fillMaxWidth'.
+2026-04-14T16:36:26.7291858Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:499:29 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.7294291Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:501:49 Unresolved reference 'size'.
+2026-04-14T16:36:26.7296832Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:503:25 Unresolved reference 'Spacer'.
+2026-04-14T16:36:26.7299628Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:503:52 Unresolved reference 'width'.
+2026-04-14T16:36:26.7302888Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:504:25 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7306211Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:504:58 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7309162Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:509:13 Unresolved reference 'Spacer'.
+2026-04-14T16:36:26.7311952Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:509:40 Unresolved reference 'height'.
+2026-04-14T16:36:26.7315212Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:510:13 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7318623Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:527:47 Argument type mismatch: actual type is 'String', but 'Long' was expected.
+2026-04-14T16:36:26.7321845Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:531:5 Unresolved reference 'Column'.
+2026-04-14T16:36:26.7324769Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:533:14 Unresolved reference 'fillMaxSize'.
+2026-04-14T16:36:26.7328349Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:535:29 Unresolved reference 'rememberScrollState'.
+2026-04-14T16:36:26.7331470Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:537:9 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7334938Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:539:35 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7337858Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:540:33 Unresolved reference 'padding'.
+2026-04-14T16:36:26.7341103Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:543:9 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7344098Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:544:33 Unresolved reference 'fillMaxWidth'.
+2026-04-14T16:36:26.7347054Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:545:38 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7350087Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:547:13 Unresolved reference 'Column'.
+2026-04-14T16:36:26.7354225Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:547:40 Unresolved reference 'padding'.
+2026-04-14T16:36:26.7357443Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:548:17 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7360820Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:548:84 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7364412Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:549:17 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7367930Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:549:104 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7371259Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:550:17 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7374800Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:550:85 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7377837Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:552:17 Unresolved reference 'Spacer'.
+2026-04-14T16:36:26.7380861Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:552:44 Unresolved reference 'height'.
+2026-04-14T16:36:26.7384241Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:553:17 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7387562Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:553:60 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7390768Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:555:21 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7394138Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:555:65 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7397015Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:560:9 Unresolved reference 'Spacer'.
+2026-04-14T16:36:26.7400002Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:560:36 Unresolved reference 'height'.
+2026-04-14T16:36:26.7402805Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:561:9 Unresolved reference 'Row'.
+2026-04-14T16:36:26.7405458Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:562:33 Unresolved reference 'fillMaxWidth'.
+2026-04-14T16:36:26.7408220Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:563:37 Unresolved reference 'Arrangement'.
+2026-04-14T16:36:26.7411268Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:565:13 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7414964Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:571:13 @Composable invocations can only happen from the context of a @Composable function
+2026-04-14T16:36:26.7418008Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:630:49 Unresolved reference 'Context'.
+2026-04-14T16:36:26.7420763Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:669:33 Unresolved reference 'Context'.
+2026-04-14T16:36:26.7423673Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:670:22 Unresolved reference 'packageManager'.
+2026-04-14T16:36:26.7426511Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:674:39 Unresolved reference 'requestedPermissions'.
+2026-04-14T16:36:26.7429546Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:674:73 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.7432513Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:676:39 Unresolved reference 'packageName'.
+2026-04-14T16:36:26.7435301Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:677:39 Unresolved reference 'versionName'.
+2026-04-14T16:36:26.7438235Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:679:29 Unresolved reference 'longVersionCode'.
+2026-04-14T16:36:26.7441142Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:681:29 Unresolved reference 'versionCode'.
+2026-04-14T16:36:26.7444560Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:687:48 Argument type mismatch: actual type is 'String', but 'Long' was expected.
+2026-04-14T16:36:26.7447650Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:691:33 Unresolved reference 'Context'.
+2026-04-14T16:36:26.7450342Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:694:20 Unresolved reference 'packageName'.
+2026-04-14T16:36:26.7453129Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:702:13 Unresolved reference 'startActivity'.
+2026-04-14T16:36:26.7455905Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:705:31 Unresolved reference 'Context'.
+2026-04-14T16:36:26.7458559Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:708:20 Unresolved reference 'packageName'.
+2026-04-14T16:36:26.7461531Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/UniversalFileViewerScreen.kt:716:13 Unresolved reference 'startActivity'.
+2026-04-14T16:36:26.7464621Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/WebViewScreen.kt:32:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.7467054Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/WebViewScreen.kt:37:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.7469534Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/WebViewScreen.kt:40:30 Unresolved reference 'Icons'.
+2026-04-14T16:36:26.7471925Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/BackupViewModel.kt:45:60 Unresolved reference 'map'.
+2026-04-14T16:36:26.7474809Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/BackupViewModel.kt:45:66 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.7477636Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/BackupViewModel.kt:47:33 Unresolved reference 'id'.
+2026-04-14T16:36:26.7480155Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/BackupViewModel.kt:48:35 Unresolved reference 'name'.
+2026-04-14T16:36:26.7482955Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/BackupViewModel.kt:49:58 Unresolved reference 'timestamp'.
+2026-04-14T16:36:26.7485646Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/BackupViewModel.kt:50:50 Unresolved reference 'size'.
+2026-04-14T16:36:26.7488133Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/BackupViewModel.kt:51:35 Unresolved reference 'path'.
+2026-04-14T16:36:26.7490758Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/ClipboardViewModel.kt:37:45 No value passed for parameter 'limit'.
+2026-04-14T16:36:26.7493780Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/EnhancedWebViewViewModel.kt:148:17 Null cannot be a value of a non-null type 'String'.
+2026-04-14T16:36:26.7496387Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FileViewerViewModel.kt:41:43 Unresolved reference 'getRecentFiles'.
+2026-04-14T16:36:26.7499105Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FileViewerViewModel.kt:41:66 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.7501752Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FileViewerViewModel.kt:43:31 Unresolved reference 'lastModified'.
+2026-04-14T16:36:26.7504328Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FileViewerViewModel.kt:44:33 Unresolved reference 'name'.
+2026-04-14T16:36:26.7506766Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FileViewerViewModel.kt:45:33 Unresolved reference 'absolutePath'.
+2026-04-14T16:36:26.7509272Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FileViewerViewModel.kt:46:48 Unresolved reference 'length'.
+2026-04-14T16:36:26.7511974Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FileViewerViewModel.kt:47:60 Unresolved reference 'lastModified'.
+2026-04-14T16:36:26.7515126Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FileViewerViewModel.kt:50:24 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.7517861Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FileViewerViewModel.kt:53:30 Unresolved reference 'name'.
+2026-04-14T16:36:26.7520499Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FileViewerViewModel.kt:69:27 Unresolved reference 'shareFile'.
+2026-04-14T16:36:26.7523280Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FileViewerViewModel.kt:74:35 Unresolved reference 'deleteFile'.
+2026-04-14T16:36:26.7525941Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:47:66 Unresolved reference 'map'.
+2026-04-14T16:36:26.7528889Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:47:72 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.7531789Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:49:33 Unresolved reference 'id'.
+2026-04-14T16:36:26.7534637Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:50:35 Unresolved reference 'name'.
+2026-04-14T16:36:26.7537241Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:51:38 Unresolved reference 'windows'.
+2026-04-14T16:36:26.7539924Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:51:52 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.7542739Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:53:47 Unresolved reference 'id'.
+2026-04-14T16:36:26.7545279Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:54:52 Unresolved reference 'appName'.
+2026-04-14T16:36:26.7547993Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:55:46 Unresolved reference 'x'.
+2026-04-14T16:36:26.7550294Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:56:46 Unresolved reference 'y'.
+2026-04-14T16:36:26.7553030Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:57:50 Unresolved reference 'width'.
+2026-04-14T16:36:26.7555703Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:58:51 Unresolved reference 'height'.
+2026-04-14T16:36:26.7558227Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:59:56 Unresolved reference 'isMinimized'.
+2026-04-14T16:36:26.7560658Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:69:22 Unresolved reference 'Intent'.
+2026-04-14T16:36:26.7563473Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:69:73 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.7566442Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:69:79 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.7569069Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:70:13 Unresolved reference 'action'.
+2026-04-14T16:36:26.7571527Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:71:13 Unresolved reference 'putExtra'.
+2026-04-14T16:36:26.7574285Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:78:22 Unresolved reference 'Intent'.
+2026-04-14T16:36:26.7577076Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:78:73 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.7580091Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:78:79 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.7583015Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:79:13 Unresolved reference 'action'.
+2026-04-14T16:36:26.7585281Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:80:13 Unresolved reference 'putExtra'.
+2026-04-14T16:36:26.7587404Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:87:22 Unresolved reference 'Intent'.
+2026-04-14T16:36:26.7589943Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:87:73 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.7592995Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:87:79 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.7595585Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:88:13 Unresolved reference 'action'.
+2026-04-14T16:36:26.7598071Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:89:13 Unresolved reference 'putExtra'.
+2026-04-14T16:36:26.7600790Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:96:22 Unresolved reference 'Intent'.
+2026-04-14T16:36:26.7603596Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:96:73 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.7606504Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:96:79 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.7609289Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/FloatingWindowViewModel.kt:97:13 Unresolved reference 'action'.
+2026-04-14T16:36:26.7612259Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/MainViewModel.kt:43:52 Initializer type mismatch: expected 'StateFlow<List<WebApp>>', actual 'Flow<List<WebApp>>'.
+2026-04-14T16:36:26.7615413Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/MainViewModel.kt:45:64 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.7619079Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/MainViewModel.kt:45:64 Initializer type mismatch: expected 'StateFlow<Map<String, List<WebApp>>>', actual 'Flow<ERROR CLASS: Cannot infer argument for type parameter R>'.
+2026-04-14T16:36:26.7623124Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/MainViewModel.kt:45:64 Type mismatch: inferred type is 'Flow<R (of fun <T1, T2, R> combine)>', but 'StateFlow<Map<String, List<WebApp>>>' was expected.
+2026-04-14T16:36:26.7626278Z e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/viewmodel/MainViewModel.kt:45:100 Cannot infer type for this parameter. Specify it explicitly.
+2026-04-14T16:36:26.7627835Z > Task :app:compileStandardDebugKotlin FAILED
+2026-04-14T16:36:26.7628300Z 
+2026-04-14T16:36:26.7628567Z FAILURE: Build failed with an exception.
+2026-04-14T16:36:26.7628885Z 
+2026-04-14T16:36:26.7629064Z * What went wrong:
+2026-04-14T16:36:26.7629683Z Execution failed for task ':app:compileStandardDebugKotlin'.
+2026-04-14T16:36:26.7631263Z > A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+
