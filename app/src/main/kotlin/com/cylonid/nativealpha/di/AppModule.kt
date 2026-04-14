@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.cylonid.nativealpha.data.*
 import com.cylonid.nativealpha.manager.*
 import com.cylonid.nativealpha.repository.WebAppRepository
+import com.cylonid.nativealpha.service.BackupService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -55,8 +56,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideCredentialManager(credentialDao: CredentialDao): CredentialManager {
-        return CredentialManager(credentialDao)
+    fun provideCredentialManager(database: AppDatabase): CredentialManager {
+        return CredentialManager(database)
     }
 
     @Provides

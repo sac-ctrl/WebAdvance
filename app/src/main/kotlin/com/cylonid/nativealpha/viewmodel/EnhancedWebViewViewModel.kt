@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class WebViewViewModel @Inject constructor(
+class EnhancedWebViewViewModel @Inject constructor(
     private val context: Context
 ) : ViewModel() {
 
@@ -224,17 +224,15 @@ class WebViewViewModel @Inject constructor(
     }
 
     fun zoomIn() {
-        val scale = (currentWebView?.scale ?: 100) + 10
-        currentWebView?.scaleWebView(scale / 100f)
+        currentWebView?.evaluateJavascript("document.body.style.zoom = (parseFloat(document.body.style.zoom || 1) + 0.1).toString();", null)
     }
 
     fun zoomOut() {
-        val scale = (currentWebView?.scale ?: 100) - 10
-        currentWebView?.scaleWebView(scale / 100f)
+        currentWebView?.evaluateJavascript("document.body.style.zoom = Math.max(0.1, parseFloat(document.body.style.zoom || 1) - 0.1).toString();", null)
     }
 
     fun resetZoom() {
-        currentWebView?.scaleWebView(1f)
+        currentWebView?.evaluateJavascript("document.body.style.zoom = '1';", null)
     }
 
     fun executeJavaScript(script: String) {

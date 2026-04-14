@@ -1,6 +1,5 @@
 package com.cylonid.nativealpha.manager
 
-import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
@@ -76,7 +75,7 @@ class DownloadManager @Inject constructor(
     private val context: Context,
     private val database: AppDatabase
 ) {
-    private val systemDownloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+    private val systemDownloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as android.app.DownloadManager
     private val dao = database.downloadItemDao()
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -92,10 +91,10 @@ class DownloadManager @Inject constructor(
         val typeDir = File(appDir, fileTypeFolder)
         typeDir.mkdirs()
 
-        val request = DownloadManager.Request(Uri.parse(url)).apply {
+        val request = android.app.DownloadManager.Request(Uri.parse(url)).apply {
             setTitle(finalFileName)
             setDescription("Downloading from ${Uri.parse(url).host}")
-            setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             setDestinationUri(Uri.fromFile(File(typeDir, finalFileName)))
             setAllowedOverMetered(true)
             setAllowedOverRoaming(true)
@@ -174,19 +173,19 @@ class DownloadManager @Inject constructor(
 
     private fun updateDownloadProgress(item: DownloadItem): DownloadItem {
         return try {
-            val query = DownloadManager.Query().setFilterById(item.id)
+            val query = android.app.DownloadManager.Query().setFilterById(item.id)
             val cursor = systemDownloadManager.query(query)
 
             if (cursor.moveToFirst()) {
-                val status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
-                val bytesDownloaded = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
-                val totalBytes = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+                val status = cursor.getInt(cursor.getColumnIndexOrThrow(android.app.DownloadManager.COLUMN_STATUS))
+                val bytesDownloaded = cursor.getLong(cursor.getColumnIndexOrThrow(android.app.DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+                val totalBytes = cursor.getLong(cursor.getColumnIndexOrThrow(android.app.DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
 
                 val newStatus = when (status) {
-                    DownloadManager.STATUS_SUCCESSFUL -> DownloadItem.Status.COMPLETED
-                    DownloadManager.STATUS_FAILED -> DownloadItem.Status.FAILED
-                    DownloadManager.STATUS_RUNNING -> DownloadItem.Status.DOWNLOADING
-                    DownloadManager.STATUS_PAUSED -> DownloadItem.Status.PAUSED
+                    android.app.DownloadManager.STATUS_SUCCESSFUL -> DownloadItem.Status.COMPLETED
+                    android.app.DownloadManager.STATUS_FAILED -> DownloadItem.Status.FAILED
+                    android.app.DownloadManager.STATUS_RUNNING -> DownloadItem.Status.DOWNLOADING
+                    android.app.DownloadManager.STATUS_PAUSED -> DownloadItem.Status.PAUSED
                     else -> DownloadItem.Status.PENDING
                 }
 

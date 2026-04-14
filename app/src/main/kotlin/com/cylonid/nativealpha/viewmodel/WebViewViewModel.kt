@@ -1,8 +1,28 @@
 package com.cylonid.nativealpha.viewmodel
 
-import androidx.work.*
+import android.content.Context
+import android.webkit.WebView
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
+import com.cylonid.nativealpha.links.LinkHistoryTracker
+import com.cylonid.nativealpha.links.LinkManagementSystem
+import com.cylonid.nativealpha.manager.DownloadManager
+import com.cylonid.nativealpha.model.WebApp
+import com.cylonid.nativealpha.repository.WebAppRepository
 import com.cylonid.nativealpha.worker.RefreshWorker
+import com.cylonid.nativealpha.worker.ScreenshotWorker
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 @HiltViewModel
 class WebViewViewModel @Inject constructor(
@@ -52,8 +72,7 @@ class WebViewViewModel @Inject constructor(
             repository.getWebAppById(id).collect { app ->
                 _webApp.value = app
                 _isLoading.value = false
-                
-                // Schedule auto-refresh if enabled
+
                 if (app?.refreshInterval ?: 0 > 0) {
                     scheduleAutoRefresh()
                 }
@@ -112,7 +131,6 @@ class WebViewViewModel @Inject constructor(
     fun addConsoleMessage(message: ConsoleMessageData) {
         val currentMessages = _consoleMessages.value.toMutableList()
         currentMessages.add(message)
-        // Keep only last 100 messages
         if (currentMessages.size > 100) {
             currentMessages.removeAt(0)
         }
@@ -120,7 +138,6 @@ class WebViewViewModel @Inject constructor(
     }
 
     fun executeJavaScript(command: String) {
-        // This would be called from the WebViewActivity to execute JS
         _webViewState.value = _webViewState.value.copy(
             javaScriptToExecute = command
         )
@@ -132,7 +149,6 @@ class WebViewViewModel @Inject constructor(
         )
     }
 
-    // Toolbar action methods
     fun goBack() {
         _webViewState.value = _webViewState.value.copy(shouldGoBack = true)
     }
@@ -151,16 +167,12 @@ class WebViewViewModel @Inject constructor(
 
     fun toggleDesktopMode() {
         _isDesktopMode.value = !_isDesktopMode.value
-        _webViewState.value = _webViewState.value.copy(
-            shouldReload = true
-        )
+        _webViewState.value = _webViewState.value.copy(shouldReload = true)
     }
 
     fun toggleAdblock() {
         _isAdblockEnabled.value = !_isAdblockEnabled.value
-        _webViewState.value = _webViewState.value.copy(
-            shouldReload = true
-        )
+        _webViewState.value = _webViewState.value.copy(shouldReload = true)
     }
 
     fun toggleAutoScroll() {
@@ -174,8 +186,6 @@ class WebViewViewModel @Inject constructor(
 
     fun toggleAutoClick() {
         _isAutoClickEnabled.value = !_isAutoClickEnabled.value
-        // Note: This would need a selector to be configured
-        // For now, just toggle the state
     }
 
     fun sharePage() {
@@ -195,7 +205,7 @@ class WebViewViewModel @Inject constructor(
         val pageTitle = webApp.value?.name ?: "Web Page"
 
         viewModelScope.launch {
-            val formattedUrl = linkSystem.copyUrl(currentUrl, pageTitle, format)
+            linkSystem.copyUrl(currentUrl, pageTitle, format)
             historyTracker.recordAction(
                 url = currentUrl,
                 pageTitle = pageTitle,
@@ -240,51 +250,31 @@ class WebViewViewModel @Inject constructor(
     }
 
     fun printPage() {
-        _webViewState.value = _webViewState.value.copy(
-            shouldPrint = true
-        )
-    }
-
-    fun printPage() {
-        _webViewState.value = _webViewState.value.copy(
-            shouldPrint = true
-        )
+        _webViewState.value = _webViewState.value.copy(shouldPrint = true)
     }
 
     fun zoomIn() {
-        _webViewState.value = _webViewState.value.copy(
-            shouldZoomIn = true
-        )
+        _webViewState.value = _webViewState.value.copy(shouldZoomIn = true)
     }
 
     fun zoomOut() {
-        _webViewState.value = _webViewState.value.copy(
-            shouldZoomOut = true
-        )
+        _webViewState.value = _webViewState.value.copy(shouldZoomOut = true)
     }
 
     fun addToFloatingWindow() {
-        _webViewState.value = _webViewState.value.copy(
-            shouldAddToFloatingWindow = true
-        )
+        _webViewState.value = _webViewState.value.copy(shouldAddToFloatingWindow = true)
     }
 
     fun openCredentialKeeper() {
-        _webViewState.value = _webViewState.value.copy(
-            shouldOpenCredentialKeeper = true
-        )
+        _webViewState.value = _webViewState.value.copy(shouldOpenCredentialKeeper = true)
     }
 
     fun openClipboardManager() {
-        _webViewState.value = _webViewState.value.copy(
-            shouldOpenClipboardManager = true
-        )
+        _webViewState.value = _webViewState.value.copy(shouldOpenClipboardManager = true)
     }
 
     fun openDownloadHistory() {
-        _webViewState.value = _webViewState.value.copy(
-            shouldOpenDownloadHistory = true
-        )
+        _webViewState.value = _webViewState.value.copy(shouldOpenDownloadHistory = true)
     }
 
     fun captureScreenshot(webView: WebView, context: Context) {
@@ -293,27 +283,24 @@ class WebViewViewModel @Inject constructor(
                 webView.buildDrawingCache()
                 val bitmap = webView.drawingCache
                 if (bitmap != null) {
-                    // Save bitmap to file
                     val filename = "screenshot_${System.currentTimeMillis()}.png"
                     val file = java.io.File(context.getExternalFilesDir(null), filename)
                     val stream = java.io.FileOutputStream(file)
                     bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
                     stream.close()
-                    
-                    // Update webApp with thumbnail
+
                     webApp.value?.let { app ->
                         val updatedApp = app.copy(thumbnail = bitmap)
                         repository.updateWebApp(updatedApp)
                     }
                 }
             } catch (e: Exception) {
-                // Handle error
+                // Handle error silently
             }
         }
     }
 
     fun shouldHandleDownload(url: String): Boolean {
-        // Check if URL is a downloadable file
         val downloadExtensions = listOf(
             ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
             ".txt", ".zip", ".rar", ".7z", ".tar", ".gz",
@@ -326,12 +313,9 @@ class WebViewViewModel @Inject constructor(
 
     fun handleDownload(url: String, webApp: WebApp? = null) {
         downloadManager.downloadFile(webApp?.id ?: 0L, url, null, webApp)
-        _webViewState.value = _webViewState.value.copy(
-            shouldDownloadUrl = null
-        )
+        _webViewState.value = _webViewState.value.copy(shouldDownloadUrl = null)
     }
 
-    // Clear action flags after handling
     fun clearActionFlags() {
         _webViewState.value = _webViewState.value.copy(
             shouldGoBack = false,
@@ -406,13 +390,11 @@ class WebViewViewModel @Inject constructor(
             (function() {
                 const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input:not([type])');
                 const passwords = document.querySelectorAll('input[type="password"]');
-                
                 if (inputs.length > 0) {
                     inputs[0].value = '$username';
                     inputs[0].dispatchEvent(new Event('input', { bubbles: true }));
                     inputs[0].dispatchEvent(new Event('change', { bubbles: true }));
                 }
-                
                 if (passwords.length > 0) {
                     passwords[0].value = '$password';
                     passwords[0].dispatchEvent(new Event('input', { bubbles: true }));
@@ -420,7 +402,7 @@ class WebViewViewModel @Inject constructor(
                 }
             })();
         """.trimIndent()
-        
+
         executeJavaScript(js)
     }
 }
@@ -434,7 +416,6 @@ data class WebViewState(
     val javaScriptToExecute: String? = null,
     val canGoBack: Boolean = false,
     val canGoForward: Boolean = false,
-    // Action flags
     val shouldGoBack: Boolean = false,
     val shouldGoForward: Boolean = false,
     val shouldLoadUrl: String? = null,
@@ -451,4 +432,11 @@ data class WebViewState(
     val shouldOpenDownloadHistory: Boolean = false,
     val shouldTakeScreenshot: Boolean = false,
     val shouldDownloadUrl: String? = null
+)
+
+data class ConsoleMessageData(
+    val message: String,
+    val sourceId: String,
+    val lineNumber: Int,
+    val level: Int
 )
