@@ -65,7 +65,7 @@ android {
     }
     buildFeatures {
         buildConfig true
-        dataBinding false
+        dataBinding true
         viewBinding true
     }
     kotlinOptions {
