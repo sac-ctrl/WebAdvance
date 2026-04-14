@@ -116,11 +116,6 @@ android {
     namespace 'com.cylonid.nativealpha'
 
 }
-repositories {
-    google()
-    mavenCentral()
-    maven { url 'https://jitpack.io' }
-}
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
@@ -158,7 +153,7 @@ dependencies {
     implementation('com.github.Edsuns.AdblockAndroid:ad-filter:v0.9.1') {
         exclude group: 'org.jetbrains.anko'
     }
-    implementation 'com.github.barteksc:android-pdf-viewer:3.2.0-beta.3'
+    implementation 'com.github.barteksc:android-pdf-viewer:3.1.0-beta.1'
     kapt "com.android.databinding:compiler:3.1.4"
     implementation 'com.google.android.material:material:1.12.0'
 
