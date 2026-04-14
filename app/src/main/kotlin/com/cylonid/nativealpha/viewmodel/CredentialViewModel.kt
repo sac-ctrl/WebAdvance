@@ -2,10 +2,18 @@ package com.cylonid.nativealpha.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cylonid.nativealpha.data.CredentialDao
 import com.cylonid.nativealpha.helper.BiometricPromptHelper
+import com.cylonid.nativealpha.manager.Credential
 import com.cylonid.nativealpha.manager.CredentialManager
 import com.cylonid.nativealpha.repository.WebAppRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,11 +46,16 @@ class CredentialViewModel @Inject constructor(
     private val _showAddDialog = MutableStateFlow(false)
     val showAddDialog: StateFlow<Boolean> = _showAddDialog
 
+    private val _editingCredential = MutableStateFlow<Credential?>(null)
+    val editingCredential: StateFlow<Credential?> = _editingCredential
+
+    private val _showPinDialog = MutableStateFlow(false)
+    val showPinDialog: StateFlow<Boolean> = _showPinDialog
+
     fun loadCredentials(webAppId: Long?) {
         currentWebAppId = webAppId
         viewModelScope.launch {
             if (webAppId == null) {
-                // Global credentials - combine all apps
                 credentialManager.getDecryptedCredentialsForApp(0L).collect { creds ->
                     _credentials.value = creds
                 }
@@ -94,7 +107,6 @@ class CredentialViewModel @Inject constructor(
         val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
         val clip = android.content.ClipData.newPlainText(label, text)
         clipboard.setPrimaryClip(clip)
-        // TODO: Show toast
     }
 
     fun deleteCredential(credential: Credential) {
@@ -107,7 +119,7 @@ class CredentialViewModel @Inject constructor(
             if (webApp?.isLocked == true && webApp.pin?.isNotBlank() == true) {
                 _isAuthenticated.value = false
                 _showPinDialog.value = false
-                _showBiometricButton.value = true // Assume biometric is available for now
+                _showBiometricButton.value = true
             } else {
                 _isAuthenticated.value = true
             }
@@ -120,8 +132,6 @@ class CredentialViewModel @Inject constructor(
             if (webApp?.pin == pin) {
                 _isAuthenticated.value = true
                 _showPinDialog.value = false
-            } else {
-                // TODO: Show error
             }
         }
     }
@@ -130,7 +140,7 @@ class CredentialViewModel @Inject constructor(
         val helper = BiometricPromptHelper(activity)
         helper.showPrompt(
             funSuccess = { _isAuthenticated.value = true; _showPinDialog.value = false },
-            funFail = { /* Handle failure */ },
+            funFail = { },
             promptTitle = "Unlock Credential Vault"
         )
     }

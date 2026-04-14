@@ -1,3 +1,5 @@
+package com.cylonid.nativealpha.worker
+
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker

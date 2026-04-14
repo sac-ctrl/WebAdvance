@@ -6,6 +6,7 @@ import androidx.room.TypeConverters
 import com.cylonid.nativealpha.manager.ClipboardItem
 import com.cylonid.nativealpha.manager.Credential
 import com.cylonid.nativealpha.manager.DownloadItem
+import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.model.WindowPresetEntity
 import com.cylonid.nativealpha.model.WindowEntity
 import com.cylonid.nativealpha.model.NotificationEntity
