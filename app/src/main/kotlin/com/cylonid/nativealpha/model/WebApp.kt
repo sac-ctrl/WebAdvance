@@ -134,7 +134,7 @@ data class WebApp(
     @Ignore
     var isOverrideGlobalSettings: Boolean = false
     @Ignore
-    var containerId: String = ""
+    var containerId: Int = 0
     @Ignore
     var isUseContainer: Boolean = false
 
@@ -421,9 +421,9 @@ data class WebApp(
     public fun onSwitchSandboxChanged(mSwitch: CompoundButton, isChecked: Boolean) {
         isUseContainer = isChecked
         containerId = if (isChecked) {
-            SandboxManager.getInstance().calculateNextFreeContainerId().toString()
+            SandboxManager.getInstance().calculateNextFreeContainerId()
         } else {
-            Const.NO_CONTAINER.toString()
+            Const.NO_CONTAINER
         }
     }
 
@@ -431,5 +431,13 @@ data class WebApp(
         isOverrideGlobalSettings = isChecked
         val sectionDetailedWebAppSettings = mSwitch.rootView.findViewById<LinearLayout>(R.id.sectionWebAppDetailSettings)
         Utility.setViewAndChildrenEnabled(sectionDetailedWebAppSettings, isChecked)
+    }
+
+    fun isClipboardSyncEnabled(): Boolean {
+        return clipboardSyncEnabled
+    }
+
+    fun setClipboardSyncEnabled(enabled: Boolean) {
+        clipboardSyncEnabled = enabled
     }
 }
