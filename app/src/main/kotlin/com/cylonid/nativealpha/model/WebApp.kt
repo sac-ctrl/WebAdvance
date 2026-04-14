@@ -425,6 +425,7 @@ data class WebApp(
     }
 
     fun onSwitchOverrideGlobalSettingsChanged(mSwitch: CompoundButton, isChecked: Boolean) {
+        isOverrideGlobalSettings = isChecked
         val sectionDetailedWebAppSettings = mSwitch.rootView.findViewById<LinearLayout>(R.id.sectionWebAppDetailSettings)
         Utility.setViewAndChildrenEnabled(sectionDetailedWebAppSettings, isChecked)
     }
