@@ -7,7 +7,9 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.webkit.ConsoleMessage
+import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
@@ -58,6 +60,7 @@ import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -72,6 +75,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -85,6 +89,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.viewmodel.ConsoleMessageData
 import com.cylonid.nativealpha.viewmodel.WebViewViewModel
 import com.cylonid.nativealpha.waos.ui.DownloadHistoryActivity
@@ -145,9 +150,53 @@ fun WebViewScreen(
 
     var showFindDialog by remember { mutableStateOf(false) }
     var findQuery by remember { mutableStateOf("") }
+    val webViewRef = remember { mutableStateOf<WebView?>(null) }
+    val webAppRef = remember { mutableStateOf<WebApp?>(null) }
+    var initialUrlLoaded by remember { mutableStateOf(false) }
+
+    var pinUnlocked by remember { mutableStateOf(false) }
+    var showPinDialog by remember { mutableStateOf(false) }
+    var pinInput by remember { mutableStateOf("") }
+    var pinError by remember { mutableStateOf(false) }
+
+    val settingsPrefs = remember { context.getSharedPreferences("waos_settings", Context.MODE_PRIVATE) }
+    val developerModeEnabled = remember { settingsPrefs.getBoolean("developer_mode", false) }
+    val floatingWindowsEnabled = remember { settingsPrefs.getBoolean("floating_windows", true) }
 
     LaunchedEffect(webAppId) {
         viewModel.loadWebApp(webAppId)
+    }
+
+    LaunchedEffect(webApp?.url) {
+        val url = webApp?.url
+        if (!initialUrlLoaded && !url.isNullOrBlank() && (webApp?.isLocked == false || pinUnlocked)) {
+            webViewRef.value?.loadUrl(url)
+            initialUrlLoaded = true
+        }
+    }
+
+    LaunchedEffect(pinUnlocked) {
+        if (pinUnlocked) {
+            val url = webApp?.url
+            if (!url.isNullOrBlank()) {
+                webViewRef.value?.loadUrl(url)
+                initialUrlLoaded = true
+            }
+        }
+    }
+
+    LaunchedEffect(webApp) {
+        webApp?.let { app ->
+            if (app.isLocked && !pinUnlocked) {
+                showPinDialog = true
+            }
+            val window = (context as? ComponentActivity)?.window
+            if (app.isKeepAwake) {
+                window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            } else {
+                window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -156,6 +205,44 @@ fun WebViewScreen(
             viewModel.autoFillCredentials(autoFill.first, autoFill.second)
             WebViewActivity.pendingAutoFill = null
         }
+    }
+
+    if (showPinDialog) {
+        AlertDialog(
+            onDismissRequest = { showPinDialog = false; onBackPressed() },
+            title = { Text("App Locked") },
+            text = {
+                Column {
+                    Text("Enter PIN to unlock ${webApp?.name ?: "this app"}")
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = pinInput,
+                        onValueChange = { pinInput = it; pinError = false },
+                        label = { Text("PIN") },
+                        isError = pinError,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+                        singleLine = true
+                    )
+                    if (pinError) {
+                        Text("Incorrect PIN", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (pinInput == webApp?.pin) {
+                        pinUnlocked = true
+                        showPinDialog = false
+                        pinInput = ""
+                    } else {
+                        pinError = true
+                    }
+                }) { Text("Unlock") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPinDialog = false; onBackPressed() }) { Text("Cancel") }
+            }
+        )
     }
 
     LaunchedEffect(webViewState.shouldOpenCredentialKeeper) {
@@ -237,11 +324,13 @@ fun WebViewScreen(
                     IconButton(onClick = { viewModel.zoomOut() }) {
                         Icon(Icons.Default.ZoomOut, contentDescription = "Zoom out")
                     }
-                    IconButton(onClick = { viewModel.toggleConsole() }) {
-                        Icon(
-                            if (showConsole) Icons.Default.CodeOff else Icons.Default.Code,
-                            contentDescription = "Toggle console"
-                        )
+                    if (developerModeEnabled) {
+                        IconButton(onClick = { viewModel.toggleConsole() }) {
+                            Icon(
+                                if (showConsole) Icons.Default.CodeOff else Icons.Default.Code,
+                                contentDescription = "Toggle console"
+                            )
+                        }
                     }
                     IconButton(onClick = { viewModel.toggleAdblock() }) {
                         Icon(
@@ -268,22 +357,24 @@ fun WebViewScreen(
                     }) {
                         Icon(Icons.Default.OpenInBrowser, contentDescription = "Open in browser")
                     }
-                    IconButton(onClick = {
-                        webApp?.let { app ->
-                            val intent = Intent(
-                                context,
-                                com.cylonid.nativealpha.service.FloatingWindowService::class.java
-                            ).apply {
-                                action = com.cylonid.nativealpha.service.FloatingWindowService.ACTION_ADD_WINDOW
-                                putExtra("webAppId", app.id)
-                                putExtra("webAppUrl", app.url)
-                                putExtra("webAppName", app.name)
+                    if (floatingWindowsEnabled) {
+                        IconButton(onClick = {
+                            webApp?.let { app ->
+                                val intent = Intent(
+                                    context,
+                                    com.cylonid.nativealpha.service.FloatingWindowService::class.java
+                                ).apply {
+                                    action = com.cylonid.nativealpha.service.FloatingWindowService.ACTION_ADD_WINDOW
+                                    putExtra("webAppId", app.id)
+                                    putExtra("webAppUrl", app.url)
+                                    putExtra("webAppName", app.name)
+                                }
+                                context.startService(intent)
                             }
-                            context.startService(intent)
+                            viewModel.clearActionFlags()
+                        }) {
+                            Icon(Icons.Default.Launch, contentDescription = "Add to floating window")
                         }
-                        viewModel.clearActionFlags()
-                    }) {
-                        Icon(Icons.Default.Launch, contentDescription = "Add to floating window")
                     }
                     IconButton(onClick = { viewModel.openCredentialKeeper() }) {
                         Icon(Icons.Default.Lock, contentDescription = "Credentials")
@@ -317,14 +408,13 @@ fun WebViewScreen(
                             ViewGroup.LayoutParams.MATCH_PARENT
                         )
                         settings.apply {
-                            javaScriptEnabled = webApp?.isJavaScriptEnabled ?: true
+                            javaScriptEnabled = true
                             domStorageEnabled = true
                             databaseEnabled = true
                             allowFileAccess = true
                             allowContentAccess = true
                             mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                            userAgentString = webApp?.userAgent ?: userAgentString
-                            builtInZoomControls = webApp?.isEnableZooming ?: true
+                            builtInZoomControls = true
                             displayZoomControls = false
                             setSupportZoom(true)
                         }
@@ -368,11 +458,39 @@ fun WebViewScreen(
                                 filePathCallback: ValueCallback<Array<Uri>>?,
                                 fileChooserParams: WebChromeClient.FileChooserParams?
                             ): Boolean = true
+                            override fun onPermissionRequest(request: PermissionRequest?) {
+                                val app = webAppRef.value
+                                val granted = request?.resources?.filter { resource ->
+                                    when (resource) {
+                                        PermissionRequest.RESOURCE_VIDEO_CAPTURE -> app?.isCameraPermission == true
+                                        PermissionRequest.RESOURCE_AUDIO_CAPTURE -> app?.isMicrophonePermission == true
+                                        else -> false
+                                    }
+                                }
+                                if (!granted.isNullOrEmpty()) {
+                                    request?.grant(granted.toTypedArray())
+                                } else {
+                                    request?.deny()
+                                }
+                            }
                         }
-                        loadUrl(webApp?.url ?: "")
-                    }
+                    }.also { webViewRef.value = it }
                 },
                 update = { webView ->
+                    webAppRef.value = webApp
+                    (webView.webViewClient as? com.cylonid.nativealpha.webview.WebViewClientWithDownload)
+                        ?.adblockEnabled = isAdblockEnabled
+                    webApp?.let { app ->
+                        webView.settings.javaScriptEnabled = app.isJavaScriptEnabled
+                        webView.settings.builtInZoomControls = app.isEnableZooming
+                        webView.settings.setSupportZoom(app.isEnableZooming)
+                        if (!app.userAgent.isNullOrBlank() && !isDesktopMode) {
+                            webView.settings.userAgentString = app.userAgent
+                        }
+                    }
+                    if (isDesktopMode) {
+                        webView.settings.userAgentString = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                    }
                     if (webViewState.shouldGoBack) {
                         webView.goBack(); viewModel.clearActionFlags()
                     }
@@ -386,7 +504,7 @@ fun WebViewScreen(
                         webView.reload(); viewModel.clearActionFlags()
                     }
                     if (webViewState.shouldRefresh) {
-                        webView.reload(); viewModel.refresh()
+                        webView.reload(); viewModel.clearRefreshFlag()
                     }
                     webViewState.javaScriptToExecute?.let { js ->
                         webView.evaluateJavascript(js, null)

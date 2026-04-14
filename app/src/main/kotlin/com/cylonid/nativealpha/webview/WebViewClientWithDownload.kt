@@ -19,7 +19,20 @@ class WebViewClientWithDownload(
     private val onDownloadStart: (String, String) -> Unit = { _, _ -> }
 ) : WebViewClient(), DownloadListener {
 
+    var adblockEnabled: Boolean = false
+
     private val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+
+    private val adHosts = setOf(
+        "doubleclick.net", "googlesyndication.com", "googleadservices.com",
+        "ads.youtube.com", "adservice.google.com", "adservice.google.co",
+        "pagead2.googlesyndication.com", "tpc.googlesyndication.com",
+        "amazon-adsystem.com", "moatads.com", "advertising.com",
+        "scorecardresearch.com", "quantserve.com", "outbrain.com",
+        "taboola.com", "criteo.com", "cdn.viglink.com", "viglink.com",
+        "ads.twitter.com", "ads.linkedin.com", "adsystem.amazon.com",
+        "pixel.facebook.com", "connect.facebook.net", "stats.g.doubleclick.net"
+    )
     
     override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
         super.onPageStarted(view, url, favicon)
@@ -67,9 +80,12 @@ class WebViewClientWithDownload(
         view: WebView?,
         request: WebResourceRequest?
     ): WebResourceResponse? {
-        // Log intercepted requests for debugging
-        request?.url?.let {
-            // Could add custom handling here for specific file types
+        if (adblockEnabled) {
+            val host = request?.url?.host?.lowercase() ?: ""
+            val blocked = adHosts.any { ad -> host == ad || host.endsWith(".$ad") }
+            if (blocked) {
+                return WebResourceResponse("text/plain", "utf-8", null)
+            }
         }
         return super.shouldInterceptRequest(view, request)
     }

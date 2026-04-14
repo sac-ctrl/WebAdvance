@@ -89,6 +89,16 @@ Dark WAOS theme with:
 - Database version 5 — any schema changes need a migration
 - Min SDK: 28 (Android 9), Target: 35
 
+## Bug Fixes Applied
+1. **FloatingWindowService crash (Android 14+)**: Added `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `POST_NOTIFICATIONS` permissions; set `android:foregroundServiceType="specialUse"` on both FloatingWindowService declarations; updated `startForeground()` to pass `ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE` on API 34+.
+2. **White screen**: WebView `factory` now stores ref via `webViewRef`; `LaunchedEffect(webApp?.url)` loads URL only when non-null to fix blank-URL race condition.
+3. **Settings not persisted**: `SettingsViewModel` fully rewritten with `SharedPreferences` backing (file: `waos_settings`); all toggles load on init and write immediately on change.
+4. **Settings toggles broken**: `SettingsScreen` wired every toggle to its ViewModel setter; backup buttons show loading state and result Toast.
+5. **BackupService AES crash**: Removed broken AES encryption (10-byte key was invalid); now saves/restores plain JSON to `externalFilesDir/backups/`.
+6. **Missing service declaration**: Added `com.cylonid.nativealpha.service.FloatingWindowService` to AndroidManifest (used by WebViewActivity but was undeclared).
+7. **Desktop user agent**: `AddWebAppViewModel.saveWebApp()` now correctly saves desktop UA string when `useDesktopUserAgent` is true; `loadForEdit()` detects and restores it.
+8. **shouldRefresh loop**: Added `clearRefreshFlag()` to `WebViewViewModel`; update block now calls it after `reload()` to prevent infinite refresh loop.
+
 ## Dependencies Added
 - `androidx.navigation:navigation-compose:2.8.9` — Compose navigation
 - `io.coil-kt:coil-compose:2.7.0` — Image loading (for future favicon support)

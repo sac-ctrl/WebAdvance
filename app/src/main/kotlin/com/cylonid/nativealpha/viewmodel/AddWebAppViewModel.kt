@@ -50,6 +50,7 @@ class AddWebAppViewModel @Inject constructor(
         viewModelScope.launch {
             repository.getWebAppById(id).collect { app ->
                 app?.let {
+                    val desktopUA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
                     editId = it.id
                     url = it.url
                     name = it.name
@@ -75,6 +76,9 @@ class AddWebAppViewModel @Inject constructor(
                     isCameraPermission = it.isCameraPermission
                     isMicrophonePermission = it.isMicrophonePermission
                     isEnableZooming = it.isEnableZooming
+                    useDesktopUserAgent = it.userAgent?.contains(desktopUA) == true
+                    useCustomUserAgent = !it.userAgent.isNullOrBlank() && it.userAgent?.contains(desktopUA) == false
+                    userAgent = if (useCustomUserAgent) it.userAgent ?: "" else ""
                     refreshIntervalText = when (it.refreshInterval) {
                         0L -> "Manual"
                         5000L -> "5s"
@@ -100,6 +104,13 @@ class AddWebAppViewModel @Inject constructor(
             else -> 0L
         }
 
+        val desktopUserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        val resolvedUserAgent = when {
+            useCustomUserAgent && userAgent.isNotBlank() -> userAgent
+            useDesktopUserAgent -> desktopUserAgent
+            else -> null
+        }
+
         val webApp = WebApp(
             id = if (editId > 0L) editId else 0L,
             name = name.ifBlank {
@@ -108,7 +119,7 @@ class AddWebAppViewModel @Inject constructor(
             url = url,
             category = category,
             customGroup = customGroup.takeIf { it.isNotBlank() },
-            userAgent = if (useCustomUserAgent) userAgent else null,
+            userAgent = resolvedUserAgent,
             isJavaScriptEnabled = isJavaScriptEnabled,
             isAdblockEnabled = isAdblockEnabled,
             isDarkModeEnabled = isDarkModeEnabled,

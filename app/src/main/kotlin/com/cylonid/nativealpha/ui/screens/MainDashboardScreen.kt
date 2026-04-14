@@ -43,6 +43,7 @@ import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.ui.WebViewActivity
 import com.cylonid.nativealpha.ui.theme.*
 import com.cylonid.nativealpha.viewmodel.MainViewModel
+import com.cylonid.nativealpha.viewmodel.SettingsViewModel
 import com.cylonid.nativealpha.waos.service.FloatingWindowService
 import com.cylonid.nativealpha.waos.ui.ClipboardManagerActivity
 import com.cylonid.nativealpha.waos.ui.CredentialVaultActivity
@@ -104,7 +105,8 @@ private fun getAppEmoji(webApp: WebApp): String {
 @Composable
 fun MainDashboardScreen(
     navController: NavController,
-    viewModel: MainViewModel = hiltViewModel()
+    viewModel: MainViewModel = hiltViewModel(),
+    settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
@@ -114,6 +116,10 @@ fun MainDashboardScreen(
     val sortBy by viewModel.sortBy.collectAsState()
     val groupBy by viewModel.groupBy.collectAsState()
     val groupedWebApps by viewModel.groupedWebApps.collectAsState()
+
+    val showCategoryChips = settingsViewModel.showCategoryChips
+    val showStatusIndicators = settingsViewModel.showStatusIndicators
+    val floatingWindowsEnabled = settingsViewModel.floatingWindowsEnabled
 
     var selectedCategory by remember { mutableStateOf("All") }
     var fabExpanded by remember { mutableStateOf(false) }
@@ -264,38 +270,40 @@ fun MainDashboardScreen(
                         singleLine = true
                     )
 
-                    LazyRow(
-                        contentPadding = PaddingValues(horizontal = 20.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    ) {
-                        items(categories) { cat ->
-                            val selected = selectedCategory == cat
-                            val bgColor by animateColorAsState(
-                                if (selected) CyanPrimary else CardSurface, label = "cat$cat"
-                            )
-                            val textColor by animateColorAsState(
-                                if (selected) BgDeep else TextSecondary, label = "catTxt$cat"
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .height(32.dp)
-                                    .background(bgColor, RoundedCornerShape(50))
-                                    .border(
-                                        1.dp,
-                                        if (selected) CyanPrimary else CardBorder,
-                                        RoundedCornerShape(50)
-                                    )
-                                    .clickable { selectedCategory = cat }
-                                    .padding(horizontal = 16.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    cat,
-                                    color = textColor,
-                                    fontSize = 12.sp,
-                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                    if (showCategoryChips) {
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 20.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        ) {
+                            items(categories) { cat ->
+                                val selected = selectedCategory == cat
+                                val bgColor by animateColorAsState(
+                                    if (selected) CyanPrimary else CardSurface, label = "cat$cat"
                                 )
+                                val textColor by animateColorAsState(
+                                    if (selected) BgDeep else TextSecondary, label = "catTxt$cat"
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .height(32.dp)
+                                        .background(bgColor, RoundedCornerShape(50))
+                                        .border(
+                                            1.dp,
+                                            if (selected) CyanPrimary else CardBorder,
+                                            RoundedCornerShape(50)
+                                        )
+                                        .clickable { selectedCategory = cat }
+                                        .padding(horizontal = 16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        cat,
+                                        color = textColor,
+                                        fontSize = 12.sp,
+                                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                }
                             }
                         }
                     }
@@ -394,6 +402,7 @@ fun MainDashboardScreen(
                                     items(filteredByCategory, key = { it.id }) { webApp ->
                                         AppGridCard(
                                             webApp = webApp,
+                                            showStatusIndicator = showStatusIndicators,
                                             onClick = {
                                                 val intent = Intent(context, WebViewActivity::class.java)
                                                     .apply { putExtra("webAppId", webApp.id) }
@@ -417,6 +426,7 @@ fun MainDashboardScreen(
                                     items(filteredByCategory, key = { it.id }) { webApp ->
                                         AppListCard(
                                             webApp = webApp,
+                                            showStatusIndicator = showStatusIndicators,
                                             onClick = {
                                                 val intent = Intent(context, WebViewActivity::class.java)
                                                     .apply { putExtra("webAppId", webApp.id) }
@@ -469,6 +479,7 @@ fun MainDashboardScreen(
                                 items(apps, key = { it.id }) { webApp ->
                                     AppListCard(
                                         webApp = webApp,
+                                        showStatusIndicator = showStatusIndicators,
                                         onClick = {
                                             val intent = Intent(context, WebViewActivity::class.java)
                                                 .apply { putExtra("webAppId", webApp.id) }
@@ -499,6 +510,7 @@ fun MainDashboardScreen(
                 },
                 onFloat = {
                     contextMenuApp = null
+                    if (!floatingWindowsEnabled) return@AppContextMenu
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
                         val permIntent = Intent(
                             Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -624,6 +636,7 @@ fun AppGridCard(
     webApp: WebApp,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
+    showStatusIndicator: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -724,39 +737,41 @@ fun AppGridCard(
 
             Spacer(Modifier.weight(1f))
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(6.dp)
-                        .background(statusColor.copy(alpha = glowAlpha), CircleShape)
-                )
-                Spacer(Modifier.width(4.dp))
-                Text(
-                    text = when (webApp.status) {
-                        WebApp.Status.ACTIVE -> "Active"
-                        WebApp.Status.BACKGROUND -> "Background"
-                        WebApp.Status.ERROR -> "Error"
-                    },
-                    color = statusColor,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                if (webApp.notificationCount > 0) {
-                    Spacer(Modifier.width(6.dp))
+            if (showStatusIndicator) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
                     Box(
                         modifier = Modifier
-                            .background(ErrorRed, RoundedCornerShape(50))
-                            .padding(horizontal = 5.dp, vertical = 1.dp)
-                    ) {
-                        Text(
-                            "${webApp.notificationCount}",
-                            color = Color.White,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                            .size(6.dp)
+                            .background(statusColor.copy(alpha = glowAlpha), CircleShape)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = when (webApp.status) {
+                            WebApp.Status.ACTIVE -> "Active"
+                            WebApp.Status.BACKGROUND -> "Background"
+                            WebApp.Status.ERROR -> "Error"
+                        },
+                        color = statusColor,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    if (webApp.notificationCount > 0) {
+                        Spacer(Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .background(ErrorRed, RoundedCornerShape(50))
+                                .padding(horizontal = 5.dp, vertical = 1.dp)
+                        ) {
+                            Text(
+                                "${webApp.notificationCount}",
+                                color = Color.White,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
@@ -770,6 +785,7 @@ fun AppListCard(
     webApp: WebApp,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
+    showStatusIndicator: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -866,14 +882,16 @@ fun AppListCard(
                     )
                 }
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(7.dp)
-                        .background(statusColor.copy(alpha = glowAlpha), CircleShape)
-                )
-                Spacer(Modifier.width(4.dp))
-                Text(statusLabel, color = statusColor, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+            if (showStatusIndicator) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(7.dp)
+                            .background(statusColor.copy(alpha = glowAlpha), CircleShape)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(statusLabel, color = statusColor, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                }
             }
         }
 

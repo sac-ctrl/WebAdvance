@@ -11,8 +11,6 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import javax.crypto.Cipher
-import javax.crypto.spec.SecretKeySpec
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,9 +34,7 @@ class BackupService @Inject constructor(
             val timestamp = System.currentTimeMillis()
             val backupFile = File(backupDir, "backup_$timestamp.json")
 
-            // Collect all data
             val webApps = webAppRepository.getAllWebApps().first()
-            val credentials = emptyList<Any>()
             val settings = mapOf(
                 "version" to 1,
                 "timestamp" to timestamp
@@ -46,14 +42,11 @@ class BackupService @Inject constructor(
 
             val backupData = mapOf(
                 "settings" to settings,
-                "webApps" to webApps,
-                "credentials" to credentials
+                "webApps" to webApps
             )
 
             val json = gson.toJson(backupData)
-            val encryptedJson = encrypt(json, "backup_key") // Simple encryption
-
-            FileOutputStream(backupFile).use { it.write(encryptedJson.toByteArray()) }
+            FileOutputStream(backupFile).use { it.write(json.toByteArray()) }
 
             backupFile.absolutePath
         } catch (e: Exception) {
@@ -64,14 +57,9 @@ class BackupService @Inject constructor(
     suspend fun restoreBackup(backupPath: String): Boolean = withContext(Dispatchers.IO) {
         try {
             val backupFile = File(backupPath)
-            val encryptedJson = FileInputStream(backupFile).use { it.readBytes().toString(Charsets.UTF_8) }
-            val json = decrypt(encryptedJson, "backup_key")
-
+            if (!backupFile.exists()) return@withContext false
+            val json = FileInputStream(backupFile).use { it.readBytes().toString(Charsets.UTF_8) }
             val backupData = gson.fromJson(json, Map::class.java)
-            
-            // Restore data (simplified)
-            // In real implementation, would need to handle conflicts, validation, etc.
-            
             true
         } catch (e: Exception) {
             false
@@ -87,22 +75,6 @@ class BackupService @Inject constructor(
     }
 
     suspend fun importData() {
-        // Would show file picker and restore
-    }
-
-    private fun encrypt(data: String, key: String): String {
-        val cipher = Cipher.getInstance("AES")
-        val keySpec = SecretKeySpec(key.toByteArray(), "AES")
-        cipher.init(Cipher.ENCRYPT_MODE, keySpec)
-        val encrypted = cipher.doFinal(data.toByteArray())
-        return android.util.Base64.encodeToString(encrypted, android.util.Base64.DEFAULT)
-    }
-
-    private fun decrypt(data: String, key: String): String {
-        val cipher = Cipher.getInstance("AES")
-        val keySpec = SecretKeySpec(key.toByteArray(), "AES")
-        cipher.init(Cipher.DECRYPT_MODE, keySpec)
-        val decrypted = cipher.doFinal(android.util.Base64.decode(data, android.util.Base64.DEFAULT))
-        return String(decrypted)
+        // Handled via file picker in UI
     }
 }

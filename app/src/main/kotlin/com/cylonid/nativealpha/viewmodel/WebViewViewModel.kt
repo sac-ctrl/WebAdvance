@@ -72,7 +72,7 @@ class WebViewViewModel @Inject constructor(
             repository.getWebAppById(id).collect { app ->
                 _webApp.value = app
                 _isLoading.value = false
-
+                app?.let { _isAdblockEnabled.value = it.isAdblockEnabled }
                 if (app?.refreshInterval ?: 0 > 0) {
                     scheduleAutoRefresh()
                 }
@@ -122,6 +122,10 @@ class WebViewViewModel @Inject constructor(
 
     fun refresh() {
         _webViewState.value = _webViewState.value.copy(shouldRefresh = true)
+    }
+
+    fun clearRefreshFlag() {
+        _webViewState.value = _webViewState.value.copy(shouldRefresh = false)
     }
 
     fun toggleConsole() {

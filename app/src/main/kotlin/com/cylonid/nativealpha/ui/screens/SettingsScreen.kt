@@ -46,6 +46,13 @@ fun SettingsScreen(
     val scrollState = rememberScrollState()
     val context = LocalContext.current
 
+    LaunchedEffect(viewModel.lastExportMessage) {
+        if (viewModel.lastExportMessage.isNotEmpty()) {
+            Toast.makeText(context, viewModel.lastExportMessage, Toast.LENGTH_LONG).show()
+            viewModel.clearExportMessage()
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize().background(BgDeep)) {
         Scaffold(
             containerColor = Color.Transparent,
@@ -85,9 +92,7 @@ fun SettingsScreen(
                 Spacer(Modifier.height(4.dp))
 
                 SettingsSectionCard(title = "Appearance", icon = Icons.Rounded.Palette) {
-                    SettingsToggleRow("Dark Mode (WAOS Default)", Icons.Rounded.DarkMode, true) {}
                     var themeExpanded by remember { mutableStateOf(false) }
-                    Spacer(Modifier.height(8.dp))
                     ExposedDropdownMenuBox(expanded = themeExpanded, onExpandedChange = { themeExpanded = it }) {
                         OutlinedTextField(
                             value = viewModel.appTheme,
@@ -107,7 +112,10 @@ fun SettingsScreen(
                             listOf("System", "Dark", "Light").forEach { theme ->
                                 DropdownMenuItem(
                                     text = { Text(theme, color = TextPrimary) },
-                                    onClick = { viewModel.appTheme = theme; themeExpanded = false }
+                                    onClick = {
+                                        viewModel.setAppTheme(theme)
+                                        themeExpanded = false
+                                    }
                                 )
                             }
                         }
@@ -117,57 +125,109 @@ fun SettingsScreen(
                 SettingsSectionCard(title = "Dashboard", icon = Icons.Rounded.Dashboard) {
                     SettingsInfoRow("Grid Columns", "2 columns (auto-adaptive)")
                     Spacer(Modifier.height(8.dp))
-                    SettingsToggleRow("Show Category Chips", Icons.Rounded.Category, true) {}
-                    SettingsToggleRow("Show Status Indicators", Icons.Rounded.Circle, true) {}
-                    SettingsToggleRow("Animated Cards", Icons.Rounded.AutoAwesome, true) {}
+                    SettingsToggleRow("Show Category Chips", Icons.Rounded.Category, viewModel.showCategoryChips) {
+                        viewModel.setShowCategoryChips(it)
+                    }
+                    SettingsToggleRow("Show Status Indicators", Icons.Rounded.Circle, viewModel.showStatusIndicators) {
+                        viewModel.setShowStatusIndicators(it)
+                    }
+                    SettingsToggleRow("Animated Cards", Icons.Rounded.AutoAwesome, viewModel.animatedCards) {
+                        viewModel.setAnimatedCards(it)
+                    }
                 }
 
                 SettingsSectionCard(title = "Notifications", icon = Icons.Rounded.Notifications) {
-                    SettingsToggleRow("Global Notifications", Icons.Rounded.NotificationsActive, viewModel.globalNotificationsEnabled) {
-                        viewModel.globalNotificationsEnabled = it
+                    SettingsToggleRow(
+                        "Global Notifications",
+                        Icons.Rounded.NotificationsActive,
+                        viewModel.globalNotificationsEnabled
+                    ) {
+                        viewModel.setGlobalNotificationsEnabled(it)
                     }
-                    SettingsToggleRow("Badge Count", Icons.Rounded.Label, viewModel.globalNotificationsEnabled) {}
+                    SettingsToggleRow(
+                        "Show Badge Count",
+                        Icons.Rounded.Label,
+                        viewModel.showBadgeCount && viewModel.globalNotificationsEnabled
+                    ) {
+                        if (viewModel.globalNotificationsEnabled) viewModel.setShowBadgeCount(it)
+                    }
                 }
 
                 SettingsSectionCard(title = "Floating Windows", icon = Icons.Rounded.OpenInNew) {
-                    SettingsToggleRow("Enable Floating Windows", Icons.Rounded.OpenWith, viewModel.floatingWindowsEnabled) {
-                        viewModel.floatingWindowsEnabled = it
+                    SettingsToggleRow(
+                        "Enable Floating Windows",
+                        Icons.Rounded.OpenWith,
+                        viewModel.floatingWindowsEnabled
+                    ) {
+                        viewModel.setFloatingWindowsEnabled(it)
                     }
                     AnimatedVisibility(visible = viewModel.floatingWindowsEnabled) {
                         Column {
                             Spacer(Modifier.height(8.dp))
-                            SettingsInfoRow("Max Windows", "${viewModel.maxFloatingWindows} simultaneous windows")
+                            SettingsInfoRow(
+                                "Max Windows",
+                                "${viewModel.maxFloatingWindows} simultaneous windows"
+                            )
                         }
                     }
                 }
 
                 SettingsSectionCard(title = "Privacy & Security", icon = Icons.Rounded.Security) {
-                    SettingsToggleRow("Global Credential Vault", Icons.Rounded.Lock, viewModel.globalVaultEnabled) {
-                        viewModel.globalVaultEnabled = it
+                    SettingsToggleRow(
+                        "Global Credential Vault",
+                        Icons.Rounded.Lock,
+                        viewModel.globalVaultEnabled
+                    ) {
+                        viewModel.setGlobalVaultEnabled(it)
                     }
-                    SettingsToggleRow("Clipboard Manager", Icons.Rounded.ContentPaste, viewModel.globalClipboardEnabled) {
-                        viewModel.globalClipboardEnabled = it
+                    SettingsToggleRow(
+                        "Clipboard Manager",
+                        Icons.Rounded.ContentPaste,
+                        viewModel.globalClipboardEnabled
+                    ) {
+                        viewModel.setGlobalClipboardEnabled(it)
                     }
                     SettingsInfoRow("Auto-lock Timeout", "5 minutes")
                 }
 
                 SettingsSectionCard(title = "Developer", icon = Icons.Rounded.Code) {
-                    SettingsToggleRow("Developer Mode", Icons.Rounded.BugReport, viewModel.developerModeEnabled) {
-                        viewModel.developerModeEnabled = it
+                    SettingsToggleRow(
+                        "Developer Mode",
+                        Icons.Rounded.BugReport,
+                        viewModel.developerModeEnabled
+                    ) {
+                        viewModel.setDeveloperModeEnabled(it)
                     }
-                    SettingsInfoRow("JS Console", if (viewModel.developerModeEnabled) "Enabled in WebView" else "Disabled")
+                    SettingsInfoRow(
+                        "JS Console",
+                        if (viewModel.developerModeEnabled) "Enabled in WebView" else "Disabled"
+                    )
                 }
 
                 SettingsSectionCard(title = "Backup & Restore", icon = Icons.Rounded.Backup) {
                     Button(
                         onClick = { viewModel.exportData() },
+                        enabled = !viewModel.isExporting,
                         modifier = Modifier.fillMaxWidth().height(44.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = CyanPrimary.copy(0.12f), contentColor = CyanPrimary),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = CyanPrimary.copy(0.12f),
+                            contentColor = CyanPrimary
+                        ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Icon(Icons.Rounded.CloudUpload, null, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text("Export All Data", fontWeight = FontWeight.SemiBold)
+                        if (viewModel.isExporting) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = CyanPrimary
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text("Exporting...", fontWeight = FontWeight.SemiBold)
+                        } else {
+                            Icon(Icons.Rounded.CloudUpload, null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Export All Data", fontWeight = FontWeight.SemiBold)
+                        }
                     }
                     Spacer(Modifier.height(8.dp))
                     OutlinedButton(

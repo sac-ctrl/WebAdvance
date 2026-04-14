@@ -11,6 +11,9 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <meta-data android:name="android.webkit.WebView.EnableSafeBrowsing"
         android:value="false" />
@@ -98,7 +101,13 @@
 
         <service
             android:name="com.cylonid.nativealpha.waos.service.FloatingWindowService"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="specialUse" />
+
+        <service
+            android:name="com.cylonid.nativealpha.service.FloatingWindowService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse" />
 
         <activity
             android:name="com.cylonid.nativealpha.crash.CrashActivity"

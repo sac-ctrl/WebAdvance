@@ -1,48 +1,152 @@
 package com.cylonid.nativealpha.viewmodel
 
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cylonid.nativealpha.data.AppDatabase
+import com.cylonid.nativealpha.service.BackupService
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val database: AppDatabase
+    private val backupService: BackupService,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    var appTheme by mutableStateOf("System")
-    var dashboardColumns by mutableStateOf(2)
-    var globalNotificationsEnabled by mutableStateOf(true)
-    var floatingWindowsEnabled by mutableStateOf(true)
-    var maxFloatingWindows by mutableStateOf(5)
-    var globalClipboardEnabled by mutableStateOf(true)
-    var globalVaultEnabled by mutableStateOf(false)
-    var globalAutoLockTimeout by mutableStateOf(300000L)
-    var screenOrientation by mutableStateOf("Portrait")
-    var developerModeEnabled by mutableStateOf(false)
+    private val prefs: SharedPreferences =
+        context.getSharedPreferences("waos_settings", Context.MODE_PRIVATE)
 
-    init {
-        loadSettings()
+    var appTheme by mutableStateOf(prefs.getString("app_theme", "Dark") ?: "Dark")
+        private set
+    var dashboardColumns by mutableStateOf(prefs.getInt("dashboard_columns", 2))
+        private set
+    var showCategoryChips by mutableStateOf(prefs.getBoolean("show_category_chips", true))
+        private set
+    var showStatusIndicators by mutableStateOf(prefs.getBoolean("show_status_indicators", true))
+        private set
+    var animatedCards by mutableStateOf(prefs.getBoolean("animated_cards", true))
+        private set
+    var globalNotificationsEnabled by mutableStateOf(prefs.getBoolean("global_notifications", true))
+        private set
+    var showBadgeCount by mutableStateOf(prefs.getBoolean("show_badge_count", true))
+        private set
+    var floatingWindowsEnabled by mutableStateOf(prefs.getBoolean("floating_windows", true))
+        private set
+    var maxFloatingWindows by mutableStateOf(prefs.getInt("max_floating_windows", 5))
+        private set
+    var globalClipboardEnabled by mutableStateOf(prefs.getBoolean("global_clipboard", true))
+        private set
+    var globalVaultEnabled by mutableStateOf(prefs.getBoolean("global_vault", false))
+        private set
+    var globalAutoLockTimeout by mutableStateOf(prefs.getLong("auto_lock_timeout", 300000L))
+        private set
+    var screenOrientation by mutableStateOf(prefs.getString("screen_orientation", "Portrait") ?: "Portrait")
+        private set
+    var developerModeEnabled by mutableStateOf(prefs.getBoolean("developer_mode", false))
+        private set
+
+    var isExporting by mutableStateOf(false)
+        private set
+    var isImporting by mutableStateOf(false)
+        private set
+    var lastExportMessage by mutableStateOf("")
+        private set
+
+    fun setAppTheme(value: String) {
+        appTheme = value
+        prefs.edit().putString("app_theme", value).apply()
     }
 
-    private fun loadSettings() {
-        // TODO: Load settings from SharedPreferences or database
+    fun setShowCategoryChips(value: Boolean) {
+        showCategoryChips = value
+        prefs.edit().putBoolean("show_category_chips", value).apply()
     }
 
-    private fun saveSettings() {
-        // TODO: Save settings to SharedPreferences or database
+    fun setShowStatusIndicators(value: Boolean) {
+        showStatusIndicators = value
+        prefs.edit().putBoolean("show_status_indicators", value).apply()
+    }
+
+    fun setAnimatedCards(value: Boolean) {
+        animatedCards = value
+        prefs.edit().putBoolean("animated_cards", value).apply()
+    }
+
+    fun setGlobalNotificationsEnabled(value: Boolean) {
+        globalNotificationsEnabled = value
+        prefs.edit().putBoolean("global_notifications", value).apply()
+    }
+
+    fun setShowBadgeCount(value: Boolean) {
+        showBadgeCount = value
+        prefs.edit().putBoolean("show_badge_count", value).apply()
+    }
+
+    fun setFloatingWindowsEnabled(value: Boolean) {
+        floatingWindowsEnabled = value
+        prefs.edit().putBoolean("floating_windows", value).apply()
+    }
+
+    fun setMaxFloatingWindows(value: Int) {
+        maxFloatingWindows = value
+        prefs.edit().putInt("max_floating_windows", value).apply()
+    }
+
+    fun setGlobalClipboardEnabled(value: Boolean) {
+        globalClipboardEnabled = value
+        prefs.edit().putBoolean("global_clipboard", value).apply()
+    }
+
+    fun setGlobalVaultEnabled(value: Boolean) {
+        globalVaultEnabled = value
+        prefs.edit().putBoolean("global_vault", value).apply()
+    }
+
+    fun setDeveloperModeEnabled(value: Boolean) {
+        developerModeEnabled = value
+        prefs.edit().putBoolean("developer_mode", value).apply()
     }
 
     fun exportData() {
-        // TODO: Implement data export
+        isExporting = true
+        lastExportMessage = ""
+        viewModelScope.launch {
+            try {
+                val path = backupService.createBackup()
+                lastExportMessage = if (path != null) {
+                    "Backup saved to: $path"
+                } else {
+                    "Export failed. Please try again."
+                }
+            } catch (e: Exception) {
+                lastExportMessage = "Export error: ${e.message}"
+            } finally {
+                isExporting = false
+            }
+        }
     }
 
     fun importData() {
-        // TODO: Implement data import
+        lastExportMessage = "To import, place your backup file in the app's backup folder and select it."
+    }
+
+    fun clearExportMessage() {
+        lastExportMessage = ""
+    }
+
+    companion object {
+        fun isDarkMode(context: Context): Boolean {
+            val prefs = context.getSharedPreferences("waos_settings", Context.MODE_PRIVATE)
+            return when (prefs.getString("app_theme", "Dark")) {
+                "Light" -> false
+                else -> true
+            }
+        }
     }
 }
