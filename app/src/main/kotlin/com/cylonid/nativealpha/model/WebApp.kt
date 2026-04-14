@@ -1,11 +1,26 @@
 package com.cylonid.nativealpha.model
 
+import android.app.Activity
 import android.graphics.Bitmap
+import android.view.View
+import android.widget.CompoundButton
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.SwitchCompat
+import android.widget.TextView
+import androidx.fragment.app.FragmentActivity
+import androidx.appcompat.widget.SwitchCompat as AppCompatSwitchCompat
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
+import com.cylonid.nativealpha.R
 import com.cylonid.nativealpha.data.Converters
+import com.cylonid.nativealpha.model.SandboxManager
+import com.cylonid.nativealpha.util.Const
+import com.cylonid.nativealpha.util.Utility
+import com.cylonid.nativealpha.helper.BiometricPromptHelper
+import com.cylonid.nativealpha.util.ShortcutIconUtils
 import java.util.Date
 
 @Entity(tableName = "webapps")
@@ -400,7 +415,7 @@ data class WebApp(
         if (isChecked) expertSettings.visibility = View.VISIBLE else expertSettings.visibility = View.GONE
     }
 
-    fun onSwitchSandboxChanged(mSwitch: CompoundButton, isChecked: Boolean) {
+    public fun onSwitchSandboxChanged(mSwitch: CompoundButton, isChecked: Boolean) {
         isUseContainer = isChecked
         containerId = if (isChecked) {
             SandboxManager.getInstance().calculateNextFreeContainerId()
