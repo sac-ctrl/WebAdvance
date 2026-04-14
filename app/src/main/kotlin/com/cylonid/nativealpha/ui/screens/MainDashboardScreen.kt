@@ -395,24 +395,31 @@ enum class GroupOption(val displayName: String) {
     STATUS("Status"),
     CUSTOM("Custom Groups")
 }
-            // Search bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { viewModel.updateSearchQuery(it) },
-                label = { Text("Search apps") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = "Search")
-                }
-            )
 
-            if (webApps.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
+@Composable
+fun SearchAndFilterBar(
+    searchQuery: String,
+    onSearchChange: (String) -> Unit,
+    webApps: List<WebApp>
+) {
+    // Search bar
+    OutlinedTextField(
+        value = searchQuery,
+        onValueChange = onSearchChange,
+        label = { Text("Search apps") },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        leadingIcon = {
+            Icon(Icons.Default.Search, contentDescription = "Search")
+        }
+    )
+
+    if (webApps.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
                     Text("No web apps yet. Add your first one!")
                 }
             } else {
