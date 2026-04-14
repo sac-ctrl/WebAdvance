@@ -6,12 +6,15 @@ import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.os.Process
+import android.provider.OpenableColumns
 import android.text.Html
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
 import android.widget.TimePicker
+import com.google.android.material.snackbar.Snackbar
 import com.cylonid.nativealpha.activities.ToolbarBaseActivity
 import com.cylonid.nativealpha.databinding.WebappSettingsBinding
 import com.cylonid.nativealpha.model.DataManager
@@ -27,6 +30,17 @@ class WebAppSettingsActivity : ToolbarBaseActivity<WebappSettingsBinding>() {
     var webappID: Int = -1
     var webapp: WebApp? = null
     private var isGlobalWebApp: Boolean = false
+
+    private lateinit var waosGroupInput: EditText
+    private lateinit var waosIconInput: EditText
+    private lateinit var waosIconPickerButton: Button
+    private lateinit var waosDownloadFolderInput: EditText
+    private lateinit var waosClipboardMaxInput: EditText
+    private lateinit var waosFloatingWidthInput: EditText
+    private lateinit var waosFloatingHeightInput: EditText
+    private lateinit var waosFloatingOpacityInput: EditText
+    private lateinit var waosClipboardSyncSwitch: com.google.android.material.materialswitch.MaterialSwitch
+    private val REQUEST_CODE_ICON_PICKER = 5150
 
     @SuppressLint("SetJavaScriptEnabled", "ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,6 +71,7 @@ class WebAppSettingsActivity : ToolbarBaseActivity<WebappSettingsBinding>() {
         setupDesktopUserAgentHint()
         setupShortcutButton()
         setupSwitchListeners(webapp!!)
+        setupWaosAdvancedSettings(modifiedWebapp)
 
     }
 
@@ -74,9 +89,47 @@ class WebAppSettingsActivity : ToolbarBaseActivity<WebappSettingsBinding>() {
             webapp.isOverrideGlobalSettings
         )
     }
-    
+
+    private fun setupWaosAdvancedSettings(modifiedWebapp: WebApp) {
+        waosGroupInput = findViewById(R.id.textGroup)
+        waosIconInput = findViewById(R.id.textIconUri)
+        waosIconPickerButton = findViewById(R.id.button_select_icon)
+        waosDownloadFolderInput = findViewById(R.id.textDownloadFolder)
+        waosClipboardMaxInput = findViewById(R.id.textClipboardMaxItems)
+        waosFloatingWidthInput = findViewById(R.id.textFloatingWidth)
+        waosFloatingHeightInput = findViewById(R.id.textFloatingHeight)
+        waosFloatingOpacityInput = findViewById(R.id.textFloatingOpacity)
+        waosClipboardSyncSwitch = findViewById(R.id.switchClipboardSync)
+
+        waosGroupInput.setText(modifiedWebapp.group)
+        waosIconInput.setText(modifiedWebapp.iconUri ?: "")
+        waosDownloadFolderInput.setText(modifiedWebapp.customDownloadFolder ?: "")
+        waosClipboardMaxInput.setText(modifiedWebapp.clipboardMaxItems.toString())
+        waosFloatingWidthInput.setText(modifiedWebapp.floatingWindowWidth.toString())
+        waosFloatingHeightInput.setText(modifiedWebapp.floatingWindowHeight.toString())
+        waosFloatingOpacityInput.setText(modifiedWebapp.floatingWindowOpacity.toString())
+        waosClipboardSyncSwitch.isChecked = modifiedWebapp.clipboardSyncEnabled
+
+        waosIconPickerButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "image/*"
+            }
+            startActivityForResult(intent, REQUEST_CODE_ICON_PICKER)
+        }
+    }
+
     private fun setupSaveAndCancel(modifiedWebapp: WebApp) {
         binding.btnSave.setOnClickListener {
+            modifiedWebapp.group = waosGroupInput.text.toString().trim().ifBlank { "Default" }
+            modifiedWebapp.iconUri = waosIconInput.text.toString().trim().ifEmpty { null }
+            modifiedWebapp.customDownloadFolder = waosDownloadFolderInput.text.toString().trim().ifEmpty { null }
+            modifiedWebapp.clipboardMaxItems = waosClipboardMaxInput.text.toString().toIntOrNull() ?: modifiedWebapp.clipboardMaxItems
+            modifiedWebapp.floatingWindowWidth = waosFloatingWidthInput.text.toString().toIntOrNull() ?: modifiedWebapp.floatingWindowWidth
+            modifiedWebapp.floatingWindowHeight = waosFloatingHeightInput.text.toString().toIntOrNull() ?: modifiedWebapp.floatingWindowHeight
+            modifiedWebapp.floatingWindowOpacity = waosFloatingOpacityInput.text.toString().toIntOrNull()?.coerceIn(30, 100) ?: modifiedWebapp.floatingWindowOpacity
+            modifiedWebapp.clipboardSyncEnabled = waosClipboardSyncSwitch.isChecked
+
             val activityManager =
                 getSystemService(ACTIVITY_SERVICE) as ActivityManager
             // Global web app => close all webview activities, save to global settings
@@ -162,6 +215,17 @@ class WebAppSettingsActivity : ToolbarBaseActivity<WebappSettingsBinding>() {
             }, c!![Calendar.HOUR_OF_DAY], c[Calendar.MINUTE], true
         )
         timePickerDialog.show()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_ICON_PICKER && resultCode == RESULT_OK && data != null) {
+            val uri = data.data
+            if (uri != null) {
+                waosIconInput.setText(uri.toString())
+                Snackbar.make(binding.root, getString(R.string.icon_selected), Snackbar.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun prepareGlobalWebAppScreen() {

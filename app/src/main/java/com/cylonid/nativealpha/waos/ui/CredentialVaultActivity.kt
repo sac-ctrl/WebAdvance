@@ -1,9 +1,12 @@
 package com.cylonid.nativealpha.waos.ui
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.Button
@@ -14,11 +17,21 @@ import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cylonid.nativealpha.R
+import com.cylonid.nativealpha.helper.BiometricPromptHelper
 import com.cylonid.nativealpha.waos.model.CredentialItem
 import com.cylonid.nativealpha.waos.model.CredentialRepository
 import com.cylonid.nativealpha.waos.util.WaosConstants
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
+import java.util.UUID
 
 class CredentialVaultActivity : AppCompatActivity() {
+    companion object {
+        private const val REQUEST_EXPORT_VAULT = 4132
+        private const val REQUEST_IMPORT_VAULT = 4133
+    }
+
     private lateinit var credentialRecyclerView: RecyclerView
     private lateinit var adapter: CredentialAdapter
     private var appId: Int = -1
@@ -39,6 +52,12 @@ class CredentialVaultActivity : AppCompatActivity() {
         findViewById<Button>(R.id.button_add_credential).setOnClickListener {
             showAddCredentialDialog()
         }
+        findViewById<Button>(R.id.button_export_vault).setOnClickListener {
+            exportVault()
+        }
+        findViewById<Button>(R.id.button_import_vault).setOnClickListener {
+            importVault()
+        }
 
         ensurePinUnlocked()
     }
@@ -46,8 +65,23 @@ class CredentialVaultActivity : AppCompatActivity() {
     private fun ensurePinUnlocked() {
         val prefs = getSharedPreferences("waos_vault", Context.MODE_PRIVATE)
         val storedHash = prefs.getString("vault_pin_hash", null)
+        val biometricEnabled = prefs.getBoolean("vault_biometric_enabled", false)
         if (storedHash == null) {
             showSetPinDialog()
+        } else if (biometricEnabled) {
+            BiometricPromptHelper(this).showPrompt(
+                {
+                    val savedPin = prefs.getString("vault_pin_secret", null)
+                    if (savedPin != null) {
+                        vaultPin = savedPin
+                        refreshCredentials()
+                    } else {
+                        showUnlockDialog(storedHash)
+                    }
+                },
+                { showUnlockDialog(storedHash) },
+                getString(R.string.bioprompt_restricted_webapp)
+            )
         } else {
             showUnlockDialog(storedHash)
         }
@@ -68,7 +102,7 @@ class CredentialVaultActivity : AppCompatActivity() {
                     getSharedPreferences("waos_vault", Context.MODE_PRIVATE)
                         .edit().putString("vault_pin_hash", hash).apply()
                     vaultPin = pin
-                    refreshCredentials()
+                    showBiometricEnablePrompt()
                 } else {
                     Toast.makeText(this, "PINs must match and have at least 4 digits", Toast.LENGTH_SHORT).show()
                     showSetPinDialog()
@@ -76,6 +110,26 @@ class CredentialVaultActivity : AppCompatActivity() {
             }
             .setCancelable(false)
             .show()
+    }
+
+    private fun showBiometricEnablePrompt() {
+        BiometricPromptHelper(this).showPrompt(
+            {
+                getSharedPreferences("waos_vault", Context.MODE_PRIVATE)
+                    .edit().putBoolean("vault_biometric_enabled", true)
+                    .putString("vault_pin_secret", vaultPin)
+                    .apply()
+                refreshCredentials()
+            },
+            {
+                getSharedPreferences("waos_vault", Context.MODE_PRIVATE)
+                    .edit().putBoolean("vault_biometric_enabled", false)
+                    .remove("vault_pin_secret")
+                    .apply()
+                refreshCredentials()
+            },
+            "Enable biometric vault unlock?"
+        )
     }
 
     private fun showUnlockDialog(storedHash: String) {
@@ -101,15 +155,98 @@ class CredentialVaultActivity : AppCompatActivity() {
     private fun refreshCredentials() {
         val pin = vaultPin ?: return
         val credentials = CredentialRepository.loadCredentials(this, appId, pin)
-        adapter = CredentialAdapter(credentials) { item -> copyCredential(item) }
+        adapter = CredentialAdapter(credentials) { item -> showCredentialActions(item) }
         credentialRecyclerView.adapter = adapter
     }
 
-    private fun copyCredential(item: CredentialItem) {
+    private fun showCredentialActions(item: CredentialItem) {
+        AlertDialog.Builder(this)
+            .setTitle(item.title)
+            .setItems(arrayOf("Autofill in browser", "Copy username", "Copy password", "Edit", "Delete")) { _, which ->
+                when (which) {
+                    0 -> autofillCredential(item)
+                    1 -> copyTextToClipboard(item.username)
+                    2 -> copyTextToClipboard(item.password)
+                    3 -> showEditCredentialDialog(item)
+                    4 -> confirmDeleteCredential(item)
+                }
+            }
+            .show()
+    }
+
+    private fun showEditCredentialDialog(item: CredentialItem) {
+        if (vaultPin == null) return
+        val builder = AlertDialog.Builder(this)
+        val view = LayoutInflater.from(this).inflate(R.layout.dialog_add_credential, null)
+        val titleInput = view.findViewById<EditText>(R.id.edit_title)
+        val usernameInput = view.findViewById<EditText>(R.id.edit_username)
+        val passwordInput = view.findViewById<EditText>(R.id.edit_password)
+        val urlInput = view.findViewById<EditText>(R.id.edit_url)
+        val notesInput = view.findViewById<EditText>(R.id.edit_notes)
+
+        titleInput.setText(item.title)
+        usernameInput.setText(item.username)
+        passwordInput.setText(item.password)
+        urlInput.setText(item.url)
+        notesInput.setText(item.notes)
+
+        val dialog = builder.setTitle("Edit Credential")
+            .setView(view)
+            .setPositiveButton("Save") { _, _ ->
+                val updated = CredentialItem(
+                    appId,
+                    titleInput.text.toString().trim(),
+                    usernameInput.text.toString().trim(),
+                    passwordInput.text.toString().trim(),
+                    urlInput.text.toString().trim(),
+                    notesInput.text.toString().trim(),
+                    item.timestamp
+                )
+                CredentialRepository.updateCredential(this, updated, vaultPin!!)
+                refreshCredentials()
+            }
+            .setNegativeButton("Cancel", null)
+            .setNeutralButton("Generate", null)
+            .create()
+        dialog.show()
+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
+            passwordInput.setText(generatePassword())
+        }
+    }
+
+    private fun confirmDeleteCredential(item: CredentialItem) {
+        AlertDialog.Builder(this)
+            .setTitle("Delete Credential")
+            .setMessage("Delete ${item.title}? This cannot be undone.")
+            .setPositiveButton("Delete") { _, _ ->
+                CredentialRepository.deleteCredential(this, item)
+                refreshCredentials()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun copyCredential(item: CredentialItem, addLabel: Boolean) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("WAOS Credential", "${item.username}:${item.password}")
+        val payload = if (addLabel) "${item.username}:${item.password}" else "${item.username}:${item.password}"
+        val clip = ClipData.newPlainText("WAOS Credential", payload)
         clipboard.setPrimaryClip(clip)
         Toast.makeText(this, "Credential copied to clipboard", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun copyTextToClipboard(text: String) {
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("WAOS Credential", text)
+        clipboard.setPrimaryClip(clip)
+        Toast.makeText(this, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun autofillCredential(item: CredentialItem) {
+        val intent = Intent()
+        intent.putExtra(WaosConstants.EXTRA_CREDENTIAL_USERNAME, item.username)
+        intent.putExtra(WaosConstants.EXTRA_CREDENTIAL_PASSWORD, item.password)
+        setResult(Activity.RESULT_OK, intent)
+        finish()
     }
 
     private fun showAddCredentialDialog() {
@@ -121,7 +258,7 @@ class CredentialVaultActivity : AppCompatActivity() {
         val passwordInput = view.findViewById<EditText>(R.id.edit_password)
         val urlInput = view.findViewById<EditText>(R.id.edit_url)
         val notesInput = view.findViewById<EditText>(R.id.edit_notes)
-        builder.setTitle("Add Credential")
+        val dialog = builder.setTitle("Add Credential")
             .setView(view)
             .setPositiveButton("Save") { _, _ ->
                 val credential = CredentialItem(
@@ -136,6 +273,78 @@ class CredentialVaultActivity : AppCompatActivity() {
                 refreshCredentials()
             }
             .setNegativeButton("Cancel", null)
-            .show()
+            .setNeutralButton("Generate", null)
+            .create()
+        dialog.show()
+        dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
+            passwordInput.setText(generatePassword())
+        }
+    }
+
+    private fun generatePassword(): String {
+        return UUID.randomUUID().toString().replace("-", "").take(16)
+    }
+
+    private fun exportVault() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            type = "application/json"
+            addCategory(Intent.CATEGORY_OPENABLE)
+            putExtra(Intent.EXTRA_TITLE, "waos_vault_export.json")
+        }
+        startActivityForResult(intent, REQUEST_EXPORT_VAULT)
+    }
+
+    private fun importVault() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+            .setType("application/json")
+            .addCategory(Intent.CATEGORY_OPENABLE)
+        startActivityForResult(intent, REQUEST_IMPORT_VAULT)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode != Activity.RESULT_OK || data == null) return
+        when (requestCode) {
+            REQUEST_EXPORT_VAULT -> {
+                val uri = data.data ?: return
+                exportVaultFile(uri)
+            }
+            REQUEST_IMPORT_VAULT -> {
+                val uri = data.data ?: return
+                importVaultFile(uri)
+            }
+        }
+    }
+
+    private fun exportVaultFile(uri: Uri) {
+        try {
+            val file = File(filesDir, "waos_credentials.json")
+            if (!file.exists()) throw Exception("Vault file not found")
+            contentResolver.openOutputStream(uri).use { output ->
+                file.inputStream().use { input ->
+                    input.copyTo(output!!)
+                }
+            }
+            Toast.makeText(this, "Vault exported successfully", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Could not export vault", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+        }
+    }
+
+    private fun importVaultFile(uri: Uri) {
+        try {
+            val target = File(filesDir, "waos_credentials.json")
+            contentResolver.openInputStream(uri).use { input ->
+                FileOutputStream(target).use { output ->
+                    input?.copyTo(output)
+                }
+            }
+            refreshCredentials()
+            Toast.makeText(this, "Vault imported successfully", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Could not import vault", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+        }
     }
 }

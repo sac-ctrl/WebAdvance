@@ -513,6 +513,151 @@
                                 android:checked="@={webapp.enableZooming}"
                                 android:text="@string/activate_two_finger_zoom" />
 
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="12dp"
+                                android:text="WAOS Advanced"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/labelCustomIcon"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/custom_icon"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                            <TextView
+                                android:id="@+id/labelGroup"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/webapp_group"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                            <EditText
+                                android:id="@+id/textGroup"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif"
+                                android:inputType="text"
+                                android:text="@={webapp.group}" />
+
+                            <TextView
+                                android:id="@+id/labelCustomIcon"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/custom_icon"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:weightSum="3">
+
+                                <EditText
+                                    android:id="@+id/textIconUri"
+                                    android:layout_width="0dp"
+                                    android:layout_weight="2"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="sans-serif"
+                                    android:inputType="textUri"
+                                    android:text="@={webapp.iconUri}" />
+
+                                <Button
+                                    android:id="@+id/button_select_icon"
+                                    android:layout_width="0dp"
+                                    android:layout_weight="1"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/select_icon"
+                                    android:textAllCaps="false"
+                                    android:layout_marginStart="8dp" />
+                            </LinearLayout>
+
+                            <TextView
+                                android:id="@+id/labelDownloadFolder"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/custom_download_folder"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                            <EditText
+                                android:id="@+id/textDownloadFolder"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif"
+                                android:inputType="text"
+                                android:text="@={webapp.customDownloadFolder}" />
+
+                            <com.google.android.material.materialswitch.MaterialSwitch
+                                android:id="@+id/switchClipboardSync"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:checked="@={webapp.clipboardSyncEnabled}"
+                                android:text="@string/clipboard_sync" />
+
+                            <TextView
+                                android:id="@+id/labelClipboardMaxItems"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/clipboard_history_limit"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                            <EditText
+                                android:id="@+id/textClipboardMaxItems"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif"
+                                android:inputType="number"
+                                android:text="@={String.valueOf(webapp.clipboardMaxItems)}" />
+
+                            <TextView
+                                android:id="@+id/labelFloatingWindowDefaults"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/floating_window_defaults"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:weightSum="3">
+
+                                <EditText
+                                    android:id="@+id/textFloatingWidth"
+                                    android:layout_width="0dp"
+                                    android:layout_weight="1"
+                                    android:layout_height="wrap_content"
+                                    android:hint="W"
+                                    android:fontFamily="sans-serif"
+                                    android:inputType="number"
+                                    android:text="@={String.valueOf(webapp.floatingWindowWidth)}" />
+
+                                <EditText
+                                    android:id="@+id/textFloatingHeight"
+                                    android:layout_width="0dp"
+                                    android:layout_weight="1"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:hint="H"
+                                    android:fontFamily="sans-serif"
+                                    android:inputType="number"
+                                    android:text="@={String.valueOf(webapp.floatingWindowHeight)}" />
+
+                                <EditText
+                                    android:id="@+id/textFloatingOpacity"
+                                    android:layout_width="0dp"
+                                    android:layout_weight="1"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="8dp"
+                                    android:hint="Opacity"
+                                    android:fontFamily="sans-serif"
+                                    android:inputType="number"
+                                    android:text="@={String.valueOf(webapp.floatingWindowOpacity)}" />
+                            </LinearLayout>
+
                             <com.google.android.material.materialswitch.MaterialSwitch
                                 android:id="@+id/switchFallbackToStandardContextmenu"
                                 android:layout_width="match_parent"

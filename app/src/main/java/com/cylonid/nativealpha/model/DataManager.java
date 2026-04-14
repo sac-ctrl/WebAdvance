@@ -219,11 +219,52 @@ public class DataManager {
 
     public void addWebsite(WebApp new_site) {
             websites.add(new_site);
+            if (new_site.getID() > max_assigned_ID) {
+                max_assigned_ID = new_site.getID();
+            }
             saveWebAppData();
     }
 
+    public void deleteWebApp(int id) {
+        if (id < 0 || id >= websites.size()) return;
+        WebApp webapp = websites.get(id);
+        webapp.setActiveEntry(false);
+        ShortcutIconUtils.deleteShortcuts(java.util.Collections.singletonList(id), App.getAppContext());
+        saveWebAppData();
+    }
+
+    public void cloneWebApp(int id) {
+        if (id < 0 || id >= websites.size()) return;
+        WebApp original = websites.get(id);
+        int newOrder = getIncrementedOrder();
+        WebApp cloned = new WebApp(original.getBaseUrl(), getIncrementedID(), newOrder);
+        cloned.setTitle(original.getTitle() + " (Copy)");
+        cloned.setOverrideGlobalSettings(original.isOverrideGlobalSettings());
+        cloned.setUseContainer(original.isUseContainer());
+        cloned.setContainerId(original.getContainerId());
+        cloned.copySettings(original);
+        cloned.setOrder(newOrder);
+        cloned.setActiveEntry(true);
+        cloned.setBiometricProtection(original.isBiometricProtection());
+        cloned.setGroup(original.getGroup());
+        cloned.setIconUri(original.getIconUri());
+        cloned.setCustomDownloadFolder(original.getCustomDownloadFolder());
+        cloned.setClipboardMaxItems(original.getClipboardMaxItems());
+        cloned.setClipboardSyncEnabled(original.isClipboardSyncEnabled());
+        cloned.setFloatingWindowWidth(original.getFloatingWindowWidth());
+        cloned.setFloatingWindowHeight(original.getFloatingWindowHeight());
+        cloned.setFloatingWindowOpacity(original.getFloatingWindowOpacity());
+        addWebsite(cloned);
+    }
+
     public int getIncrementedID() {
-        return getWebsites().size();
+        if (max_assigned_ID < 0) {
+            for (WebApp webapp : websites) {
+                max_assigned_ID = Math.max(max_assigned_ID, webapp.getID());
+            }
+        }
+        max_assigned_ID++;
+        return max_assigned_ID;
     }
 
     public int getIncrementedOrder() {

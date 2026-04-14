@@ -40,6 +40,25 @@ object CredentialRepository {
         getStorageFile(context).writeText(Gson().toJson(all))
     }
 
+    fun deleteCredential(context: Context, credential: CredentialItem) {
+        val all = loadAllEncryptedCredentials(context)
+        val filtered = all.filterNot { it.appId == credential.appId && it.timestamp == credential.timestamp }
+        getStorageFile(context).writeText(Gson().toJson(filtered))
+    }
+
+    fun updateCredential(context: Context, credential: CredentialItem, pin: String) {
+        val all = loadAllEncryptedCredentials(context)
+        val payload = CredentialEncryption.encrypt(Gson().toJson(credential), pin)
+        val updated = all.map {
+            if (it.appId == credential.appId && it.timestamp == credential.timestamp) {
+                EncryptedCredentialItem(credential.appId, payload, credential.timestamp)
+            } else {
+                it
+            }
+        }
+        getStorageFile(context).writeText(Gson().toJson(updated))
+    }
+
     private fun loadAllEncryptedCredentials(context: Context): MutableList<EncryptedCredentialItem> {
         val file = getStorageFile(context)
         if (!file.exists()) return mutableListOf()

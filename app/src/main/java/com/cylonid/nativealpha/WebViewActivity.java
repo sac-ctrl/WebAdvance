@@ -32,7 +32,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
-import androidx.appcompat.widget.Toolbar;
 import android.webkit.HttpAuthHandler;
 import android.webkit.PermissionRequest;
 import android.webkit.SslErrorHandler;
@@ -45,6 +44,9 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
+import android.print.PrintAttributes;
+import android.print.PrintDocumentAdapter;
+import android.print.PrintManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -104,6 +106,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
     private static final int NONE = 0;
     private static final int SWIPE = 1;
     private static final int TRESHOLD = 100;
+    private static final int REQUEST_CODE_CREDENTIAL_AUTOFILL = 4231;
     int webappID = -1;
     private WebView wv;
     private ProgressBar progressBar;
@@ -118,6 +121,7 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
     private Handler reload_handler = null;
     private WebApp webapp = null;
     private String urlOnFirstPageload = "";
+    private boolean hasRestoredScrollPosition = false;
     private boolean fallbackToDefaultLongClickBehaviour = false;
     private PopupMenu mPopupMenu = null;
 
@@ -189,6 +193,12 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
         ImageButton buttonShare = findViewById(R.id.button_share);
         ImageButton buttonCopyUrl = findViewById(R.id.button_copy_url);
         ImageButton buttonOpenExternal = findViewById(R.id.button_open_external);
+        ImageButton buttonZoomIn = findViewById(R.id.button_zoom_in);
+        ImageButton buttonZoomOut = findViewById(R.id.button_zoom_out);
+        ImageButton buttonConsole = findViewById(R.id.button_console);
+        ImageButton buttonToggleMode = findViewById(R.id.button_toggle_mode);
+        ImageButton buttonScreenshot = findViewById(R.id.button_screenshot);
+        ImageButton buttonPrint = findViewById(R.id.button_print);
         ImageButton buttonDownloadHistory = findViewById(R.id.button_download_history);
         ImageButton buttonClipboard = findViewById(R.id.button_clipboard);
         ImageButton buttonCredentials = findViewById(R.id.button_credentials);
@@ -231,6 +241,27 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                 startActivity(browserIntent);
             }
         });
+        buttonZoomIn.setOnClickListener(v -> wv.zoomIn());
+        buttonZoomOut.setOnClickListener(v -> wv.zoomOut());
+        buttonConsole.setOnClickListener(v -> showJavaScriptConsole());
+        buttonToggleMode.setOnClickListener(v -> {
+            webapp.setRequestDesktop(!webapp.isRequestDesktop());
+            if (webapp.isRequestDesktop()) {
+                wv.getSettings().setUserAgentString(Const.DESKTOP_USER_AGENT);
+                wv.getSettings().setUseWideViewPort(true);
+                wv.getSettings().setLoadWithOverviewMode(true);
+                wv.getSettings().setSupportZoom(true);
+                wv.getSettings().setBuiltInZoomControls(true);
+                wv.getSettings().setDisplayZoomControls(false);
+            } else {
+                wv.getSettings().setUserAgentString(wv.getSettings().getUserAgentString());
+                wv.getSettings().setUseWideViewPort(false);
+                wv.getSettings().setLoadWithOverviewMode(false);
+            }
+            wv.reload();
+        });
+        buttonScreenshot.setOnClickListener(v -> captureWebViewScreenshot());
+        buttonPrint.setOnClickListener(v -> printCurrentPage());
         buttonDownloadHistory.setOnClickListener(v -> {
             Intent intent = new Intent(this, com.cylonid.nativealpha.waos.ui.DownloadHistoryActivity.class);
             intent.putExtra(WaosConstants.EXTRA_DOWNLOAD_APP_ID, webappID);
@@ -241,12 +272,20 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
             intent.putExtra(WaosConstants.EXTRA_CLIPBOARD_APP_ID, webappID);
             startActivity(intent);
         });
+        buttonClipboard.setOnLongClickListener(v -> {
+            captureSelectedTextToClipboard();
+            return true;
+        });
         buttonCredentials.setOnClickListener(v -> {
             Intent intent = new Intent(this, com.cylonid.nativealpha.waos.ui.CredentialVaultActivity.class);
             intent.putExtra(WaosConstants.EXTRA_WAOS_APP_ID, webappID);
-            startActivity(intent);
+            startActivityForResult(intent, REQUEST_CODE_CREDENTIAL_AUTOFILL);
         });
         buttonFind.setOnClickListener(v -> showFindInPageDialog());
+
+        if (webapp.getLastScrollPosition() > 0) {
+            hasRestoredScrollPosition = false;
+        }
 
         List<AdblockConfig> adblockConfigs = DataManager.getInstance().getSettings().getGlobalWebApp().getAdBlockSettings();
         if (webapp.isUseAdblock() && !adblockConfigs.isEmpty()) {
@@ -328,6 +367,13 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
             showWebViewPopupMenu();
             return true;
         });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            wv.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+                if (scrollY != oldScrollY) {
+                    webapp.setLastScrollPosition(scrollY);
+                }
+            });
+        }
 
 
         wv.setDownloadListener((dl_url, userAgent, contentDisposition, mimeType, contentLength) -> {
@@ -366,7 +412,10 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                   request.allowScanningByMediaScanner();
                   request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
 
-                  String appFolder = "WAOS/" + sanitizeFolderName(webapp.getTitle());
+                  String defaultFolder = "WAOS/" + sanitizeFolderName(webapp.getTitle());
+                  String appFolder = webapp.getCustomDownloadFolder() != null && !webapp.getCustomDownloadFolder().trim().isEmpty()
+                          ? webapp.getCustomDownloadFolder().trim()
+                          : defaultFolder;
                   request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, appFolder + "/" + file_name);
 
                   DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
@@ -534,6 +583,85 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show();
+    }
+
+    private void showJavaScriptConsole() {
+        final EditText input = new EditText(this);
+        input.setHint("Enter JavaScript command");
+        new AlertDialog.Builder(this)
+                .setTitle("Console")
+                .setView(input)
+                .setPositiveButton("Run", (dialog, which) -> {
+                    String code = input.getText().toString().trim();
+                    if (!code.isEmpty()) {
+                        wv.evaluateJavascript(code, value -> {
+                            NotificationUtils.showInfoSnackbar(WebViewActivity.this, "Console output: " + value, Snackbar.LENGTH_LONG);
+                        });
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    private void captureSelectedTextToClipboard() {
+        wv.evaluateJavascript("window.getSelection().toString()", value -> {
+            String selected = value != null ? value.replaceAll("^\"|\"$", "") : "";
+            if (!selected.isEmpty()) {
+                ClipboardManager clipboard = getSystemService(ClipboardManager.class);
+                ClipData clip = ClipData.newPlainText("Selected text", selected);
+                clipboard.setPrimaryClip(clip);
+                NotificationUtils.showInfoSnackbar(WebViewActivity.this, "Selected text copied", Snackbar.LENGTH_SHORT);
+            } else {
+                NotificationUtils.showInfoSnackbar(WebViewActivity.this, "No text selected", Snackbar.LENGTH_SHORT);
+            }
+        });
+    }
+
+    private void injectCredentialsIntoPage(String username, String password) {
+        String js = String.format(
+                "(function() { var u = document.querySelector('input[type=text], input[type=email], input[name*=user], input[name*=email]'); var p = document.querySelector('input[type=password]'); if (u) u.value = '%1$s'; if (p) p.value = '%2$s'; return 'filled'; })();",
+                escapeForJs(username), escapeForJs(password)
+        );
+        wv.evaluateJavascript(js, value -> {
+            NotificationUtils.showInfoSnackbar(WebViewActivity.this, "Credentials injected", Snackbar.LENGTH_SHORT);
+        });
+    }
+
+    private String escapeForJs(String value) {
+        return value.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n").replace("\r", "\\r");
+    }
+
+    private void captureWebViewScreenshot() {
+        try {
+            Bitmap bitmap = Bitmap.createBitmap(wv.getWidth(), wv.getHeight(), Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+            wv.draw(canvas);
+            File screenshotsDir = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "WAOS/Screenshots");
+            if (!screenshotsDir.exists() && !screenshotsDir.mkdirs()) {
+                throw new Exception("Could not create screenshots folder");
+            }
+            String fileName = "waos_screenshot_" + System.currentTimeMillis() + ".png";
+            File screenshotFile = new File(screenshotsDir, fileName);
+            try (FileOutputStream fos = new FileOutputStream(screenshotFile)) {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 90, fos);
+            }
+            NotificationUtils.showInfoSnackbar(this, "Screenshot saved to " + screenshotFile.getName(), Snackbar.LENGTH_LONG);
+        } catch (Exception e) {
+            NotificationUtils.showInfoSnackbar(this, "Could not capture screenshot", Snackbar.LENGTH_LONG);
+            e.printStackTrace();
+        }
+    }
+
+    private void printCurrentPage() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            PrintManager printManager = (PrintManager) getSystemService(Context.PRINT_SERVICE);
+            if (printManager != null) {
+                PrintDocumentAdapter printAdapter = wv.createPrintDocumentAdapter("WAOS_Print");
+                printManager.print("WAOS Web Page", printAdapter, new PrintAttributes.Builder().build());
+            }
+        } else {
+            NotificationUtils.showInfoSnackbar(this, "Printing requires Android KitKat or higher", Snackbar.LENGTH_LONG);
+        }
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -770,6 +898,23 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        if (wv != null && webapp != null) {
+            wv.evaluateJavascript("window.scrollY.toString()", value -> {
+                if (value != null && !value.equals("null")) {
+                    try {
+                        int scrollY = Integer.parseInt(value.replaceAll("[^0-9]", ""));
+                        webapp.setLastScrollPosition(scrollY);
+                        DataManager.getInstance().replaceWebApp(webapp);
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+            });
+        }
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
@@ -834,6 +979,12 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
         } else if (resultCode == RESULT_OK && requestCode == CODE_OPEN_FILE) {
             filePathCallback.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, intent));
             filePathCallback = null;
+        } else if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_CREDENTIAL_AUTOFILL && intent != null) {
+            String username = intent.getStringExtra(WaosConstants.EXTRA_CREDENTIAL_USERNAME);
+            String password = intent.getStringExtra(WaosConstants.EXTRA_CREDENTIAL_PASSWORD);
+            if (username != null && password != null) {
+                injectCredentialsIntoPage(username, password);
+            }
         }
     }
 
@@ -1004,6 +1155,10 @@ public class WebViewActivity extends AppCompatActivity implements EasyPermission
             if(url.equals("about:blank")) {
                 String langExtension = LocaleUtils.getFileEnding();
                 wv.loadUrl("file:///android_asset/errorSite/error_" + langExtension + ".html");
+            }
+                if (!hasRestoredScrollPosition && webapp.getLastScrollPosition() > 0) {
+                view.evaluateJavascript("window.scrollTo(0, " + webapp.getLastScrollPosition() + ")", null);
+                hasRestoredScrollPosition = true;
             }
             wv.evaluateJavascript("document.addEventListener(\"visibilitychange\",function (event) {event.stopImmediatePropagation();},true);", null);
             super.onPageFinished(view, url);

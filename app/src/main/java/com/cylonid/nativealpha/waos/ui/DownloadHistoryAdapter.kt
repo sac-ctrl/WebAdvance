@@ -11,7 +11,7 @@ import java.text.DateFormat
 import java.util.*
 
 class DownloadHistoryAdapter(
-    private val downloads: List<DownloadRecord>,
+    val downloads: List<DownloadRecord>,
     private val onOpen: (DownloadRecord) -> Unit
 ) : RecyclerView.Adapter<DownloadHistoryAdapter.ViewHolder>() {
 

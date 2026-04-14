@@ -21,6 +21,34 @@
         android:textColor="@color/md_theme_onSurfaceVariant"
         android:textSize="14sp" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
+
+        <EditText
+            android:id="@+id/search_downloads"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="48dp"
+            android:hint="Search downloads"
+            android:background="@drawable/search_background"
+            android:padding="12dp"
+            android:textColor="@color/md_theme_onSurface" />
+
+        <Button
+            android:id="@+id/button_filter_type"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:text="All"
+            android:textAllCaps="false"
+            android:backgroundTint="@color/md_theme_primary"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/download_history_recycler_view"
         android:layout_width="match_parent"

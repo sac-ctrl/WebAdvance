@@ -29,4 +29,14 @@ object DownloadRepository {
         records.add(0, record)
         getStorageFile(context).writeText(Gson().toJson(records))
     }
+
+    fun saveDownloads(context: Context, records: List<DownloadRecord>) {
+        getStorageFile(context).writeText(Gson().toJson(records))
+    }
+
+    fun deleteDownload(context: Context, record: DownloadRecord) {
+        val records = loadDownloads(context)
+        records.removeAll { it.timestamp == record.timestamp && it.uriPath == record.uriPath }
+        saveDownloads(context, records)
+    }
 }

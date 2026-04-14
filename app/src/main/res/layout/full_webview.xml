@@ -92,6 +92,60 @@
                 android:tint="@color/colorSignature" />
 
             <ImageButton
+                android:id="@+id/button_zoom_in"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_baseline_menu_open_24"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Zoom in"
+                android:tint="@color/colorSignature" />
+
+            <ImageButton
+                android:id="@+id/button_zoom_out"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_baseline_menu_open_24"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Zoom out"
+                android:tint="@color/colorSignature" />
+
+            <ImageButton
+                android:id="@+id/button_console"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_baseline_more_horiz_24"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="JavaScript console"
+                android:tint="@color/colorSignature" />
+
+            <ImageButton
+                android:id="@+id/button_toggle_mode"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_baseline_menu_open_24"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Toggle desktop/mobile"
+                android:tint="@color/colorSignature" />
+
+            <ImageButton
+                android:id="@+id/button_screenshot"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_baseline_settings_black_24"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Screenshot"
+                android:tint="@color/colorSignature" />
+
+            <ImageButton
+                android:id="@+id/button_print"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/ic_baseline_more_horiz_24"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Print"
+                android:tint="@color/colorSignature" />
+
+            <ImageButton
                 android:id="@+id/button_download_history"
                 android:layout_width="48dp"
                 android:layout_height="48dp"

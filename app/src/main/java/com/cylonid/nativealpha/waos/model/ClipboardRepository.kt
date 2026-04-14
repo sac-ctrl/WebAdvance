@@ -32,4 +32,23 @@ object ClipboardRepository {
         }
         getStorageFile(context).writeText(Gson().toJson(records))
     }
+
+    fun saveClipboardItems(context: Context, items: List<ClipboardItem>) {
+        getStorageFile(context).writeText(Gson().toJson(items))
+    }
+
+    fun deleteClipboardItem(context: Context, item: ClipboardItem) {
+        val records = loadClipboardItems(context)
+        records.removeAll { it.timestamp == item.timestamp && it.text == item.text && it.appId == item.appId }
+        saveClipboardItems(context, records)
+    }
+
+    fun updateClipboardItem(context: Context, item: ClipboardItem) {
+        val records = loadClipboardItems(context)
+        val index = records.indexOfFirst { it.timestamp == item.timestamp && it.appId == item.appId }
+        if (index >= 0) {
+            records[index] = item
+            saveClipboardItems(context, records)
+        }
+    }
 }

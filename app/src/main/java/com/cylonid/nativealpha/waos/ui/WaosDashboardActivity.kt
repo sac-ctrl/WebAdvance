@@ -18,10 +18,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.cylonid.nativealpha.R
+import java.util.Collections
 import com.cylonid.nativealpha.WebAppSettingsActivity
 import com.cylonid.nativealpha.model.DataManager
 import com.cylonid.nativealpha.model.WebApp
@@ -44,7 +46,8 @@ class WaosDashboardActivity : AppCompatActivity() {
 
     private enum class SortMode {
         ORDER,
-        NAME
+        NAME,
+        GROUP
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,6 +85,7 @@ class WaosDashboardActivity : AppCompatActivity() {
         setupLayoutToggle()
         setupSort()
         setupAddApp()
+        setupDragAndDrop()
         loadApps()
 
         val launchBubbleButton = findViewById<Button>(R.id.button_launch_floating)
@@ -98,6 +102,7 @@ class WaosDashboardActivity : AppCompatActivity() {
     private fun loadApps() {
         val apps = when (currentSortMode) {
             SortMode.NAME -> DataManager.getInstance().getActiveWebsites().sortedBy { it.title.lowercase() }
+            SortMode.GROUP -> DataManager.getInstance().getActiveWebsites().sortedWith(compareBy({ it.group.lowercase() }, { it.order }))
             SortMode.ORDER -> DataManager.getInstance().getActiveWebsites().sortedBy { it.order }
         }
         adapter.updateWebApps(apps)
@@ -117,8 +122,16 @@ class WaosDashboardActivity : AppCompatActivity() {
 
     private fun setupSort() {
         sortAppsButton.setOnClickListener {
-            currentSortMode = if (currentSortMode == SortMode.ORDER) SortMode.NAME else SortMode.ORDER
-            sortAppsButton.text = if (currentSortMode == SortMode.ORDER) getString(R.string.sort_by_order) else getString(R.string.sort_by_name)
+            currentSortMode = when (currentSortMode) {
+                SortMode.ORDER -> SortMode.NAME
+                SortMode.NAME -> SortMode.GROUP
+                SortMode.GROUP -> SortMode.ORDER
+            }
+            sortAppsButton.text = when (currentSortMode) {
+                SortMode.ORDER -> getString(R.string.sort_by_order)
+                SortMode.NAME -> getString(R.string.sort_by_name)
+                SortMode.GROUP -> getString(R.string.sort_by_group)
+            }
             loadApps()
         }
         sortAppsButton.text = getString(R.string.sort_by_order)
@@ -179,8 +192,45 @@ class WaosDashboardActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupDragAndDrop() {
+        val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP or ItemTouchHelper.DOWN,
+            0
+        ) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                val from = viewHolder.adapterPosition
+                val to = target.adapterPosition
+                val updated = adapter.currentApps.toMutableList()
+                Collections.swap(updated, from, to)
+                adapter.updateWebApps(updated)
+                return true
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) = Unit
+
+            override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+                super.clearView(recyclerView, viewHolder)
+                applyOrderToApps(adapter.currentApps)
+            }
+        })
+        itemTouchHelper.attachToRecyclerView(dashboardRecyclerView)
+    }
+
+    private fun applyOrderToApps(apps: List<WebApp>) {
+        apps.forEachIndexed { index, webapp ->
+            webapp.order = index + 1
+            DataManager.getInstance().replaceWebApp(webapp)
+        }
+        loadApps()
+    }
+
     private fun showAppActions(app: WebApp) {
-        val actions = arrayOf("Open", "Settings", "Download History", "Clipboard", "Vault", "Launch Floating Bubble", "Copy URL")
+        val lockLabel = if (app.isBiometricProtection) "Unlock" else "Lock"
+        val actions = arrayOf("Open", "Settings", "Download History", "Clipboard", "Vault", "Clone", "Delete", lockLabel, "Copy URL", "Launch Floating Bubble")
         AlertDialog.Builder(this)
             .setTitle(app.getTitle())
             .setItems(actions) { _, which ->
@@ -190,8 +240,11 @@ class WaosDashboardActivity : AppCompatActivity() {
                     2 -> openDownloadHistory(app.ID)
                     3 -> openClipboard(app.ID)
                     4 -> openCredentials(app.ID)
-                    5 -> startService(Intent(this, com.cylonid.nativealpha.waos.service.FloatingWindowService::class.java))
-                    6 -> copyAppUrl(app)
+                    5 -> cloneWebApp(app)
+                    6 -> confirmDeleteWebApp(app)
+                    7 -> toggleLockWebApp(app)
+                    8 -> copyAppUrl(app)
+                    9 -> startService(Intent(this, com.cylonid.nativealpha.waos.service.FloatingWindowService::class.java))
                 }
             }
             .show()
@@ -230,6 +283,33 @@ class WaosDashboardActivity : AppCompatActivity() {
         intent.putExtra(WaosConstants.EXTRA_WAOS_APP_ID, appId)
         startActivity(intent)
     }
+
+    private fun cloneWebApp(app: WebApp) {
+        DataManager.getInstance().cloneWebApp(app.ID)
+        loadApps()
+        Toast.makeText(this, "Web App cloned", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun confirmDeleteWebApp(app: WebApp) {
+        AlertDialog.Builder(this)
+            .setTitle("Delete Web App")
+            .setMessage("Are you sure you want to delete ${app.getTitle()}?")
+            .setPositiveButton("Delete") { _, _ ->
+                DataManager.getInstance().deleteWebApp(app.ID)
+                loadApps()
+                Toast.makeText(this, "Web App deleted", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun toggleLockWebApp(app: WebApp) {
+        app.isBiometricProtection = !app.isBiometricProtection
+        DataManager.getInstance().replaceWebApp(app)
+        loadApps()
+        val message = if (app.isBiometricProtection) "Lock enabled" else "Lock disabled"
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
 }
 
 private class WaosAppAdapter(
@@ -242,6 +322,8 @@ private class WaosAppAdapter(
 ) : RecyclerView.Adapter<WaosAppViewHolder>() {
 
     private var originalApps: List<WebApp> = apps.toList()
+    var currentApps: List<WebApp> = apps
+        private set
     private var apps: List<WebApp> = apps
 
     override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): WaosAppViewHolder {
@@ -254,7 +336,7 @@ private class WaosAppAdapter(
         val app = apps[position]
         holder.title.text = app.getTitle()
         holder.subtitle.text = app.getBaseUrl()
-        holder.status.text = if (position % 3 == 0) "Active" else if (position % 3 == 1) "Background" else "Idle"
+        holder.status.text = app.group.ifBlank { "Workspace" }
         holder.openButton.setOnClickListener { onOpenApp(app) }
         holder.downloadsButton.setOnClickListener { onShowDownloads(app) }
         holder.clipboardButton.setOnClickListener { onShowClipboard(app) }
@@ -269,6 +351,7 @@ private class WaosAppAdapter(
 
     fun updateWebApps(newApps: List<WebApp>) {
         originalApps = newApps
+        currentApps = newApps
         filter("")
     }
 
@@ -278,9 +361,11 @@ private class WaosAppAdapter(
         } else {
             originalApps.filter {
                 it.getTitle().contains(query, ignoreCase = true) ||
-                    it.getBaseUrl().contains(query, ignoreCase = true)
+                    it.getBaseUrl().contains(query, ignoreCase = true) ||
+                    it.group.contains(query, ignoreCase = true)
             }
         }
+        currentApps = apps
         notifyDataSetChanged()
     }
 }

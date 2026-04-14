@@ -58,6 +58,16 @@ data class WebApp(var baseUrl: String, val ID: Int) {
     var alwaysUseFallbackContextMenu = false
     var adBlockSettings = mutableListOf<AdblockConfig>()
 
+    var iconUri: String? = null
+    var group: String = "Default"
+    var customDownloadFolder: String? = null
+    var clipboardMaxItems: Int = 50
+    var clipboardSyncEnabled: Boolean = true
+    var floatingWindowWidth: Int = 360
+    var floatingWindowHeight: Int = 640
+    var floatingWindowOpacity: Int = 100
+    var lastScrollPosition: Int = 0
+
     init {
         title = baseUrl.replace("http://", "").replace("https://", "").replace("www.", "")
         initDefaultSettings()
@@ -119,6 +129,15 @@ data class WebApp(var baseUrl: String, val ID: Int) {
         order = other.order
         alwaysUseFallbackContextMenu = other.alwaysUseFallbackContextMenu
         adBlockSettings = other.adBlockSettings
+        iconUri = other.iconUri
+        group = other.group
+        customDownloadFolder = other.customDownloadFolder
+        clipboardMaxItems = other.clipboardMaxItems
+        clipboardSyncEnabled = other.clipboardSyncEnabled
+        floatingWindowWidth = other.floatingWindowWidth
+        floatingWindowHeight = other.floatingWindowHeight
+        floatingWindowOpacity = other.floatingWindowOpacity
+        lastScrollPosition = other.lastScrollPosition
     }
 
     private fun initDefaultSettings() {

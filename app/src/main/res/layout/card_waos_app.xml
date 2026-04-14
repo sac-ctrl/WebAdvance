@@ -39,6 +39,15 @@
                 android:textColor="@color/md_theme_onSurface" />
 
             <TextView
+                android:id="@+id/waos_app_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Default Group"
+                android:textAppearance="?attr/textAppearanceBody2"
+                android:textColor="@color/md_theme_onSurfaceVariant"
+                android:layout_marginTop="2dp" />
+
+            <TextView
                 android:id="@+id/waos_app_subtitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
