@@ -6,10 +6,9 @@ import android.view.View
 import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.SwitchCompat
 import android.widget.TextView
+import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.FragmentActivity
-import androidx.appcompat.widget.SwitchCompat as AppCompatSwitchCompat
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey

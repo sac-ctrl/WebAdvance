@@ -2,8 +2,10 @@ package com.cylonid.nativealpha.webview
 
 import android.app.DownloadManager
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
 import android.webkit.*
+import android.webkit.DownloadListener
 import android.webkit.WebViewClient
 import android.os.Environment
 import java.io.File
@@ -15,7 +17,7 @@ class WebViewClientWithDownload(
     private val onPageStarted: (String) -> Unit = {},
     private val onPageFinished: (String) -> Unit = {},
     private val onDownloadStart: (String, String) -> Unit = { _, _ -> }
-) : WebViewClient() {
+) : WebViewClient(), DownloadListener {
 
     private val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
     

@@ -38,18 +38,18 @@ class NotificationViewModel @Inject constructor(
 
     private fun loadNotifications() {
         viewModelScope.launch {
-            val notificationEntities = notificationRepository.getRecentNotifications()
-            val notificationList = notificationEntities.map { entity ->
-                WebAppNotification(
-                    id = entity.id,
-                    appName = entity.appName,
-                    title = entity.title,
-                    message = entity.message,
-                    timestamp = dateFormat.format(Date(entity.timestamp)),
-                    actions = entity.actions
-                )
+            notificationRepository.getRecentNotifications().collect { notificationEntities ->
+                _notifications.value = notificationEntities.map { entity ->
+                    WebAppNotification(
+                        id = entity.id,
+                        appName = entity.appName,
+                        title = entity.title,
+                        message = entity.message,
+                        timestamp = dateFormat.format(Date(entity.timestamp)),
+                        actions = entity.actions
+                    )
+                }
             }
-            _notifications.value = notificationList
         }
     }
 

@@ -45,8 +45,6 @@ class SessionManager(
                 databaseEnabled = true
                 allowFileAccess = true
                 allowContentAccess = true
-                setAppCachePath(dataDir.absolutePath + "/cache")
-                setAppCacheEnabled(true)
                 cacheMode = android.webkit.WebSettings.LOAD_DEFAULT
                 
                 // Set user agent if custom one is stored

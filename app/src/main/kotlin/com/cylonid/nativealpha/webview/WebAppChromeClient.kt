@@ -69,7 +69,7 @@ class WebAppChromeClient(
      */
     override fun onConsoleMessage(consoleMessage: android.webkit.ConsoleMessage?): Boolean {
         consoleMessage?.let {
-            Log.d("WebConsole", "[${it.lineNumber}] ${it.message}")
+            Log.d("WebConsole", "[${it.lineNumber()}] ${it.message()}")
         }
         return true
     }
