@@ -1,0 +1,136 @@
+Skip to content
+ks8-ctrl
+WebAdvance
+Repository navigation
+Code
+Pull requests
+Agents
+Actions
+Projects
+Wiki
+Security and quality
+Insights
+Settings
+Build Debug APK
+Fix biometric method signature - remove activity parameter from binding #12
+All jobs
+Run details
+Annotations
+1 error and 1 warning
+Build Debug APK
+failed 37 minutes ago in 4m 21s
+Search logs
+3s
+1s
+0s
+24s
+0s
+0s
+3m 49s
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:47:46 Unresolved reference 'SwipeRefreshLayout'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:75:30 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:75:30 Not enough information to infer type argument for 'T'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:153:16 Unresolved reference 'getTitle'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:154:20 Unresolved reference 'getBaseUrl'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:168:28 Unresolved reference 'isRefreshing'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:264:28 Unresolved reference 'setOnRefreshListener'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:320:27 Unresolved reference 'getTitle'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:321:14 Unresolved reference 'setItems'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:321:34 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:321:37 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:340:76 Unresolved reference 'getBaseUrl'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:379:64 Unresolved reference 'getTitle'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:474:30 Unresolved reference 'getTitle'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/java/com/cylonid/nativealpha/waos/ui/WaosDashboardActivity.kt:475:33 Unresolved reference 'getBaseUrl'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/MainActivity.kt:16:7 Redeclaration:
+class MainActivity : AppCompatActivity
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/MainActivity.kt:16:22 Unresolved reference 'ComponentActivity'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/MainActivity.kt:17:5 'onCreate' overrides nothing.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/MainActivity.kt:18:9 Unresolved reference 'ComponentActivity'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/MainActivity.kt:18:15 Unresolved reference 'onCreate'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/activities/AdblockConfigActivity.kt:66:113 Unresolved reference 'value'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:48:25 Argument type mismatch: actual type is 'Long', but 'Int' was expected.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:50:17 No parameter with name 'imageData' found.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:51:17 No parameter with name 'isPinned' found.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:77:25 Argument type mismatch: actual type is 'Long', but 'Int' was expected.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:78:24 Null cannot be a value of a non-null type 'String'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:79:17 No parameter with name 'imageData' found.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:80:17 No parameter with name 'isPinned' found.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:111:33 No parameter with name 'isPinned' found.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:111:50 Unresolved reference 'isPinned'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:178:21 Argument type mismatch: actual type is 'Long', but 'Int' was expected.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:180:13 No parameter with name 'imageData' found.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:181:13 No parameter with name 'isPinned' found.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:204:43 Unresolved reference 'imageData'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/clipboard/EnhancedClipboardManager.kt:205:44 Unresolved reference 'isPinned'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/credentials/EnhancedCredentialKeeper.kt:87:21 Argument type mismatch: actual type is 'Long', but 'Int' was expected.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/credentials/EnhancedCredentialKeeper.kt:91:19 Argument type mismatch: actual type is 'String?', but 'String' was expected.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/credentials/EnhancedCredentialKeeper.kt:92:21 Argument type mismatch: actual type is 'String?', but 'String' was expected.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/credentials/EnhancedCredentialKeeper.kt:93:13 No parameter with name 'customFields' found.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/credentials/EnhancedCredentialKeeper.kt:232:51 Unresolved reference 'not' for operator '!'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/credentials/EnhancedCredentialKeeper.kt:232:55 Unresolved reference 'customFields'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/data/Converters.kt:28:28 Unresolved reference 'WebApp'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/data/Converters.kt:29:23 Unresolved reference 'name'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/di/AppModule.kt:49:33 Argument type mismatch: actual type is 'ClipboardItemDao', but 'Context' was expected.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/di/AppModule.kt:49:33 No value passed for parameter 'database'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:79:21 Argument type mismatch: actual type is 'Long', but 'Int' was expected.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:80:13 No parameter with name 'filename' found.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:81:13 No parameter with name 'url' found.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:83:13 No parameter with name 'size' found.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:86:13 No parameter with name 'progress' found.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:87:13 No parameter with name 'downloadId' found.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:88:13 No value passed for parameter 'fileName'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:88:13 No value passed for parameter 'sizeBytes'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:216:35 Overload resolution ambiguity between candidates:
+fun <T> Iterable<T>.sumOf(selector: (T) -> BigDecimal): BigDecimal
+fun <T> Iterable<T>.sumOf(selector: (T) -> BigInteger): BigInteger
+fun <T> Iterable<T>.sumOf(selector: (T) -> Double): Double
+fun <T> Iterable<T>.sumOf(selector: (T) -> Int): Int
+fun <T> Iterable<T>.sumOf(selector: (T) -> Long): Long
+fun <T> Iterable<T>.sumOf(selector: (T) -> UInt): UInt
+fun <T> Iterable<T>.sumOf(selector: (T) -> ULong): ULong
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:216:46 Unresolved reference 'size'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:225:23 Operator '==' cannot be applied to 'Int' and 'Long'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:253:48 Unresolved reference 'downloadId'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:258:25 No parameter with name 'progress' found.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/downloads/EnhancedDownloadManager.kt:259:25 No parameter with name 'size' found.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/fragments/adblocklist/AdblockListAdapter.kt:25:45 Unresolved reference 'value'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/helper/AdblockProviderApiHelper.kt:13:40 Unresolved reference 'value'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/helper/AdblockProviderApiHelper.kt:15:87 Unresolved reference 'value'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/helper/AdblockProviderApiHelper.kt:23:53 Unresolved reference 'value'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementExample.kt:265:61 Unresolved reference 'LinkHisticsReport'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementExample.kt:268:66 Unresolved reference 'generatedAt'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementExample.kt:269:54 Unresolved reference 'totalActions'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementExample.kt:271:20 Unresolved reference 'actionBreakdown'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementExample.kt:271:46 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementExample.kt:271:46 Function 'component1()' is ambiguous for this expression: 
+fun <T> Array<out T>.component1(): T
+fun ByteArray.component1(): Byte
+fun ShortArray.component1(): Short
+fun IntArray.component1(): Int
+fun LongArray.component1(): Long
+fun FloatArray.component1(): Float
+fun DoubleArray.component1(): Double
+fun BooleanArray.component1(): Boolean
+fun CharArray.component1(): Char
+fun <T> List<T>.component1(): T
+fun <K, V> Map.Entry<K, V>.component1(): K
+fun UIntArray.component1(): UInt
+fun ULongArray.component1(): ULong
+fun UByteArray.component1(): UByte
+fun UShortArray.component1(): UShort.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/links/LinkManagementExample.kt:271:46 Function 'component2()' is ambiguous for this expression: 
+fun <T> Array<out T>.component2(): T
+fun ByteArray.component2(): Byte
+fun ShortArray.component2(): Short
+fun IntArray.component2(): Int
+fun LongArray.component2(): Long
+fun FloatArray.component2(): Float
+fun DoubleArray.component2(): Double
+0s
+1s
+0s
+0s
+0s
+1s
+0s
