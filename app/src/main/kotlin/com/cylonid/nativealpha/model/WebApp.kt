@@ -1,57 +1,62 @@
 package com.cylonid.nativealpha.model
 
-import android.app.Activity
-import android.view.View
-import android.widget.*
-import androidx.appcompat.widget.SwitchCompat
-import androidx.fragment.app.FragmentActivity
-import com.cylonid.nativealpha.R
-import com.cylonid.nativealpha.WebAppSettingsActivity
-import com.cylonid.nativealpha.helper.BiometricPromptHelper
-import com.cylonid.nativealpha.util.Const
-import com.cylonid.nativealpha.util.ShortcutIconUtils
-import com.cylonid.nativealpha.util.Utility
-import java.util.*
+import android.graphics.Bitmap
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import androidx.room.TypeConverters
+import com.cylonid.nativealpha.data.Converters
+import java.util.Date
 
-data class AdblockConfig(val label: String, val value: String)
-
-data class WebApp(var baseUrl: String, val ID: Int) {
-    var title: String
-    var isActiveEntry = true
-    var isOverrideGlobalSettings = true
-
-    var isOpenUrlExternal = false
-    var isAllowCookies = true
-    var isAllowThirdPartyCookies = false
-    var isRestorePage = false
-    var isAllowJs = true
-    var isRequestDesktop = false
-    var isClearCache = false
-    var isUseAdblock = false
-    var isSendSavedataRequest = false
-    var isBlockImages = false
-    var isAllowHttp = false
-    var isAllowLocationAccess = false
-    var userAgent: String? = null
-    var isUseCustomUserAgent = false
-    var isAutoreload = false
-    var timeAutoreload = 0
-    var isForceDarkMode = false
-    var isUseTimespanDarkMode = false
-    var timespanDarkModeBegin: String? = "22:00"
-    var timespanDarkModeEnd: String? = "06:00"
-    var isIgnoreSslErrors = false
-    var isShowExpertSettings = false
-    var isSafeBrowsing = false
-    var isBlockThirdPartyRequests = false
-    var containerId: Int = Const.NO_CONTAINER
-    var isUseContainer = false
-    var isDrmAllowed = false
-    var isShowFullscreen = false
-    var isKeepAwake = false
-    var isCameraPermission = false
-    var isMicrophonePermission = false
-    var isEnableZooming = false
+@Entity(tableName = "webapps")
+@TypeConverters(Converters::class)
+data class WebApp(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val name: String,
+    val url: String,
+    val iconUrl: String? = null,
+    val category: String? = null,
+    val userAgent: String? = null,
+    val isJavaScriptEnabled: Boolean = true,
+    val isAdblockEnabled: Boolean = false,
+    val isDarkModeEnabled: Boolean = false,
+    val refreshInterval: Long = 0, // 0 = manual
+    val isSmartRefreshEnabled: Boolean = false,
+    val isLocked: Boolean = false,
+    val pin: String? = null,
+    val customDownloadFolder: String? = null,
+    val clipboardMaxItems: Int = 50,
+    val credentialAutoLockTimeout: Long = 300000, // 5 min
+    val floatingWindowDefaultWidth: Int = 800,
+    val floatingWindowDefaultHeight: Int = 600,
+    val floatingWindowDefaultOpacity: Float = 1.0f,
+    val screenshotSaveLocation: String = "app", // app or global
+    val linkCopierDefaultFormat: String = "url", // url, url_title, markdown, html
+    val userAgentOverride: String? = null,
+    val cacheMode: String = "default",
+    val status: Status = Status.ACTIVE,
+    val lastUpdated: Date? = null,
+    val notificationCount: Int = 0,
+    val thumbnail: Bitmap? = null,
+    val scrollPosition: Int = 0,
+    val sessionData: String? = null, // JSON for cookies, localStorage
+    val lastUsed: Date? = null,
+    val usageCount: Int = 0,
+    val customOrder: Int = 0,
+    val customGroup: String? = null,
+    val isActive: Boolean = true,
+    val isBackground: Boolean = false,
+    val isKeepAwake: Boolean = false,
+    val isCameraPermission: Boolean = false,
+    val isMicrophonePermission: Boolean = false,
+    val isEnableZooming: Boolean = false
+) {
+    enum class Status {
+        ACTIVE,
+        BACKGROUND,
+        ERROR
+    }
+}
     var isBiometricProtection = false
     var isAllowMediaPlaybackInBackground = false
     var order = 0

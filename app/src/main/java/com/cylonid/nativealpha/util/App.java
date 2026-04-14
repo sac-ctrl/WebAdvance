@@ -6,7 +6,9 @@ import android.content.Context;
 
 import androidx.work.Configuration;
 import androidx.work.WorkManager;
+import dagger.hilt.android.HiltAndroidApp;
 
+@HiltAndroidApp
 public class App extends Application {
 
     @SuppressLint("StaticFieldLeak") //We are using app context which is never deleted during runtime, so this is not a leak per se.

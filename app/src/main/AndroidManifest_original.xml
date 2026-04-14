@@ -56,13 +56,31 @@
             android:exported="false" />
 
         <activity
+            android:name="com.cylonid.nativealpha.ui.UniversalFileViewerActivity"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme"
+            android:exported="false" />
+
+        <activity
             android:name="com.cylonid.nativealpha.waos.ui.UniversalFileViewerActivity"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme"
             android:exported="false" />
 
         <activity
+            android:name="com.cylonid.nativealpha.ui.CredentialVaultActivity"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme"
+            android:exported="false" />
+
+        <activity
             android:name="com.cylonid.nativealpha.waos.ui.CredentialVaultActivity"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme"
+            android:exported="false" />
+
+        <activity
+            android:name="com.cylonid.nativealpha.ui.ClipboardManagerActivity"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme"
             android:exported="false" />
