@@ -2,6 +2,8 @@ package com.cylonid.nativealpha.manager
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverters
+import com.cylonid.nativealpha.data.Converters
 import com.cylonid.nativealpha.data.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

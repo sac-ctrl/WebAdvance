@@ -2,6 +2,7 @@ package com.cylonid.nativealpha.model
 
 import android.graphics.Bitmap
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.cylonid.nativealpha.data.Converters

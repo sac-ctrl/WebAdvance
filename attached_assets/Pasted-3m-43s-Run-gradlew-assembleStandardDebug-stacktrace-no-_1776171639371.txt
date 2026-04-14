@@ -1,0 +1,113 @@
+3m 43s
+Run ./gradlew assembleStandardDebug --stacktrace --no-daemon
+Downloading https://services.gradle.org/distributions/gradle-8.10.2-all.zip
+.........................................................................................................................................................................................................................
+Unzipping /home/runner/.gradle/wrapper/dists/gradle-8.10.2-all/7iv73wktx1xtkvlq19urqw1wm/gradle-8.10.2-all.zip to /home/runner/.gradle/wrapper/dists/gradle-8.10.2-all/7iv73wktx1xtkvlq19urqw1wm
+Set executable permissions for: /home/runner/.gradle/wrapper/dists/gradle-8.10.2-all/7iv73wktx1xtkvlq19urqw1wm/gradle-8.10.2/bin/gradle
+Welcome to Gradle 8.10.2!
+Here are the highlights of this release:
+ - Support for Java 23
+ - Faster configuration cache
+ - Better configuration cache reports
+For more details see https://docs.gradle.org/8.10.2/release-notes.html
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.10.2/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Configure project :app
+WARNING: The option setting 'android.defaults.buildfeatures.buildconfig=true' is deprecated.
+The current default is 'false'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+To keep using this feature, add the following to your module-level build.gradle files:
+    android.buildFeatures.buildConfig = true
+or from Android Studio, click: `Refactor` > `Migrate BuildConfig to Gradle Build Files`.
+> Task :app:renameManifest
+> Task :app:extendAndroidManifest
+> Task :app:createWebViewclass0 NO-SOURCE
+> Task :app:createWebViewclass1 NO-SOURCE
+> Task :app:createWebViewclass2 NO-SOURCE
+> Task :app:createWebViewclass3 NO-SOURCE
+> Task :app:createWebViewclass4 NO-SOURCE
+> Task :app:createWebViewclass5 NO-SOURCE
+> Task :app:createWebViewclass6 NO-SOURCE
+> Task :app:createWebViewclass7 NO-SOURCE
+> Task :app:preBuild
+> Task :app:preStandardDebugBuild
+> Task :app:mergeStandardDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:dataBindingMergeDependencyArtifactsStandardDebug
+> Task :app:generateStandardDebugResValues
+> Task :app:generateStandardDebugResources
+> Task :app:collectDependenciesStandardDebug
+> Task :app:prepareLibraryDefinitionsStandardDebug
+> Task :app:dataBindingTriggerStandardDebug
+> Task :app:generateStandardDebugBuildConfig
+> Task :app:checkStandardDebugAarMetadata
+> Task :app:mapStandardDebugSourceSetPaths
+> Task :app:createStandardDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksStandardDebug
+> Task :app:mergeStandardDebugResources
+> Task :app:processStandardDebugMainManifest
+> Task :app:dataBindingGenBaseClassesStandardDebug
+> Task :app:processStandardDebugManifest
+> Task :app:javaPreCompileStandardDebug
+> Task :app:mergeStandardDebugShaders
+> Task :app:compileStandardDebugShaders NO-SOURCE
+> Task :app:processStandardDebugManifestForPackage
+> Task :app:generateStandardDebugAssets UP-TO-DATE
+> Task :app:mergeStandardDebugAssets
+> Task :app:compressStandardDebugAssets
+> Task :app:desugarStandardDebugFileDependencies
+> Task :app:checkStandardDebugDuplicateClasses
+> Task :app:mergeStandardDebugJniLibFolders
+> Task :app:processStandardDebugResources
+> Task :app:mergeExtDexStandardDebug
+> Task :app:mergeLibDexStandardDebug
+> Task :app:mergeStandardDebugNativeLibs
+> Task :app:validateSigningStandardDebug
+> Task :app:writeStandardDebugAppMetadata
+> Task :app:writeStandardDebugSigningConfigVersions
+> Task :app:stripStandardDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libadblock-client.so, libandroidx.graphics.path.so, libc++_shared.so, libjniPdfium.so, libmodft2.so, libmodpdfium.so, libmodpng.so.
+> Task :app:kaptGenerateStubsStandardDebugKotlin
+/home/runner/work/WebAdvance/WebAdvance/app/build/tmp/kapt3/stubs/standardDebug/com/cylonid/nativealpha/model/WebApp.java:48: error: Cannot figure out how to save this property into database. You can consider adding a type converter for it.
+> Task :app:kaptStandardDebugKotlin
+    private final android.graphics.Bitmap thumbnail = null;
+                                          ^
+/home/runner/work/WebAdvance/WebAdvance/app/build/tmp/kapt3/stubs/standardDebug/com/cylonid/nativealpha/model/WebApp.java:69: error: Cannot figure out how to save this property into database. You can consider adding a type converter for it.
+    private java.util.List<error.NonExistentClass> adBlockSettings;
+                                                   ^
+/home/runner/work/WebAdvance/WebAdvance/app/build/tmp/kapt3/stubs/standardDebug/com/cylonid/nativealpha/manager/Credential.java:21: error: Cannot figure out how to save this property into database. You can consider adding a type converter for it.
+    private final java.util.Map<java.lang.String, java.lang.String> customFields = null;
+                                                                    ^
+/home/runner/work/WebAdvance/WebAdvance/app/build/tmp/kapt3/stubs/standardDebug/com/cylonid/nativealpha/model/WebApp.java:48: error: Cannot figure out how to read this property from a statement.
+    private final android.graphics.Bitmap thumbnail = null;
+                                          ^
+/home/runner/work/WebAdvance/WebAdvance/app/build/tmp/kapt3/stubs/standardDebug/com/cylonid/nativealpha/model/WebApp.java:69: error: Cannot figure out how to read this property from a statement.
+    private java.util.List<error.NonExistentClass> adBlockSettings;
+                                                   ^
+/home/runner/work/WebAdvance/WebAdvance/app/build/tmp/kapt3/stubs/standardDebug/com/cylonid/nativealpha/manager/Credential.java:21: error: Cannot figure out how to read this property from a statement.
+    private final java.util.Map<java.lang.String, java.lang.String> customFields = null;
+                                                                    ^
+/home/runner/work/WebAdvance/WebAdvance/app/build/tmp/kapt3/stubs/standardDebug/com/cylonid/nativealpha/data/NotificationSettingsDao.java:9: error: Cannot resolve return type for [Ljava.lang.Object;@73bdc91e
+    public abstract java.lang.Object getSettings(@org.jetbrains.annotations.NotNull()
+                                     ^
+/home/runner/work/WebAdvance/WebAdvance/app/build/tmp/kapt3/stubs/standardDebug/com/cylonid/nativealpha/data/NotificationSettingsDao.java:9: error: Not sure how to convert the query result to this function's return type (error.NonExistentClass).
+    public abstract java.lang.Object getSettings(@org.jetbrains.annotations.NotNull()
+                                     ^
+/home/runner/work/WebAdvance/WebAdvance/app/build/tmp/kapt3/stubs/standardDebug/com/cylonid/nativealpha/data/NotificationSettingsDao.java:15: error: Type of the parameter must be a class annotated with @Entity or a collection/array of it.
+    error.NonExistentClass settings, @org.jetbrains.annotations.NotNull()
+                           ^
+/home/runner/work/WebAdvance/WebAdvance/app/build/tmp/kapt3/stubs/standardDebug/com/cylonid/nativealpha/data/NotificationSettingsDao.java:21: error: Type of the parameter must be a class annotated with @Entity or a collection/array of it.
+    error.NonExistentClass settings, @org.jetbrains.annotations.NotNull()
+                           ^
+warning: ERROR: View field globalSettingsInfoText collides with a variable or import file://app/src/main/res/layout/webapp_settings.xml Line:122
+> Task :app:kaptStandardDebugKotlin FAILED
+FAILURE: Build failed with an exception.
+* What went wrong:
+Execution failed for task ':app:kaptStandardDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.gradle.internal.KaptWithoutKotlincTask$KaptExecutionWorkAction
+* Try:
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+* Exception is:
+org.gradle.api.tasks.TaskExecutionExcep

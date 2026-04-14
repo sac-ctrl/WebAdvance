@@ -1,10 +1,13 @@
 package com.cylonid.nativealpha.data
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.room.TypeConverter
 import com.cylonid.nativealpha.manager.ClipboardItem
 import com.cylonid.nativealpha.model.WindowEntity
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.io.ByteArrayOutputStream
 import java.util.Date
 
 class Converters {
@@ -55,5 +58,30 @@ class Converters {
     fun toStringList(json: String): List<String> {
         val type = object : TypeToken<List<String>>() {}.type
         return gson.fromJson(json, type)
+    }
+
+    @TypeConverter
+    fun fromBitmap(bitmap: Bitmap?): ByteArray? {
+        if (bitmap == null) return null
+        val stream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+        return stream.toByteArray()
+    }
+
+    @TypeConverter
+    fun toBitmap(bytes: ByteArray?): Bitmap? {
+        if (bytes == null) return null
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+    }
+
+    @TypeConverter
+    fun fromStringMap(map: Map<String, String>): String {
+        return gson.toJson(map)
+    }
+
+    @TypeConverter
+    fun toStringMap(json: String): Map<String, String> {
+        val type = object : TypeToken<Map<String, String>>() {}.type
+        return gson.fromJson(json, type) ?: emptyMap()
     }
 }
