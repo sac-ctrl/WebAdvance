@@ -65,8 +65,6 @@ data class WebApp(
 
     var iconUri: String? = null
     var group: String = "Default"
-    var customDownloadFolder: String? = null
-    var clipboardMaxItems: Int = 50
     var clipboardSyncEnabled: Boolean = true
     var floatingWindowWidth: Int = 360
     var floatingWindowHeight: Int = 640

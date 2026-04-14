@@ -397,68 +397,6 @@ enum class GroupOption(val displayName: String) {
 }
 
 @Composable
-fun SearchAndFilterBar(
-    searchQuery: String,
-    onSearchChange: (String) -> Unit,
-    webApps: List<WebApp>
-) {
-    // Search bar
-    OutlinedTextField(
-        value = searchQuery,
-        onValueChange = onSearchChange,
-        label = { Text("Search apps") },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        leadingIcon = {
-            Icon(Icons.Default.Search, contentDescription = "Search")
-        }
-    )
-
-    if (webApps.isEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-                    Text("No web apps yet. Add your first one!")
-                }
-            } else {
-                if (isGridView) {
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = 150.dp),
-                        contentPadding = PaddingValues(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        items(webApps) { webApp ->
-                            WebAppCard(
-                                webApp = webApp,
-                                onClick = { /* TODO: Open webapp */ },
-                                onLongClick = { /* TODO: Show context menu */ }
-                            )
-                        }
-                    }
-                } else {
-                    // List view - TODO: Implement
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(webApps) { webApp ->
-                            WebAppListItem(
-                                webApp = webApp,
-                                onClick = { /* TODO: Open webapp */ },
-                                onLongClick = { /* TODO: Show context menu */ }
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun WebAppListItem(
     webApp: WebApp,
     onClick: () -> Unit,

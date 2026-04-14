@@ -74,28 +74,29 @@ fun CredentialVaultScreen(
             }
         }
     } else {
-        topBar = {
-            TopAppBar(
-                title = { Text("Credential Vault") },
-                navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Credential Vault") },
+                    navigationIcon = {
+                        IconButton(onClick = onBackPressed) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
+                    },
+                    actions = {
+                        // Add credential button
+                        IconButton(onClick = { viewModel.showAddCredentialDialog() }) {
+                            Icon(Icons.Default.Add, contentDescription = "Add credential")
+                        }
                     }
-                },
-                actions = {
-                    // Add credential button
-                    IconButton(onClick = { viewModel.showAddCredentialDialog() }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add credential")
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
+                )
+            }
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
             // Search bar
             OutlinedTextField(
                 value = searchQuery,

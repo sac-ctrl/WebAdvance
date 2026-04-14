@@ -657,6 +657,12 @@ fun FindInPageDialog(
         }
     )
 }
+
+@Composable
+fun ErrorPanel(
+    error: String,
+    onRetry: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
