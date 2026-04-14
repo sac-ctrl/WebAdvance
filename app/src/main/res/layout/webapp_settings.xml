@@ -156,7 +156,7 @@
                                 android:id="@+id/switchJavascript"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.allowJs}"
+                                android:checked="@{webapp.isAllowJs}"
                                 android:onCheckedChanged="@{(switch, checked) -> webapp.onSwitchJsChanged(switch, checked)}"
                                 android:text="@string/allow_javascript" />
 
@@ -164,28 +164,28 @@
                                 android:id="@+id/switchBlockThirdParty"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.blockThirdPartyRequests}"
+                                android:checked="@{webapp.isBlockThirdPartyRequests}"
                                 android:text="@string/block_all_third_party_requests" />
 
                             <com.google.android.material.materialswitch.MaterialSwitch
                                 android:id="@+id/switchHTTP"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.allowHttp}"
+                                android:checked="@{webapp.isAllowHttp}"
                                 android:text="@string/allow_http" />
 
                             <com.google.android.material.materialswitch.MaterialSwitch
                                 android:id="@+id/switchLocationAccess"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.allowLocationAccess}"
+                                android:checked="@{webapp.isAllowLocationAccess}"
                                 android:text="@string/allow_location_access" />
 
                             <com.google.android.material.materialswitch.MaterialSwitch
                                 android:id="@+id/switchDRMContent"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.drmAllowed}"
+                                android:checked="@{webapp.isDrmAllowed}"
                                 android:text="@string/allow_drm_content" />
 
                             <com.google.android.material.materialswitch.MaterialSwitch
@@ -222,7 +222,7 @@
                                 android:id="@+id/switchBiometricAccess"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.biometricProtection}"
+                                android:checked="@{webapp.isBiometricProtection}"
                                 android:onCheckedChanged="@{(switch, checked) -> webapp.onSwitchBiometricAccessChanged(switch, checked, activity)}"
                                 android:text="@string/enable_access_restriction" />
 
@@ -250,7 +250,7 @@
                                 android:id="@+id/switchCookies"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.allowCookies}"
+                                android:checked="@{webapp.isAllowCookies}"
                                 android:onCheckedChanged="@{(switch, checked) -> webapp.onSwitchCookiesChanged(switch, checked)}"
                                 android:text="@string/accept_cookies" />
 
@@ -258,7 +258,7 @@
                                 android:id="@+id/switch3PCookies"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.allowThirdPartyCookies}"
+                                android:checked="@{webapp.isAllowThirdPartyCookies}"
                                 android:enabled="@{webapp.allowCookies}"
                                 android:text="@string/accept_third_party_cookies" />
 
@@ -266,7 +266,7 @@
                                 android:id="@+id/switchAdblock"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.useAdblock}"
+                                android:checked="@{webapp.isUseAdblock}"
                                 android:enabled="@{webapp.allowJs}"
                                 android:text="@string/enable_adblock_experimental" />
                         </LinearLayout>
@@ -292,7 +292,7 @@
                                 android:id="@+id/switchDarkMode"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.forceDarkMode}"
+                                android:checked="@{webapp.isForceDarkMode}"
                                 android:onCheckedChanged="@{(switch, checked) -> webapp.onSwitchForceDarkChanged(switch, checked)}"
                                 android:text="@string/force_dark_mode" />
 
@@ -300,7 +300,7 @@
                                 android:id="@+id/switchTimeSpanDarkMode"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.useTimespanDarkMode}"
+                                android:checked="@{webapp.isUseTimespanDarkMode}"
                                 android:enabled="@{webapp.forceDarkMode}"
                                 android:onCheckedChanged="@{(switch, checked) -> webapp.onSwitchTimeSpanDarkChanged(switch, checked)}"
                                 android:text="@string/limit_dark_mode_to_time_span" />
@@ -391,7 +391,7 @@
                                 android:id="@+id/switchSaveDataRequest"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.sendSavedataRequest}"
+                                android:checked="@{webapp.isSendSavedataRequest}"
                                 android:enabled="true"
                                 android:text="@string/request_data_saving_page" />
 
@@ -399,7 +399,7 @@
                                 android:id="@+id/switchBlockImages"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.blockImages}"
+                                android:checked="@{webapp.isBlockImages}"
                                 android:enabled="true"
                                 android:text="@string/do_not_load_images" />
                         </LinearLayout>
@@ -424,7 +424,7 @@
                                 android:id="@+id/switchAutoreload"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.autoreload}"
+                                android:checked="@{webapp.isAutoreload}"
                                 android:onCheckedChanged="@{(switch, checked) -> webapp.onSwitchAutoreloadChanged(switch, checked)}"
                                 android:text="@string/webapp_autoreload_switch" />
 
@@ -473,14 +473,14 @@
                                 android:id="@+id/switchFullScreen"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.showFullscreen}"
+                                android:checked="@{webapp.isShowFullscreen}"
                                 android:text="@string/show_fullscreen" />
 
                             <com.google.android.material.materialswitch.MaterialSwitch
                                 android:id="@+id/switchKeepAwake"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.keepAwake}"
+                                android:checked="@{webapp.isKeepAwake}"
                                 android:text="@string/keep_screen_awake" />
 
                         </LinearLayout>
@@ -506,7 +506,7 @@
                                 android:id="@+id/switchDesktopSite"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:checked="@={webapp.requestDesktop}"
+                                android:checked="@{webapp.isRequestDesktop}"
                                 android:enabled="@{webapp.allowJs}"
                                 android:text="@string/request_website_in_desktop_version" />
 
