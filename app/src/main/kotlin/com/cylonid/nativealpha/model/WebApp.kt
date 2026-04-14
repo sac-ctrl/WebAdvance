@@ -432,4 +432,8 @@ data class WebApp(
         val sectionDetailedWebAppSettings = mSwitch.rootView.findViewById<LinearLayout>(R.id.sectionWebAppDetailSettings)
         Utility.setViewAndChildrenEnabled(sectionDetailedWebAppSettings, isChecked)
     }
+
+    fun isClipboardSyncEnabled(): Boolean {
+        return clipboardSyncEnabled
+    }
 }
