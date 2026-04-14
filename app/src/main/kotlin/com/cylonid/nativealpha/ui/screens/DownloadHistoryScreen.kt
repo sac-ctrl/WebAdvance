@@ -3,13 +3,15 @@ package com.cylonid.nativealpha.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.cylonid.nativealpha.R
 import com.cylonid.nativealpha.manager.DownloadItem
 import com.cylonid.nativealpha.viewmodel.DownloadViewModel
 import java.text.SimpleDateFormat
@@ -276,9 +278,7 @@ fun DownloadItemCard(
                     // File name and type icon
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            painter = rememberAsyncImagePainter(
-                                model = getFileTypeIcon(download.mimeType)
-                            ),
+                            imageVector = getFileTypeIcon(download.mimeType),
                             contentDescription = "File type",
                             modifier = Modifier.size(24.dp),
                             tint = MaterialTheme.colorScheme.primary
@@ -435,14 +435,14 @@ private fun formatTimestamp(timestamp: Long): String {
     return sdf.format(Date(timestamp))
 }
 
-private fun getFileTypeIcon(mimeType: String?): Int {
+private fun getFileTypeIcon(mimeType: String?): ImageVector {
     return when {
-        mimeType?.startsWith("image/") == true -> R.drawable.ic_image
-        mimeType?.startsWith("video/") == true -> R.drawable.ic_video
-        mimeType?.startsWith("audio/") == true -> R.drawable.ic_audio
-        mimeType == "application/pdf" -> R.drawable.ic_pdf
-        mimeType?.startsWith("text/") == true -> R.drawable.ic_text
-        mimeType == "application/vnd.android.package-archive" -> R.drawable.ic_apk
-        else -> R.drawable.ic_file
+        mimeType?.startsWith("image/") == true -> Icons.Default.Image
+        mimeType?.startsWith("video/") == true -> Icons.Default.Movie
+        mimeType?.startsWith("audio/") == true -> Icons.Default.MusicNote
+        mimeType == "application/pdf" -> Icons.Default.PictureAsPdf
+        mimeType?.startsWith("text/") == true -> Icons.Default.Description
+        mimeType == "application/vnd.android.package-archive" -> Icons.Default.InsertDriveFile
+        else -> Icons.Default.InsertDriveFile
     }
 }

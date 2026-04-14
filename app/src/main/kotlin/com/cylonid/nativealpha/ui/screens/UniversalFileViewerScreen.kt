@@ -21,10 +21,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import android.content.Context
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import com.cylonid.nativealpha.manager.FileViewerManager
 import com.github.barteksc.pdfviewer.PDFView
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -699,7 +701,7 @@ private fun getApkInfo(context: Context, file: File): ApkInfo {
             permissions = permissions
         )
     } else {
-        ApkInfo("Failed to read APK info", "", "", file.length(), emptyList())
+        ApkInfo("Failed to read APK info", "", 0L, file.length(), emptyList())
     }
 }
 
