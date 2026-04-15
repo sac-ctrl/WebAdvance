@@ -101,4 +101,12 @@ class ClipboardViewModel @Inject constructor(
     fun addClipboardItem(webAppId: Long, content: String, type: ClipboardItem.Type = ClipboardItem.Type.TEXT) {
         clipboardManager.copyToAppClipboard(webAppId, content, type)
     }
+
+    fun updateItemContent(item: ClipboardItem, newContent: String) {
+        viewModelScope.launch {
+            val updated = item.copy(content = newContent)
+            clipboardDao.insertItem(updated)
+            loadClipboardItems(currentWebAppId)
+        }
+    }
 }

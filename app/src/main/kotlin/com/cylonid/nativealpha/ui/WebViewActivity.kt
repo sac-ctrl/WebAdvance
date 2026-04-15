@@ -17,7 +17,16 @@ import android.webkit.WebView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -25,17 +34,23 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.CodeOff
 import androidx.compose.material.icons.filled.Computer
@@ -46,9 +61,12 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Launch
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -60,10 +78,11 @@ import androidx.compose.material.icons.filled.Smartphone
 import androidx.compose.material.icons.filled.TouchApp
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -71,11 +90,9 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -85,11 +102,34 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cylonid.nativealpha.model.WebApp
+import com.cylonid.nativealpha.ui.theme.BgDeep
+import com.cylonid.nativealpha.ui.theme.BgDark
+import com.cylonid.nativealpha.ui.theme.CardBorder
+import com.cylonid.nativealpha.ui.theme.CardSurface
+import com.cylonid.nativealpha.ui.theme.CyanPrimary
+import com.cylonid.nativealpha.ui.theme.ErrorRed
+import com.cylonid.nativealpha.ui.theme.GradCyanEnd
+import com.cylonid.nativealpha.ui.theme.GradCyanStart
+import com.cylonid.nativealpha.ui.theme.GradVioletEnd
+import com.cylonid.nativealpha.ui.theme.GradVioletStart
+import com.cylonid.nativealpha.ui.theme.StatusActive
+import com.cylonid.nativealpha.ui.theme.TextMuted
+import com.cylonid.nativealpha.ui.theme.TextPrimary
+import com.cylonid.nativealpha.ui.theme.TextSecondary
+import com.cylonid.nativealpha.ui.theme.VioletSecondary
 import com.cylonid.nativealpha.viewmodel.ConsoleMessageData
 import com.cylonid.nativealpha.viewmodel.WebViewViewModel
 import com.cylonid.nativealpha.waos.ui.DownloadHistoryActivity
@@ -148,11 +188,13 @@ fun WebViewScreen(
     val isAutoClickEnabled by viewModel.isAutoClickEnabled.collectAsState()
     val webApp by viewModel.webApp.collectAsState()
 
-    var showFindDialog by remember { mutableStateOf(false) }
+    var showFindBar by remember { mutableStateOf(false) }
     var findQuery by remember { mutableStateOf("") }
+    var findResultCount by remember { mutableStateOf(0) }
     val webViewRef = remember { mutableStateOf<WebView?>(null) }
     val webAppRef = remember { mutableStateOf<WebApp?>(null) }
     var initialUrlLoaded by remember { mutableStateOf(false) }
+    var showMoreMenu by remember { mutableStateOf(false) }
 
     var pinUnlocked by remember { mutableStateOf(false) }
     var showPinDialog by remember { mutableStateOf(false) }
@@ -210,37 +252,72 @@ fun WebViewScreen(
     if (showPinDialog) {
         AlertDialog(
             onDismissRequest = { showPinDialog = false; onBackPressed() },
-            title = { Text("App Locked") },
+            containerColor = CardSurface,
+            titleContentColor = TextPrimary,
+            textContentColor = TextSecondary,
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .background(
+                                Brush.radialGradient(listOf(VioletSecondary.copy(0.3f), Color.Transparent)),
+                                RoundedCornerShape(10.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Lock, contentDescription = null, tint = VioletSecondary, modifier = Modifier.size(20.dp))
+                    }
+                    Spacer(Modifier.width(10.dp))
+                    Text("App Locked", fontWeight = FontWeight.Bold)
+                }
+            },
             text = {
                 Column {
-                    Text("Enter PIN to unlock ${webApp?.name ?: "this app"}")
-                    Spacer(Modifier.height(12.dp))
+                    Text("Enter PIN to unlock ${webApp?.name ?: "this app"}", color = TextSecondary, fontSize = 14.sp)
+                    Spacer(Modifier.height(16.dp))
                     OutlinedTextField(
                         value = pinInput,
                         onValueChange = { pinInput = it; pinError = false },
-                        label = { Text("PIN") },
+                        label = { Text("PIN", color = TextMuted) },
                         isError = pinError,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                        singleLine = true
+                        singleLine = true,
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = VioletSecondary,
+                            unfocusedBorderColor = CardBorder,
+                            cursorColor = VioletSecondary,
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary
+                        )
                     )
                     if (pinError) {
-                        Text("Incorrect PIN", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                        Spacer(Modifier.height(6.dp))
+                        Text("Incorrect PIN", color = ErrorRed, fontSize = 12.sp)
                     }
                 }
             },
             confirmButton = {
-                TextButton(onClick = {
-                    if (pinInput == webApp?.pin) {
-                        pinUnlocked = true
-                        showPinDialog = false
-                        pinInput = ""
-                    } else {
-                        pinError = true
-                    }
-                }) { Text("Unlock") }
+                Button(
+                    onClick = {
+                        if (pinInput == webApp?.pin) {
+                            pinUnlocked = true
+                            showPinDialog = false
+                            pinInput = ""
+                        } else {
+                            pinError = true
+                        }
+                    },
+                    modifier = Modifier.background(
+                        Brush.horizontalGradient(listOf(GradVioletStart, GradVioletEnd)),
+                        RoundedCornerShape(8.dp)
+                    )
+                ) { Text("Unlock") }
             },
             dismissButton = {
-                TextButton(onClick = { showPinDialog = false; onBackPressed() }) { Text("Cancel") }
+                TextButton(onClick = { showPinDialog = false; onBackPressed() }) {
+                    Text("Cancel", color = TextMuted)
+                }
             }
         )
     }
@@ -278,128 +355,21 @@ fun WebViewScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(webApp?.name ?: "Web App") },
-                navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { viewModel.goBack() }, enabled = webViewState.canGoBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                    IconButton(onClick = { viewModel.goForward() }, enabled = webViewState.canGoForward) {
-                        Icon(Icons.Default.ArrowForward, contentDescription = "Forward")
-                    }
-                    IconButton(onClick = { viewModel.refresh() }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
-                    }
-                    IconButton(onClick = { viewModel.toggleDesktopMode() }) {
-                        Icon(
-                            if (isDesktopMode) Icons.Default.Computer else Icons.Default.Smartphone,
-                            contentDescription = if (isDesktopMode) "Desktop mode" else "Mobile mode"
-                        )
-                    }
-                    IconButton(onClick = { viewModel.goHome() }) {
-                        Icon(Icons.Default.Home, contentDescription = "Home")
-                    }
-                    IconButton(onClick = { viewModel.sharePage() }) {
-                        Icon(Icons.Default.Share, contentDescription = "Share")
-                    }
-                    IconButton(onClick = { viewModel.copyUrl() }) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy URL")
-                    }
-                    IconButton(onClick = { showFindDialog = true }) {
-                        Icon(Icons.Default.Search, contentDescription = "Find in page")
-                    }
-                    IconButton(onClick = { viewModel.printPage() }) {
-                        Icon(Icons.Default.Print, contentDescription = "Print")
-                    }
-                    IconButton(onClick = { viewModel.zoomIn() }) {
-                        Icon(Icons.Default.ZoomIn, contentDescription = "Zoom in")
-                    }
-                    IconButton(onClick = { viewModel.zoomOut() }) {
-                        Icon(Icons.Default.ZoomOut, contentDescription = "Zoom out")
-                    }
-                    if (developerModeEnabled) {
-                        IconButton(onClick = { viewModel.toggleConsole() }) {
-                            Icon(
-                                if (showConsole) Icons.Default.CodeOff else Icons.Default.Code,
-                                contentDescription = "Toggle console"
-                            )
-                        }
-                    }
-                    IconButton(onClick = { viewModel.toggleAdblock() }) {
-                        Icon(
-                            if (isAdblockEnabled) Icons.Default.Block else Icons.Default.CheckCircle,
-                            contentDescription = "Toggle adblock"
-                        )
-                    }
-                    IconButton(onClick = { viewModel.toggleAutoScroll() }) {
-                        Icon(
-                            if (isAutoScrollEnabled) Icons.Default.PlayArrow else Icons.Default.Pause,
-                            contentDescription = "Toggle auto-scroll"
-                        )
-                    }
-                    IconButton(onClick = { viewModel.toggleAutoClick() }) {
-                        Icon(
-                            if (isAutoClickEnabled) Icons.Default.TouchApp else Icons.Default.DoNotTouch,
-                            contentDescription = "Toggle auto-click"
-                        )
-                    }
-                    IconButton(onClick = {
-                        val currentUrl = webViewState.currentUrl ?: webApp?.url ?: return@IconButton
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentUrl))
-                        context.startActivity(intent)
-                    }) {
-                        Icon(Icons.Default.OpenInBrowser, contentDescription = "Open in browser")
-                    }
-                    if (floatingWindowsEnabled) {
-                        IconButton(onClick = {
-                            webApp?.let { app ->
-                                val intent = Intent(
-                                    context,
-                                    com.cylonid.nativealpha.service.FloatingWindowService::class.java
-                                ).apply {
-                                    action = com.cylonid.nativealpha.service.FloatingWindowService.ACTION_ADD_WINDOW
-                                    putExtra("webAppId", app.id)
-                                    putExtra("webAppUrl", app.url)
-                                    putExtra("webAppName", app.name)
-                                }
-                                context.startService(intent)
-                            }
-                            viewModel.clearActionFlags()
-                        }) {
-                            Icon(Icons.Default.Launch, contentDescription = "Add to floating window")
-                        }
-                    }
-                    IconButton(onClick = { viewModel.openCredentialKeeper() }) {
-                        Icon(Icons.Default.Lock, contentDescription = "Credentials")
-                    }
-                    IconButton(onClick = { viewModel.openClipboardManager() }) {
-                        Icon(Icons.Default.ContentPaste, contentDescription = "Clipboard")
-                    }
-                    IconButton(onClick = { viewModel.openDownloadHistory() }) {
-                        Icon(Icons.Default.History, contentDescription = "Downloads")
-                    }
-                    IconButton(onClick = { viewModel.takeScreenshot() }) {
-                        Icon(Icons.Default.Camera, contentDescription = "Screenshot")
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            if (webViewState.isLoading) {
-                LinearProgressIndicator(
-                    progress = { webViewState.progress / 100f },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BgDeep)
+            .statusBarsPadding()
+    ) {
+        WaosTopBar(
+            title = webApp?.name ?: "Web App",
+            url = webViewState.currentUrl,
+            isLoading = webViewState.isLoading,
+            progress = webViewState.progress,
+            onBack = onBackPressed
+        )
 
+        Box(modifier = Modifier.weight(1f)) {
             AndroidView(
                 factory = { ctx ->
                     WebView(ctx).apply {
@@ -417,28 +387,29 @@ fun WebViewScreen(
                             builtInZoomControls = true
                             displayZoomControls = false
                             setSupportZoom(true)
+                            loadWithOverviewMode = true
+                            useWideViewPort = true
+                            mediaPlaybackRequiresUserGesture = false
                         }
                         webViewClient = WebViewClientWithDownload(
                             context = ctx,
                             onPageStarted = { url -> viewModel.onPageStarted(url) },
                             onPageFinished = { url ->
                                 viewModel.onPageFinished(url)
-                                webApp?.let { app ->
-                                    if (app.isDarkModeEnabled) {
-                                        injectDarkMode(this)
-                                    }
+                                webAppRef.value?.let { app ->
+                                    if (app.isDarkModeEnabled) injectDarkMode(this)
                                 }
                             },
                             onDownloadStart = { _, downloadUrl ->
-                                viewModel.handleDownload(downloadUrl, webApp)
+                                viewModel.handleDownload(downloadUrl, webAppRef.value)
                             }
                         )
                         setDownloadListener { url, _, _, _, _ ->
-                            viewModel.handleDownload(url, webApp)
+                            viewModel.handleDownload(url, webAppRef.value)
                         }
                         webChromeClient = object : WebChromeClient() {
-                            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
-                                consoleMessage?.let {
+                            override fun onConsoleMessage(msg: ConsoleMessage?): Boolean {
+                                msg?.let {
                                     viewModel.addConsoleMessage(
                                         ConsoleMessageData(
                                             message = it.message(),
@@ -448,7 +419,7 @@ fun WebViewScreen(
                                         )
                                     )
                                 }
-                                return super.onConsoleMessage(consoleMessage)
+                                return super.onConsoleMessage(msg)
                             }
                             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                                 viewModel.onProgressChanged(newProgress)
@@ -467,45 +438,38 @@ fun WebViewScreen(
                                         else -> false
                                     }
                                 }
-                                if (!granted.isNullOrEmpty()) {
-                                    request?.grant(granted.toTypedArray())
-                                } else {
-                                    request?.deny()
-                                }
+                                if (!granted.isNullOrEmpty()) request?.grant(granted.toTypedArray())
+                                else request?.deny()
                             }
                         }
                     }.also { webViewRef.value = it }
                 },
                 update = { webView ->
                     webAppRef.value = webApp
-                    (webView.webViewClient as? com.cylonid.nativealpha.webview.WebViewClientWithDownload)
-                        ?.adblockEnabled = isAdblockEnabled
+                    (webView.webViewClient as? WebViewClientWithDownload)?.adblockEnabled = isAdblockEnabled
                     webApp?.let { app ->
                         webView.settings.javaScriptEnabled = app.isJavaScriptEnabled
                         webView.settings.builtInZoomControls = app.isEnableZooming
                         webView.settings.setSupportZoom(app.isEnableZooming)
+                        webView.settings.displayZoomControls = false
                         if (!app.userAgent.isNullOrBlank() && !isDesktopMode) {
                             webView.settings.userAgentString = app.userAgent
                         }
                     }
                     if (isDesktopMode) {
-                        webView.settings.userAgentString = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                        webView.settings.userAgentString =
+                            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+                        webView.settings.useWideViewPort = true
+                        webView.settings.loadWithOverviewMode = true
+                    } else {
+                        webView.settings.useWideViewPort = true
+                        webView.settings.loadWithOverviewMode = true
                     }
-                    if (webViewState.shouldGoBack) {
-                        webView.goBack(); viewModel.clearActionFlags()
-                    }
-                    if (webViewState.shouldGoForward) {
-                        webView.goForward(); viewModel.clearActionFlags()
-                    }
-                    webViewState.shouldLoadUrl?.let { url ->
-                        webView.loadUrl(url); viewModel.clearActionFlags()
-                    }
-                    if (webViewState.shouldReload) {
-                        webView.reload(); viewModel.clearActionFlags()
-                    }
-                    if (webViewState.shouldRefresh) {
-                        webView.reload(); viewModel.clearRefreshFlag()
-                    }
+                    if (webViewState.shouldGoBack) { webView.goBack(); viewModel.clearActionFlags() }
+                    if (webViewState.shouldGoForward) { webView.goForward(); viewModel.clearActionFlags() }
+                    webViewState.shouldLoadUrl?.let { url -> webView.loadUrl(url); viewModel.clearActionFlags() }
+                    if (webViewState.shouldReload) { webView.reload(); viewModel.clearActionFlags() }
+                    if (webViewState.shouldRefresh) { webView.reload(); viewModel.clearRefreshFlag() }
                     webViewState.javaScriptToExecute?.let { js ->
                         webView.evaluateJavascript(js, null)
                         viewModel.clearJavaScriptCommand()
@@ -513,60 +477,516 @@ fun WebViewScreen(
                     viewModel.updateNavigationState(webView.canGoBack(), webView.canGoForward())
                     webViewState.shouldShareUrl?.let { urlToShare ->
                         val intent = Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, urlToShare)
+                            type = "text/plain"; putExtra(Intent.EXTRA_TEXT, urlToShare)
                         }
                         context.startActivity(Intent.createChooser(intent, "Share URL"))
                         viewModel.clearActionFlags()
                     }
                     webViewState.shouldCopyUrl?.let { urlToCopy ->
                         val clipboard = context.getSystemService(android.content.ClipboardManager::class.java)
-                        val clip = android.content.ClipData.newPlainText("URL", urlToCopy)
-                        clipboard.setPrimaryClip(clip)
+                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("URL", urlToCopy))
                         viewModel.clearActionFlags()
                     }
                     if (webViewState.shouldPrint) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            val printManager = context.getSystemService(Context.PRINT_SERVICE) as android.print.PrintManager
-                            val printAdapter = webView.createPrintDocumentAdapter("WAOS Print")
-                            printManager.print("WAOS Document", printAdapter, null)
+                            val pm = context.getSystemService(Context.PRINT_SERVICE) as android.print.PrintManager
+                            pm.print("WAOS Document", webView.createPrintDocumentAdapter("WAOS Print"), null)
                         }
                         viewModel.clearActionFlags()
                     }
-                    if (webViewState.shouldZoomIn) {
-                        webView.zoomIn(); viewModel.clearActionFlags()
-                    }
-                    if (webViewState.shouldTakeScreenshot) {
-                        viewModel.clearActionFlags()
-                    }
+                    if (webViewState.shouldZoomIn) { webView.zoomIn(); viewModel.clearActionFlags() }
+                    if (webViewState.shouldTakeScreenshot) { viewModel.clearActionFlags() }
                 },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.fillMaxSize()
             )
 
-            if (showConsole) {
-                ConsolePanel(
-                    messages = consoleMessages,
-                    onExecuteCommand = { command -> viewModel.executeJavaScript(command) },
-                    modifier = Modifier.height(200.dp)
+            if (webViewState.isLoading && webViewState.progress < 100) {
+                LinearProgressIndicator(
+                    progress = { webViewState.progress / 100f },
+                    modifier = Modifier.fillMaxWidth().align(Alignment.TopStart),
+                    color = CyanPrimary,
+                    trackColor = CyanPrimary.copy(alpha = 0.15f)
                 )
             }
 
-            if (showFindDialog) {
-                FindInPageDialog(
+            AnimatedVisibility(
+                visible = showFindBar,
+                modifier = Modifier.align(Alignment.TopCenter),
+                enter = slideInVertically { -it } + fadeIn(),
+                exit = slideOutVertically { -it } + fadeOut()
+            ) {
+                WaosFindBar(
                     query = findQuery,
-                    onQueryChange = { findQuery = it },
-                    onFindNext = {
-                        viewModel.executeJavaScript("window.waosFind?.findNext('$findQuery');")
+                    onQueryChange = { q ->
+                        findQuery = q
+                        webViewRef.value?.findAllAsync(q)
                     },
-                    onFindPrevious = {
-                        viewModel.executeJavaScript("window.waosFind?.findPrevious('$findQuery');")
-                    },
-                    onDismiss = { showFindDialog = false }
+                    onFindNext = { webViewRef.value?.findNext(true) },
+                    onFindPrev = { webViewRef.value?.findNext(false) },
+                    onClose = {
+                        showFindBar = false
+                        findQuery = ""
+                        webViewRef.value?.clearMatches()
+                    }
                 )
             }
 
             webViewState.error?.let { error ->
-                ErrorPanel(error = error, onRetry = { viewModel.refresh() })
+                WaosErrorPanel(error = error, onRetry = { viewModel.refresh() })
+            }
+        }
+
+        if (showConsole) {
+            WaosConsolePanel(
+                messages = consoleMessages,
+                onExecuteCommand = { viewModel.executeJavaScript(it) },
+                modifier = Modifier.height(200.dp)
+            )
+        }
+
+        WaosBottomBar(
+            canGoBack = webViewState.canGoBack,
+            canGoForward = webViewState.canGoForward,
+            isDesktopMode = isDesktopMode,
+            isAdblockEnabled = isAdblockEnabled,
+            isAutoScrollEnabled = isAutoScrollEnabled,
+            isAutoClickEnabled = isAutoClickEnabled,
+            developerModeEnabled = developerModeEnabled,
+            showConsole = showConsole,
+            floatingWindowsEnabled = floatingWindowsEnabled,
+            showMoreMenu = showMoreMenu,
+            onMoreMenuToggle = { showMoreMenu = !showMoreMenu },
+            onMoreMenuDismiss = { showMoreMenu = false },
+            onGoBack = { viewModel.goBack() },
+            onGoForward = { viewModel.goForward() },
+            onHome = { viewModel.goHome() },
+            onRefresh = { viewModel.refresh() },
+            onFind = { showFindBar = !showFindBar },
+            onDesktop = { viewModel.toggleDesktopMode() },
+            onAdblock = { viewModel.toggleAdblock() },
+            onAutoScroll = { viewModel.toggleAutoScroll() },
+            onAutoClick = { viewModel.toggleAutoClick() },
+            onConsole = { viewModel.toggleConsole() },
+            onShare = { viewModel.sharePage() },
+            onCopyUrl = { viewModel.copyUrl() },
+            onOpenBrowser = {
+                val currentUrl = webViewState.currentUrl.ifBlank { webApp?.url ?: return@WaosBottomBar }
+                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(currentUrl)))
+            },
+            onFloat = {
+                webApp?.let { app ->
+                    val intent = Intent(context, com.cylonid.nativealpha.service.FloatingWindowService::class.java).apply {
+                        action = com.cylonid.nativealpha.service.FloatingWindowService.ACTION_ADD_WINDOW
+                        putExtra("webAppId", app.id)
+                        putExtra("webAppUrl", app.url)
+                        putExtra("webAppName", app.name)
+                    }
+                    context.startService(intent)
+                }
+            },
+            onCredentials = { viewModel.openCredentialKeeper() },
+            onClipboard = { viewModel.openClipboardManager() },
+            onDownloads = { viewModel.openDownloadHistory() },
+            onScreenshot = { viewModel.takeScreenshot() },
+            onZoomIn = { viewModel.zoomIn() },
+            onZoomOut = { viewModel.zoomOut() }
+        )
+    }
+}
+
+@Composable
+private fun WaosTopBar(
+    title: String,
+    url: String,
+    isLoading: Boolean,
+    progress: Int,
+    onBack: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(BgDark)
+            .border(width = 1.dp, color = CardBorder, shape = RoundedCornerShape(0.dp))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBack, modifier = Modifier.size(36.dp)) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = TextSecondary, modifier = Modifier.size(20.dp))
+            }
+            Spacer(Modifier.width(6.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    color = TextPrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                if (url.isNotBlank()) {
+                    Text(
+                        text = url.replace("https://", "").replace("http://", ""),
+                        color = TextMuted,
+                        fontSize = 11.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+            if (isLoading) {
+                Text(
+                    text = "$progress%",
+                    color = CyanPrimary,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .background(StatusActive, androidx.compose.foundation.shape.CircleShape)
+                )
+                Spacer(Modifier.width(8.dp))
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun WaosBottomBar(
+    canGoBack: Boolean,
+    canGoForward: Boolean,
+    isDesktopMode: Boolean,
+    isAdblockEnabled: Boolean,
+    isAutoScrollEnabled: Boolean,
+    isAutoClickEnabled: Boolean,
+    developerModeEnabled: Boolean,
+    showConsole: Boolean,
+    floatingWindowsEnabled: Boolean,
+    showMoreMenu: Boolean,
+    onMoreMenuToggle: () -> Unit,
+    onMoreMenuDismiss: () -> Unit,
+    onGoBack: () -> Unit,
+    onGoForward: () -> Unit,
+    onHome: () -> Unit,
+    onRefresh: () -> Unit,
+    onFind: () -> Unit,
+    onDesktop: () -> Unit,
+    onAdblock: () -> Unit,
+    onAutoScroll: () -> Unit,
+    onAutoClick: () -> Unit,
+    onConsole: () -> Unit,
+    onShare: () -> Unit,
+    onCopyUrl: () -> Unit,
+    onOpenBrowser: () -> Unit,
+    onFloat: () -> Unit,
+    onCredentials: () -> Unit,
+    onClipboard: () -> Unit,
+    onDownloads: () -> Unit,
+    onScreenshot: () -> Unit,
+    onZoomIn: () -> Unit,
+    onZoomOut: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(BgDark)
+            .border(width = 1.dp, color = CardBorder, RoundedCornerShape(0.dp))
+            .navigationBarsPadding()
+    ) {
+        Divider(color = CardBorder, thickness = 1.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 4.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            WaosToolbarBtn(onClick = onGoBack, enabled = canGoBack) {
+                Icon(Icons.Default.ArrowBack, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarBtn(onClick = onGoForward, enabled = canGoForward) {
+                Icon(Icons.Default.ArrowForward, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarBtn(onClick = onHome) {
+                Icon(Icons.Default.Home, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarBtn(onClick = onRefresh) {
+                Icon(Icons.Default.Refresh, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarBtn(onClick = onFind) {
+                Icon(Icons.Default.Search, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarDivider()
+            WaosToolbarBtn(onClick = onDesktop, active = isDesktopMode, activeColor = CyanPrimary) {
+                Icon(if (isDesktopMode) Icons.Default.Computer else Icons.Default.Smartphone, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarBtn(onClick = onAdblock, active = isAdblockEnabled, activeColor = StatusActive) {
+                Icon(Icons.Default.Block, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarBtn(onClick = onAutoScroll, active = isAutoScrollEnabled, activeColor = CyanPrimary) {
+                Icon(if (isAutoScrollEnabled) Icons.Default.PlayArrow else Icons.Default.Pause, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarBtn(onClick = onAutoClick, active = isAutoClickEnabled, activeColor = VioletSecondary) {
+                Icon(if (isAutoClickEnabled) Icons.Default.TouchApp else Icons.Default.DoNotTouch, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarDivider()
+            WaosToolbarBtn(onClick = onZoomIn) {
+                Icon(Icons.Default.ZoomIn, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarBtn(onClick = onZoomOut) {
+                Icon(Icons.Default.ZoomOut, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarDivider()
+            WaosToolbarBtn(onClick = onShare) {
+                Icon(Icons.Default.Share, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarBtn(onClick = onCopyUrl) {
+                Icon(Icons.Default.ContentCopy, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarBtn(onClick = onOpenBrowser) {
+                Icon(Icons.Default.OpenInBrowser, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarDivider()
+            WaosToolbarBtn(onClick = onCredentials) {
+                Icon(Icons.Default.Lock, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarBtn(onClick = onClipboard) {
+                Icon(Icons.Default.ContentPaste, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarBtn(onClick = onDownloads) {
+                Icon(Icons.Default.Download, null, modifier = Modifier.size(18.dp))
+            }
+            WaosToolbarBtn(onClick = onScreenshot) {
+                Icon(Icons.Default.Camera, null, modifier = Modifier.size(18.dp))
+            }
+            if (developerModeEnabled) {
+                WaosToolbarBtn(onClick = onConsole, active = showConsole, activeColor = CyanPrimary) {
+                    Icon(if (showConsole) Icons.Default.CodeOff else Icons.Default.Code, null, modifier = Modifier.size(18.dp))
+                }
+            }
+            if (floatingWindowsEnabled) {
+                WaosToolbarBtn(onClick = onFloat) {
+                    Icon(Icons.Default.Launch, null, modifier = Modifier.size(18.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WaosToolbarBtn(
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    active: Boolean = false,
+    activeColor: Color = CyanPrimary,
+    content: @Composable () -> Unit
+) {
+    val tint = when {
+        !enabled -> TextMuted.copy(alpha = 0.3f)
+        active -> activeColor
+        else -> TextSecondary
+    }
+    IconButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier
+            .size(40.dp)
+            .then(
+                if (active) Modifier.background(activeColor.copy(0.12f), RoundedCornerShape(8.dp))
+                else Modifier
+            )
+    ) {
+        androidx.compose.runtime.CompositionLocalProvider(
+            androidx.compose.material3.LocalContentColor provides tint
+        ) {
+            content()
+        }
+    }
+}
+
+@Composable
+private fun WaosToolbarDivider() {
+    Box(
+        modifier = Modifier
+            .height(20.dp)
+            .width(1.dp)
+            .background(CardBorder)
+            .padding(horizontal = 4.dp)
+    )
+}
+
+@Composable
+private fun WaosFindBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onFindNext: () -> Unit,
+    onFindPrev: () -> Unit,
+    onClose: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(CardSurface)
+            .border(1.dp, CardBorder, RoundedCornerShape(0.dp))
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(Icons.Default.Search, null, tint = CyanPrimary, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(8.dp))
+        OutlinedTextField(
+            value = query,
+            onValueChange = onQueryChange,
+            placeholder = { Text("Find in page…", color = TextMuted, fontSize = 13.sp) },
+            modifier = Modifier.weight(1f).height(48.dp),
+            singleLine = true,
+            textStyle = androidx.compose.ui.text.TextStyle(color = TextPrimary, fontSize = 14.sp),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = CyanPrimary,
+                unfocusedBorderColor = CardBorder,
+                cursorColor = CyanPrimary,
+                focusedTextColor = TextPrimary,
+                unfocusedTextColor = TextPrimary
+            )
+        )
+        IconButton(onClick = onFindPrev, modifier = Modifier.size(36.dp)) {
+            Icon(Icons.Default.KeyboardArrowUp, null, tint = TextSecondary, modifier = Modifier.size(20.dp))
+        }
+        IconButton(onClick = onFindNext, modifier = Modifier.size(36.dp)) {
+            Icon(Icons.Default.KeyboardArrowDown, null, tint = TextSecondary, modifier = Modifier.size(20.dp))
+        }
+        IconButton(onClick = onClose, modifier = Modifier.size(36.dp)) {
+            Icon(Icons.Default.Close, null, tint = TextMuted, modifier = Modifier.size(18.dp))
+        }
+    }
+}
+
+@Composable
+private fun WaosConsolePanel(
+    messages: List<ConsoleMessageData>,
+    onExecuteCommand: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var command by remember { mutableStateOf("") }
+    Column(
+        modifier = modifier
+            .background(Color(0xFF080C15))
+            .border(1.dp, CardBorder, RoundedCornerShape(0.dp))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(CardSurface)
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(Icons.Default.Code, null, tint = CyanPrimary, modifier = Modifier.size(14.dp))
+            Spacer(Modifier.width(6.dp))
+            Text("Console", color = CyanPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        }
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(8.dp)
+        ) {
+            items(messages) { message ->
+                val levelName = when (message.level) {
+                    ConsoleMessage.MessageLevel.ERROR.ordinal -> "ERR"
+                    ConsoleMessage.MessageLevel.WARNING.ordinal -> "WRN"
+                    else -> "LOG"
+                }
+                val color = when (message.level) {
+                    ConsoleMessage.MessageLevel.ERROR.ordinal -> ErrorRed
+                    ConsoleMessage.MessageLevel.WARNING.ordinal -> Color(0xFFFFB800)
+                    else -> TextSecondary
+                }
+                Text(
+                    "[$levelName] ${message.sourceId}:${message.lineNumber} ${message.message}",
+                    color = color,
+                    fontSize = 10.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                    modifier = Modifier.padding(vertical = 1.dp)
+                )
+            }
+        }
+        Row(
+            modifier = Modifier.padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = command,
+                onValueChange = { command = it },
+                placeholder = { Text("JS command…", color = TextMuted, fontSize = 12.sp) },
+                modifier = Modifier.weight(1f).height(44.dp),
+                singleLine = true,
+                textStyle = androidx.compose.ui.text.TextStyle(
+                    color = TextPrimary,
+                    fontSize = 12.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                ),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = CyanPrimary,
+                    unfocusedBorderColor = CardBorder
+                )
+            )
+            Spacer(Modifier.width(8.dp))
+            IconButton(
+                onClick = {
+                    if (command.isNotBlank()) { onExecuteCommand(command); command = "" }
+                },
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(CyanPrimary.copy(0.15f), RoundedCornerShape(8.dp))
+            ) {
+                Icon(Icons.Default.PlayArrow, null, tint = CyanPrimary, modifier = Modifier.size(20.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun WaosErrorPanel(error: String, onRetry: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BgDeep),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(32.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(CardSurface)
+                .border(1.dp, ErrorRed.copy(0.3f), RoundedCornerShape(20.dp))
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .background(ErrorRed.copy(0.15f), RoundedCornerShape(16.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.Error, null, tint = ErrorRed, modifier = Modifier.size(36.dp))
+            }
+            Spacer(Modifier.height(16.dp))
+            Text("Failed to Load", color = TextPrimary, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(6.dp))
+            Text(error, color = TextSecondary, fontSize = 13.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            Spacer(Modifier.height(20.dp))
+            Button(
+                onClick = onRetry,
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = CyanPrimary)
+            ) {
+                Icon(Icons.Default.Refresh, null, tint = Color.Black, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Retry", color = Color.Black, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -586,137 +1006,4 @@ private fun injectDarkMode(webView: WebView) {
         """.trimIndent(),
         null
     )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ConsolePanel(
-    messages: List<ConsoleMessageData>,
-    onExecuteCommand: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var command by remember { mutableStateOf("") }
-
-    Column(modifier = modifier) {
-        LazyColumn(
-            modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(8.dp)
-        ) {
-            items(messages) { message ->
-                ConsoleMessageItem(message)
-            }
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            OutlinedTextField(
-                value = command,
-                onValueChange = { command = it },
-                placeholder = { Text("Enter JavaScript command...") },
-                modifier = Modifier.weight(1f),
-                singleLine = true
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Button(onClick = {
-                if (command.isNotBlank()) {
-                    onExecuteCommand(command)
-                    command = ""
-                }
-            }) {
-                Text("Execute")
-            }
-        }
-    }
-}
-
-@Composable
-fun ConsoleMessageItem(message: ConsoleMessageData) {
-    val levelName = when (message.level) {
-        ConsoleMessage.MessageLevel.ERROR.ordinal -> "ERROR"
-        ConsoleMessage.MessageLevel.WARNING.ordinal -> "WARNING"
-        else -> "LOG"
-    }
-    val color = when (message.level) {
-        ConsoleMessage.MessageLevel.ERROR.ordinal -> MaterialTheme.colorScheme.error
-        ConsoleMessage.MessageLevel.WARNING.ordinal -> MaterialTheme.colorScheme.tertiary
-        else -> MaterialTheme.colorScheme.onSurface
-    }
-    Text(
-        text = "[$levelName] ${message.sourceId}:${message.lineNumber} ${message.message}",
-        color = color,
-        style = MaterialTheme.typography.bodySmall,
-        modifier = Modifier.padding(vertical = 2.dp)
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun FindInPageDialog(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    onFindNext: () -> Unit,
-    onFindPrevious: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Find in Page") },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = query,
-                    onValueChange = onQueryChange,
-                    placeholder = { Text("Search text...") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(onClick = onFindPrevious, modifier = Modifier.weight(1f)) {
-                        Text("Previous")
-                    }
-                    OutlinedButton(onClick = onFindNext, modifier = Modifier.weight(1f)) {
-                        Text("Next")
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Close") }
-        }
-    )
-}
-
-@Composable
-fun ErrorPanel(error: String, onRetry: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                Icons.Default.Error,
-                contentDescription = "Error",
-                modifier = Modifier.size(48.dp),
-                tint = MaterialTheme.colorScheme.error
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Failed to load page", style = MaterialTheme.typography.titleMedium)
-            Text(
-                text = error,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onRetry) {
-                Icon(Icons.Default.Refresh, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Retry")
-            }
-        }
-    }
 }

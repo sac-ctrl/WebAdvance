@@ -1,18 +1,33 @@
 package com.cylonid.nativealpha.ui.screens
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cylonid.nativealpha.manager.DownloadItem
+import com.cylonid.nativealpha.ui.theme.*
 import com.cylonid.nativealpha.viewmodel.DownloadViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -28,232 +43,227 @@ fun DownloadHistoryScreen(
     val sortBy by viewModel.sortBy.collectAsState()
     val filterBy by viewModel.filterBy.collectAsState()
 
-    LaunchedEffect(webAppId) {
-        viewModel.loadDownloads(webAppId)
-    }
+    LaunchedEffect(webAppId) { viewModel.loadDownloads(webAppId) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Download History") },
-                navigationIcon = {
-                    IconButton(onClick = { /* Navigate back */ }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+    val filterOptions = listOf(
+        DownloadViewModel.FilterBy.ALL to "All",
+        DownloadViewModel.FilterBy.COMPLETED to "Done",
+        DownloadViewModel.FilterBy.DOWNLOADING to "Active",
+        DownloadViewModel.FilterBy.FAILED to "Failed",
+        DownloadViewModel.FilterBy.IMAGES to "Images",
+        DownloadViewModel.FilterBy.VIDEOS to "Videos",
+        DownloadViewModel.FilterBy.DOCUMENTS to "Docs"
+    )
+
+    val completedCount = downloads.count { it.status == DownloadItem.Status.COMPLETED }
+    val totalSize = downloads.filter { it.status == DownloadItem.Status.COMPLETED }
+        .sumOf { it.fileSize }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BgDeep)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    Brush.verticalGradient(listOf(BgDark, BgDeep))
+                )
+                .padding(horizontal = 20.dp, vertical = 20.dp)
+        ) {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(42.dp)
+                            .background(
+                                Brush.radialGradient(listOf(GradCyanStart.copy(0.4f), Color.Transparent)),
+                                RoundedCornerShape(12.dp)
+                            )
+                            .border(1.dp, GradCyanEnd.copy(0.3f), RoundedCornerShape(12.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Download, null, tint = GradCyanEnd, modifier = Modifier.size(22.dp))
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Column {
+                        Text("Downloads", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text("$completedCount files · ${formatBytes(totalSize)}", color = TextMuted, fontSize = 12.sp)
                     }
                 }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            // Search, Filter and Sort
-            Column(modifier = Modifier.padding(16.dp)) {
+                Spacer(Modifier.height(16.dp))
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { viewModel.updateSearchQuery(it) },
-                    label = { Text("Search downloads") },
+                    placeholder = { Text("Search downloads…", color = TextMuted, fontSize = 13.sp) },
                     modifier = Modifier.fillMaxWidth(),
-                    leadingIcon = {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
-                    }
+                    singleLine = true,
+                    leadingIcon = { Icon(Icons.Default.Search, null, tint = TextMuted, modifier = Modifier.size(18.dp)) },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { viewModel.updateSearchQuery("") }, modifier = Modifier.size(20.dp)) {
+                                Icon(Icons.Default.Close, null, tint = TextMuted, modifier = Modifier.size(16.dp))
+                            }
+                        }
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = CyanPrimary,
+                        unfocusedBorderColor = CardBorder,
+                        cursorColor = CyanPrimary,
+                        focusedTextColor = TextPrimary,
+                        unfocusedTextColor = TextPrimary,
+                        containerColor = CardSurface
+                    ),
+                    textStyle = androidx.compose.ui.text.TextStyle(color = TextPrimary, fontSize = 14.sp)
                 )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
+                Spacer(Modifier.height(12.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Sort dropdown
+                    Text("Sort:", color = TextMuted, fontSize = 12.sp)
                     var sortExpanded by remember { mutableStateOf(false) }
-                    ExposedDropdownMenuBox(
-                        expanded = sortExpanded,
-                        onExpandedChange = { sortExpanded = it },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        OutlinedTextField(
-                            value = when (sortBy) {
-                                DownloadViewModel.SortBy.DATE_DESC -> "Newest first"
-                                DownloadViewModel.SortBy.DATE_ASC -> "Oldest first"
-                                DownloadViewModel.SortBy.NAME_ASC -> "Name A-Z"
-                                DownloadViewModel.SortBy.NAME_DESC -> "Name Z-A"
-                                DownloadViewModel.SortBy.SIZE_DESC -> "Largest first"
-                                DownloadViewModel.SortBy.SIZE_ASC -> "Smallest first"
-                            },
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Sort by") },
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = sortExpanded)
-                            },
-                            modifier = Modifier.menuAnchor()
-                        )
-                        ExposedDropdownMenu(
-                            expanded = sortExpanded,
-                            onDismissRequest = { sortExpanded = false }
+                    Box {
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(CardSurface)
+                                .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
+                                .padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            DropdownMenuItem(
-                                text = { Text("Newest first") },
-                                onClick = {
-                                    viewModel.updateSortBy(DownloadViewModel.SortBy.DATE_DESC)
-                                    sortExpanded = false
-                                }
+                            Text(
+                                when (sortBy) {
+                                    DownloadViewModel.SortBy.DATE_DESC -> "Newest"
+                                    DownloadViewModel.SortBy.DATE_ASC -> "Oldest"
+                                    DownloadViewModel.SortBy.NAME_ASC -> "A–Z"
+                                    DownloadViewModel.SortBy.NAME_DESC -> "Z–A"
+                                    DownloadViewModel.SortBy.SIZE_DESC -> "Largest"
+                                    DownloadViewModel.SortBy.SIZE_ASC -> "Smallest"
+                                },
+                                color = CyanPrimary,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium
                             )
-                            DropdownMenuItem(
-                                text = { Text("Oldest first") },
-                                onClick = {
-                                    viewModel.updateSortBy(DownloadViewModel.SortBy.DATE_ASC)
-                                    sortExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Name A-Z") },
-                                onClick = {
-                                    viewModel.updateSortBy(DownloadViewModel.SortBy.NAME_ASC)
-                                    sortExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Name Z-A") },
-                                onClick = {
-                                    viewModel.updateSortBy(DownloadViewModel.SortBy.NAME_DESC)
-                                    sortExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Largest first") },
-                                onClick = {
-                                    viewModel.updateSortBy(DownloadViewModel.SortBy.SIZE_DESC)
-                                    sortExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Smallest first") },
-                                onClick = {
-                                    viewModel.updateSortBy(DownloadViewModel.SortBy.SIZE_ASC)
-                                    sortExpanded = false
-                                }
-                            )
+                            Spacer(Modifier.width(4.dp))
+                            Icon(Icons.Default.ArrowDropDown, null, tint = CyanPrimary, modifier = Modifier.size(16.dp))
                         }
-                    }
-
-                    // Filter dropdown
-                    var filterExpanded by remember { mutableStateOf(false) }
-                    ExposedDropdownMenuBox(
-                        expanded = filterExpanded,
-                        onExpandedChange = { filterExpanded = it },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        OutlinedTextField(
-                            value = when (filterBy) {
-                                DownloadViewModel.FilterBy.ALL -> "All files"
-                                DownloadViewModel.FilterBy.COMPLETED -> "Completed"
-                                DownloadViewModel.FilterBy.DOWNLOADING -> "Downloading"
-                                DownloadViewModel.FilterBy.FAILED -> "Failed"
-                                DownloadViewModel.FilterBy.IMAGES -> "Images"
-                                DownloadViewModel.FilterBy.VIDEOS -> "Videos"
-                                DownloadViewModel.FilterBy.DOCUMENTS -> "Documents"
-                            },
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Filter") },
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = filterExpanded)
-                            },
-                            modifier = Modifier.menuAnchor()
-                        )
-                        ExposedDropdownMenu(
-                            expanded = filterExpanded,
-                            onDismissRequest = { filterExpanded = false }
+                        DropdownMenu(
+                            expanded = sortExpanded,
+                            onDismissRequest = { sortExpanded = false },
+                            modifier = Modifier.background(CardSurface)
                         ) {
-                            DropdownMenuItem(
-                                text = { Text("All files") },
-                                onClick = {
-                                    viewModel.updateFilterBy(DownloadViewModel.FilterBy.ALL)
-                                    filterExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Completed") },
-                                onClick = {
-                                    viewModel.updateFilterBy(DownloadViewModel.FilterBy.COMPLETED)
-                                    filterExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Downloading") },
-                                onClick = {
-                                    viewModel.updateFilterBy(DownloadViewModel.FilterBy.DOWNLOADING)
-                                    filterExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Failed") },
-                                onClick = {
-                                    viewModel.updateFilterBy(DownloadViewModel.FilterBy.FAILED)
-                                    filterExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Images") },
-                                onClick = {
-                                    viewModel.updateFilterBy(DownloadViewModel.FilterBy.IMAGES)
-                                    filterExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Videos") },
-                                onClick = {
-                                    viewModel.updateFilterBy(DownloadViewModel.FilterBy.VIDEOS)
-                                    filterExpanded = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Documents") },
-                                onClick = {
-                                    viewModel.updateFilterBy(DownloadViewModel.FilterBy.DOCUMENTS)
-                                    filterExpanded = false
-                                }
-                            )
+                            listOf(
+                                DownloadViewModel.SortBy.DATE_DESC to "Newest first",
+                                DownloadViewModel.SortBy.DATE_ASC to "Oldest first",
+                                DownloadViewModel.SortBy.NAME_ASC to "Name A–Z",
+                                DownloadViewModel.SortBy.NAME_DESC to "Name Z–A",
+                                DownloadViewModel.SortBy.SIZE_DESC to "Largest first",
+                                DownloadViewModel.SortBy.SIZE_ASC to "Smallest first"
+                            ).forEach { (value, label) ->
+                                DropdownMenuItem(
+                                    text = { Text(label, color = if (sortBy == value) CyanPrimary else TextPrimary, fontSize = 13.sp) },
+                                    onClick = { viewModel.updateSortBy(value); sortExpanded = false },
+                                    leadingIcon = if (sortBy == value) ({
+                                        Icon(Icons.Default.Check, null, tint = CyanPrimary, modifier = Modifier.size(14.dp))
+                                    }) else null
+                                )
+                            }
+                        }
+                        androidx.compose.foundation.clickable(onClick = { sortExpanded = true }) {}
+                        Box(modifier = Modifier.matchParentSize().clip(RoundedCornerShape(8.dp)).background(Color.Transparent)) {
+                            androidx.compose.material3.Surface(
+                                modifier = Modifier.fillMaxSize(),
+                                color = Color.Transparent,
+                                onClick = { sortExpanded = true }
+                            ) {}
                         }
                     }
                 }
             }
+        }
 
-            if (downloads.isEmpty()) {
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(BgDark)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(filterOptions) { (value, label) ->
+                val isSelected = filterBy == value
+                val bgColor by animateColorAsState(
+                    if (isSelected) CyanPrimary.copy(0.2f) else CardSurface,
+                    tween(200)
+                )
+                val borderColor by animateColorAsState(
+                    if (isSelected) CyanPrimary else CardBorder,
+                    tween(200)
+                )
                 Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(bgColor)
+                        .border(1.dp, borderColor, RoundedCornerShape(20.dp))
+                        .padding(horizontal = 14.dp, vertical = 6.dp)
                 ) {
-                    Text("No downloads yet")
+                    Text(
+                        label,
+                        color = if (isSelected) CyanPrimary else TextSecondary,
+                        fontSize = 12.sp,
+                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                    androidx.compose.material3.Surface(
+                        modifier = Modifier.matchParentSize(),
+                        color = Color.Transparent,
+                        onClick = { viewModel.updateFilterBy(value) }
+                    ) {}
                 }
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(downloads) { download ->
-                        DownloadItemCard(
-                            download = download,
-                            onOpen = { viewModel.openFile(download) },
-                            onShare = { viewModel.shareFile(download) },
-                            onDelete = { viewModel.deleteDownload(download) },
-                            onRetry = { viewModel.retryDownload(download) },
-                            onPause = { viewModel.pauseDownload(download) },
-                            onResume = { viewModel.resumeDownload(download) },
-                            onCancel = { viewModel.cancelDownload(download) }
-                        )
+            }
+        }
+
+        if (downloads.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .background(CardSurface, RoundedCornerShape(20.dp))
+                            .border(1.dp, CardBorder, RoundedCornerShape(20.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Download, null, tint = TextMuted, modifier = Modifier.size(40.dp))
                     }
+                    Spacer(Modifier.height(16.dp))
+                    Text("No downloads yet", color = TextSecondary, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                    Text("Files you download will appear here", color = TextMuted, fontSize = 13.sp)
+                }
+            }
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(downloads, key = { it.id }) { download ->
+                    DownloadItemCard(
+                        download = download,
+                        onOpen = { viewModel.openFile(download) },
+                        onShare = { viewModel.shareFile(download) },
+                        onDelete = { viewModel.deleteDownload(download) },
+                        onRetry = { viewModel.retryDownload(download) },
+                        onPause = { viewModel.pauseDownload(download) },
+                        onResume = { viewModel.resumeDownload(download) },
+                        onCancel = { viewModel.cancelDownload(download) }
+                    )
                 }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DownloadItemCard(
     download: DownloadItem,
@@ -265,110 +275,97 @@ fun DownloadItemCard(
     onResume: () -> Unit,
     onCancel: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth()
+    val (iconRes, gradStart, gradEnd) = getDownloadTypeStyle(download.mimeType)
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(CardSurface)
+            .border(1.dp, CardBorder, RoundedCornerShape(16.dp))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(
+                            Brush.radialGradient(listOf(gradStart.copy(0.35f), Color.Transparent)),
+                            RoundedCornerShape(12.dp)
+                        )
+                        .border(1.dp, gradStart.copy(0.4f), RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(iconRes, null, tint = gradEnd, modifier = Modifier.size(22.dp))
+                }
+                Spacer(Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    // File name and type icon
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = getFileTypeIcon(download.mimeType),
-                            contentDescription = "File type",
-                            modifier = Modifier.size(24.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = download.fileName,
-                            style = MaterialTheme.typography.titleMedium,
-                            maxLines = 2,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    // Progress and size info
-                    if (download.status == DownloadItem.Status.DOWNLOADING) {
-                        LinearProgressIndicator(
-                            progress = download.progressPercentage / 100f,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "${download.progressPercentage}% • ${download.formattedDownloadedSize} / ${download.formattedFileSize}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        if (download.formattedSpeed.isNotEmpty()) {
-                            Text(
-                                text = "${download.formattedSpeed} • ETA: ${download.formattedETA}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    } else {
-                        Text(
-                            text = download.formattedFileSize,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-
-                    // Date
                     Text(
-                        text = formatTimestamp(download.timestamp),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        download.fileName,
+                        color = TextPrimary,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        formatTimestamp(download.timestamp),
+                        color = TextMuted,
+                        fontSize = 11.sp
                     )
                 }
+                Spacer(Modifier.width(8.dp))
+                DownloadStatusBadge(download.status)
+            }
 
-                // Status indicator
-                Column(horizontalAlignment = Alignment.End) {
-                    when (download.status) {
-                        DownloadItem.Status.COMPLETED -> {
-                            Icon(
-                                Icons.Default.CheckCircle,
-                                contentDescription = "Completed",
-                                tint = MaterialTheme.colorScheme.primary
+            Spacer(Modifier.height(10.dp))
+
+            when (download.status) {
+                DownloadItem.Status.DOWNLOADING -> {
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                "${download.progressPercentage}%  ·  ${download.formattedDownloadedSize} / ${download.formattedFileSize}",
+                                color = CyanPrimary,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium
                             )
+                            if (download.formattedSpeed.isNotEmpty()) {
+                                Text(
+                                    "${download.formattedSpeed}  ·  ETA ${download.formattedETA}",
+                                    color = TextMuted,
+                                    fontSize = 11.sp
+                                )
+                            }
                         }
-                        DownloadItem.Status.DOWNLOADING -> {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                        }
-                        DownloadItem.Status.FAILED -> {
-                            Icon(
-                                Icons.Default.Error,
-                                contentDescription = "Failed",
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        }
-                        DownloadItem.Status.PAUSED -> {
-                            Icon(
-                                Icons.Default.Pause,
-                                contentDescription = "Paused",
-                                tint = MaterialTheme.colorScheme.secondary
-                            )
-                        }
-                        DownloadItem.Status.PENDING -> {
-                            Icon(
-                                Icons.Default.Schedule,
-                                contentDescription = "Pending",
-                                tint = MaterialTheme.colorScheme.outline
-                            )
-                        }
+                        Spacer(Modifier.height(6.dp))
+                        LinearProgressIndicator(
+                            progress = { download.progressPercentage / 100f },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(2.dp)),
+                            color = CyanPrimary,
+                            trackColor = CyanPrimary.copy(0.15f)
+                        )
                     }
+                }
+                DownloadItem.Status.COMPLETED -> {
+                    Text(download.formattedFileSize, color = TextSecondary, fontSize = 12.sp)
+                }
+                else -> {
+                    Text(download.formattedFileSize, color = TextSecondary, fontSize = 12.sp)
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(8.dp))
+            Divider(color = CardBorder, thickness = 0.5.dp)
+            Spacer(Modifier.height(6.dp))
 
-            // Action buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
@@ -376,73 +373,99 @@ fun DownloadItemCard(
             ) {
                 when (download.status) {
                     DownloadItem.Status.COMPLETED -> {
-                        TextButton(onClick = onOpen) {
-                            Icon(Icons.Default.OpenInNew, contentDescription = null)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Open")
-                        }
-                        TextButton(onClick = onShare) {
-                            Icon(Icons.Default.Share, contentDescription = null)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Share")
-                        }
+                        WaosSmallBtn("Open", Icons.Default.OpenInNew, CyanPrimary, onOpen)
+                        Spacer(Modifier.width(6.dp))
+                        WaosSmallBtn("Share", Icons.Default.Share, VioletSecondary, onShare)
                     }
                     DownloadItem.Status.DOWNLOADING -> {
-                        TextButton(onClick = onPause) {
-                            Icon(Icons.Default.Pause, contentDescription = null)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Pause")
-                        }
-                        TextButton(onClick = onCancel) {
-                            Icon(Icons.Default.Cancel, contentDescription = null)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Cancel")
-                        }
+                        WaosSmallBtn("Pause", Icons.Default.Pause, Color(0xFFFFB800), onPause)
+                        Spacer(Modifier.width(6.dp))
+                        WaosSmallBtn("Cancel", Icons.Default.Close, ErrorRed, onCancel)
                     }
                     DownloadItem.Status.PAUSED -> {
-                        TextButton(onClick = onResume) {
-                            Icon(Icons.Default.PlayArrow, contentDescription = null)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Resume")
-                        }
-                        TextButton(onClick = onCancel) {
-                            Icon(Icons.Default.Cancel, contentDescription = null)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Cancel")
-                        }
+                        WaosSmallBtn("Resume", Icons.Default.PlayArrow, StatusActive, onResume)
+                        Spacer(Modifier.width(6.dp))
+                        WaosSmallBtn("Cancel", Icons.Default.Close, ErrorRed, onCancel)
                     }
                     DownloadItem.Status.FAILED -> {
-                        TextButton(onClick = onRetry) {
-                            Icon(Icons.Default.Refresh, contentDescription = null)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Retry")
-                        }
+                        WaosSmallBtn("Retry", Icons.Default.Refresh, Color(0xFFFFB800), onRetry)
                     }
-                    else -> {} // PENDING - no actions
+                    else -> {}
                 }
-                TextButton(onClick = onDelete) {
-                    Icon(Icons.Default.Delete, contentDescription = null)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Delete")
+                Spacer(Modifier.width(6.dp))
+                IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
+                    Icon(Icons.Default.Delete, null, tint = ErrorRed.copy(0.7f), modifier = Modifier.size(16.dp))
                 }
             }
         }
     }
 }
 
+@Composable
+private fun WaosSmallBtn(label: String, icon: ImageVector, color: Color, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(color.copy(0.12f))
+            .border(1.dp, color.copy(0.3f), RoundedCornerShape(8.dp))
+            .padding(horizontal = 10.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, null, tint = color, modifier = Modifier.size(13.dp))
+        Spacer(Modifier.width(4.dp))
+        Text(label, color = color, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+        androidx.compose.material3.Surface(
+            modifier = Modifier.matchParentSize(),
+            color = Color.Transparent,
+            onClick = onClick
+        ) {}
+    }
+}
+
+@Composable
+private fun DownloadStatusBadge(status: DownloadItem.Status) {
+    val (label, color) = when (status) {
+        DownloadItem.Status.COMPLETED -> "Done" to StatusActive
+        DownloadItem.Status.DOWNLOADING -> "Active" to CyanPrimary
+        DownloadItem.Status.PAUSED -> "Paused" to Color(0xFFFFB800)
+        DownloadItem.Status.FAILED -> "Failed" to ErrorRed
+        DownloadItem.Status.PENDING -> "Queued" to TextMuted
+    }
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
+            .background(color.copy(0.15f))
+            .border(1.dp, color.copy(0.4f), RoundedCornerShape(20.dp))
+            .padding(horizontal = 8.dp, vertical = 3.dp)
+    ) {
+        Text(label, color = color, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+private data class DownloadTypeStyle(val icon: ImageVector, val gradStart: Color, val gradEnd: Color)
+
+private fun getDownloadTypeStyle(mimeType: String?): DownloadTypeStyle {
+    return when {
+        mimeType?.startsWith("image/") == true -> DownloadTypeStyle(Icons.Default.Image, GradPinkStart, GradPinkEnd)
+        mimeType?.startsWith("video/") == true -> DownloadTypeStyle(Icons.Default.Movie, GradVioletStart, GradVioletEnd)
+        mimeType?.startsWith("audio/") == true -> DownloadTypeStyle(Icons.Default.MusicNote, GradCyanStart, GradCyanEnd)
+        mimeType == "application/pdf" -> DownloadTypeStyle(Icons.Default.PictureAsPdf, GradRedStart, GradRedEnd)
+        mimeType?.startsWith("text/") == true -> DownloadTypeStyle(Icons.Default.Description, GradBlueStart, GradBlueEnd)
+        mimeType == "application/vnd.android.package-archive" -> DownloadTypeStyle(Icons.Default.Android, GradGreenStart, GradGreenEnd)
+        else -> DownloadTypeStyle(Icons.Default.InsertDriveFile, GradOrangeStart, GradOrangeEnd)
+    }
+}
+
 private fun formatTimestamp(timestamp: Long): String {
-    val sdf = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
+    val sdf = SimpleDateFormat("MMM dd, yyyy  HH:mm", Locale.getDefault())
     return sdf.format(Date(timestamp))
 }
 
-private fun getFileTypeIcon(mimeType: String?): ImageVector {
+private fun formatBytes(bytes: Long): String {
     return when {
-        mimeType?.startsWith("image/") == true -> Icons.Default.Image
-        mimeType?.startsWith("video/") == true -> Icons.Default.Movie
-        mimeType?.startsWith("audio/") == true -> Icons.Default.MusicNote
-        mimeType == "application/pdf" -> Icons.Default.PictureAsPdf
-        mimeType?.startsWith("text/") == true -> Icons.Default.Description
-        mimeType == "application/vnd.android.package-archive" -> Icons.Default.InsertDriveFile
-        else -> Icons.Default.InsertDriveFile
+        bytes >= 1_073_741_824L -> "%.1f GB".format(bytes / 1_073_741_824.0)
+        bytes >= 1_048_576L -> "%.1f MB".format(bytes / 1_048_576.0)
+        bytes >= 1_024L -> "%.1f KB".format(bytes / 1_024.0)
+        else -> "$bytes B"
     }
 }
