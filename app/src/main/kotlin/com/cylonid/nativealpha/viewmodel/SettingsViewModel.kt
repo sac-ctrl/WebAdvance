@@ -58,57 +58,57 @@ class SettingsViewModel @Inject constructor(
     var lastExportMessage by mutableStateOf("")
         private set
 
-    fun setAppTheme(value: String) {
+    fun updateAppTheme(value: String) {
         appTheme = value
         prefs.edit().putString("app_theme", value).apply()
     }
 
-    fun setShowCategoryChips(value: Boolean) {
+    fun updateShowCategoryChips(value: Boolean) {
         showCategoryChips = value
         prefs.edit().putBoolean("show_category_chips", value).apply()
     }
 
-    fun setShowStatusIndicators(value: Boolean) {
+    fun updateShowStatusIndicators(value: Boolean) {
         showStatusIndicators = value
         prefs.edit().putBoolean("show_status_indicators", value).apply()
     }
 
-    fun setAnimatedCards(value: Boolean) {
+    fun updateAnimatedCards(value: Boolean) {
         animatedCards = value
         prefs.edit().putBoolean("animated_cards", value).apply()
     }
 
-    fun setGlobalNotificationsEnabled(value: Boolean) {
+    fun updateGlobalNotificationsEnabled(value: Boolean) {
         globalNotificationsEnabled = value
         prefs.edit().putBoolean("global_notifications", value).apply()
     }
 
-    fun setShowBadgeCount(value: Boolean) {
+    fun updateShowBadgeCount(value: Boolean) {
         showBadgeCount = value
         prefs.edit().putBoolean("show_badge_count", value).apply()
     }
 
-    fun setFloatingWindowsEnabled(value: Boolean) {
+    fun updateFloatingWindowsEnabled(value: Boolean) {
         floatingWindowsEnabled = value
         prefs.edit().putBoolean("floating_windows", value).apply()
     }
 
-    fun setMaxFloatingWindows(value: Int) {
+    fun updateMaxFloatingWindows(value: Int) {
         maxFloatingWindows = value
         prefs.edit().putInt("max_floating_windows", value).apply()
     }
 
-    fun setGlobalClipboardEnabled(value: Boolean) {
+    fun updateGlobalClipboardEnabled(value: Boolean) {
         globalClipboardEnabled = value
         prefs.edit().putBoolean("global_clipboard", value).apply()
     }
 
-    fun setGlobalVaultEnabled(value: Boolean) {
+    fun updateGlobalVaultEnabled(value: Boolean) {
         globalVaultEnabled = value
         prefs.edit().putBoolean("global_vault", value).apply()
     }
 
-    fun setDeveloperModeEnabled(value: Boolean) {
+    fun updateDeveloperModeEnabled(value: Boolean) {
         developerModeEnabled = value
         prefs.edit().putBoolean("developer_mode", value).apply()
     }

@@ -113,7 +113,7 @@ fun SettingsScreen(
                                 DropdownMenuItem(
                                     text = { Text(theme, color = TextPrimary) },
                                     onClick = {
-                                        viewModel.setAppTheme(theme)
+                                        viewModel.updateAppTheme(theme)
                                         themeExpanded = false
                                     }
                                 )
@@ -126,13 +126,13 @@ fun SettingsScreen(
                     SettingsInfoRow("Grid Columns", "2 columns (auto-adaptive)")
                     Spacer(Modifier.height(8.dp))
                     SettingsToggleRow("Show Category Chips", Icons.Rounded.Category, viewModel.showCategoryChips) {
-                        viewModel.setShowCategoryChips(it)
+                        viewModel.updateShowCategoryChips(it)
                     }
                     SettingsToggleRow("Show Status Indicators", Icons.Rounded.Circle, viewModel.showStatusIndicators) {
-                        viewModel.setShowStatusIndicators(it)
+                        viewModel.updateShowStatusIndicators(it)
                     }
                     SettingsToggleRow("Animated Cards", Icons.Rounded.AutoAwesome, viewModel.animatedCards) {
-                        viewModel.setAnimatedCards(it)
+                        viewModel.updateAnimatedCards(it)
                     }
                 }
 
@@ -142,14 +142,14 @@ fun SettingsScreen(
                         Icons.Rounded.NotificationsActive,
                         viewModel.globalNotificationsEnabled
                     ) {
-                        viewModel.setGlobalNotificationsEnabled(it)
+                        viewModel.updateGlobalNotificationsEnabled(it)
                     }
                     SettingsToggleRow(
                         "Show Badge Count",
                         Icons.Rounded.Label,
                         viewModel.showBadgeCount && viewModel.globalNotificationsEnabled
                     ) {
-                        if (viewModel.globalNotificationsEnabled) viewModel.setShowBadgeCount(it)
+                        if (viewModel.globalNotificationsEnabled) viewModel.updateShowBadgeCount(it)
                     }
                 }
 
@@ -159,7 +159,7 @@ fun SettingsScreen(
                         Icons.Rounded.OpenWith,
                         viewModel.floatingWindowsEnabled
                     ) {
-                        viewModel.setFloatingWindowsEnabled(it)
+                        viewModel.updateFloatingWindowsEnabled(it)
                     }
                     AnimatedVisibility(visible = viewModel.floatingWindowsEnabled) {
                         Column {
@@ -178,14 +178,14 @@ fun SettingsScreen(
                         Icons.Rounded.Lock,
                         viewModel.globalVaultEnabled
                     ) {
-                        viewModel.setGlobalVaultEnabled(it)
+                        viewModel.updateGlobalVaultEnabled(it)
                     }
                     SettingsToggleRow(
                         "Clipboard Manager",
                         Icons.Rounded.ContentPaste,
                         viewModel.globalClipboardEnabled
                     ) {
-                        viewModel.setGlobalClipboardEnabled(it)
+                        viewModel.updateGlobalClipboardEnabled(it)
                     }
                     SettingsInfoRow("Auto-lock Timeout", "5 minutes")
                 }
@@ -196,7 +196,7 @@ fun SettingsScreen(
                         Icons.Rounded.BugReport,
                         viewModel.developerModeEnabled
                     ) {
-                        viewModel.setDeveloperModeEnabled(it)
+                        viewModel.updateDeveloperModeEnabled(it)
                     }
                     SettingsInfoRow(
                         "JS Console",
