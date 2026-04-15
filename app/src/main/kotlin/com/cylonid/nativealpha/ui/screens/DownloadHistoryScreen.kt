@@ -4,9 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.matchParentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -176,8 +174,7 @@ fun DownloadHistoryScreen(
                                 )
                             }
                         }
-                        Modifier.clickable(onClick = { sortExpanded = true }) {}
-                        Box(modifier = Modifier.matchParentSize().clip(RoundedCornerShape(8.dp)).background(Color.Transparent)) {
+                        Box(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)).background(Color.Transparent)) {
                             androidx.compose.material3.Surface(
                                 modifier = Modifier.fillMaxSize(),
                                 color = Color.Transparent,
@@ -418,7 +415,7 @@ private fun WaosSmallBtn(label: String, icon: ImageVector, color: Color, onClick
         Spacer(Modifier.width(4.dp))
         Text(label, color = color, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
         androidx.compose.material3.Surface(
-            modifier = Modifier.matchParentSize(),
+            modifier = Modifier.fillMaxSize(),
             color = Color.Transparent,
             onClick = onClick
         ) {}
