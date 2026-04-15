@@ -163,6 +163,13 @@ class FloatingWindowService : Service() {
             false
         }
 
+        webView.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                bringWindowToFront(webAppId)
+            }
+            false
+        }
+
         // Configure WebView
         webView.settings.apply {
             javaScriptEnabled = true
