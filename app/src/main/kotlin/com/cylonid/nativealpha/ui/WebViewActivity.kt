@@ -88,8 +88,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
@@ -931,7 +930,7 @@ private fun WaosConsolePanel(
                     fontSize = 12.sp,
                     fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                 ),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = CyanPrimary,
                     unfocusedBorderColor = CardBorder
                 )

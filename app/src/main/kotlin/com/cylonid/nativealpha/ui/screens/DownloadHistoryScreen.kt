@@ -4,7 +4,9 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.matchParentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -108,7 +110,7 @@ fun DownloadHistoryScreen(
                         }
                     },
                     shape = RoundedCornerShape(12.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = CyanPrimary,
                         unfocusedBorderColor = CardBorder,
                         cursorColor = CyanPrimary,
@@ -173,7 +175,7 @@ fun DownloadHistoryScreen(
                                 )
                             }
                         }
-                        androidx.compose.foundation.clickable(onClick = { sortExpanded = true }) {}
+                        Modifier.clickable(onClick = { sortExpanded = true }) {}
                         Box(modifier = Modifier.matchParentSize().clip(RoundedCornerShape(8.dp)).background(Color.Transparent)) {
                             androidx.compose.material3.Surface(
                                 modifier = Modifier.fillMaxSize(),

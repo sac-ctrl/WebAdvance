@@ -157,7 +157,7 @@ fun CredentialVaultScreen(
                             }
                         },
                         shape = RoundedCornerShape(12.dp),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                        colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = GradGreenEnd,
                             unfocusedBorderColor = CardBorder,
                             cursorColor = GradGreenEnd,
@@ -669,7 +669,7 @@ private fun VaultInputField(
             keyboardType = if (label == "Password") KeyboardType.Password else KeyboardType.Text
         ),
         shape = RoundedCornerShape(10.dp),
-        colors = TextFieldDefaults.outlinedTextFieldColors(
+        colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = GradGreenEnd,
             unfocusedBorderColor = CardBorder,
             cursorColor = GradGreenEnd,
@@ -724,7 +724,7 @@ fun PinDialog(
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = VioletSecondary,
                     unfocusedBorderColor = CardBorder,
                     cursorColor = VioletSecondary,

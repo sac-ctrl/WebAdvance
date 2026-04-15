@@ -141,7 +141,7 @@ fun ClipboardManagerScreen(
                         }
                     },
                     shape = RoundedCornerShape(12.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = VioletSecondary,
                         unfocusedBorderColor = CardBorder,
                         cursorColor = VioletSecondary,
@@ -401,7 +401,7 @@ private fun ClipboardEditDialog(
                 value = text,
                 onValueChange = { text = it },
                 modifier = Modifier.fillMaxWidth().height(160.dp),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
+                colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = VioletSecondary,
                     unfocusedBorderColor = CardBorder,
                     focusedTextColor = TextPrimary,
