@@ -26,10 +26,20 @@ class CredentialVaultActivity : ComponentActivity() {
                         putExtra("CREDENTIAL_USERNAME", username)
                         putExtra("CREDENTIAL_PASSWORD", password)
                     }
-                    setResult(android.app.Activity.RESULT_OK, resultIntent)
+                    setResult(RESULT_OK, resultIntent)
                     finish()
                 }
             )
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Auto-lock timer will be managed by ViewModel through composition state
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Auto-lock timer will be managed by ViewModel through composition state
     }
 }

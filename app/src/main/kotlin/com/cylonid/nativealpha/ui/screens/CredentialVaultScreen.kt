@@ -7,6 +7,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -35,6 +36,7 @@ import com.cylonid.nativealpha.manager.Credential
 import com.cylonid.nativealpha.ui.components.*
 import com.cylonid.nativealpha.ui.theme.*
 import com.cylonid.nativealpha.viewmodel.CredentialViewModel
+import kotlinx.coroutines.delay
 
 private fun generatePassword(): String {
     val upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -83,16 +85,60 @@ fun CredentialVaultScreen(
         viewModel.checkAuthentication(webAppId)
     }
 
+    // Start auto-lock timer when authenticated
+    LaunchedEffect(isAuthenticated) {
+        if (isAuthenticated) {
+            viewModel.startAutoLockTimer()
+        } else {
+            viewModel.cancelAutoLockTimer()
+        }
+    }
+
+    // Periodically reset the auto-lock timer while authenticated
+    LaunchedEffect(isAuthenticated) {
+        if (isAuthenticated) {
+            while (true) {
+                delay(5000) // Check every 5 seconds
+                viewModel.resetAutoLockTimer()
+            }
+        }
+    }
+
     if (!isAuthenticated) {
-        VaultAuthScreen(
-            showBiometricButton = showBiometricButton,
-            onBiometric = {
-                val activity = context as? androidx.activity.ComponentActivity
-                activity?.let { viewModel.authenticateWithBiometric(it as androidx.fragment.app.FragmentActivity) }
-            },
-            onPinUnlock = { viewModel.showPinDialog() },
-            onBack = onBackPressed
-        )
+        if (showPinDialog) {
+            LockingDialog(
+                showBiometric = showBiometricButton,
+                onBiometricClick = {
+                    viewModel.hapticTap()
+                    val activity = context as? androidx.activity.ComponentActivity
+                    activity?.let { viewModel.authenticateWithBiometric(it as androidx.fragment.app.FragmentActivity) }
+                },
+                onPinSubmit = { pin ->
+                    viewModel.hapticTap()
+                    viewModel.authenticateWithPin(pin)
+                },
+                onCancel = {
+                    viewModel.hapticTap()
+                    viewModel.hidePinDialog()
+                    onBackPressed()
+                },
+                autoLockMinutes = 5
+            )
+        } else {
+            VaultAuthScreen(
+                showBiometricButton = showBiometricButton,
+                onBiometric = {
+                    viewModel.hapticTap()
+                    val activity = context as? androidx.activity.ComponentActivity
+                    activity?.let { viewModel.authenticateWithBiometric(it as androidx.fragment.app.FragmentActivity) }
+                },
+                onPinUnlock = {
+                    viewModel.hapticTap()
+                    viewModel.showPinDialog()
+                },
+                onBack = onBackPressed
+            )
+        }
     } else {
         Column(
             modifier = Modifier
@@ -131,7 +177,10 @@ fun CredentialVaultScreen(
                             }
                         }
                         Button(
-                            onClick = { viewModel.showAddCredentialDialog() },
+                            onClick = {
+                                viewModel.hapticTap()
+                                viewModel.showAddCredentialDialog()
+                            },
                             colors = ButtonDefaults.buttonColors(containerColor = GradGreenEnd.copy(0.15f)),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                             modifier = Modifier.border(1.dp, GradGreenEnd.copy(0.4f), RoundedCornerShape(10.dp))

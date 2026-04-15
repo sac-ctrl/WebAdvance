@@ -1,5 +1,12 @@
 package com.cylonid.nativealpha.viewmodel
 
+import android.content.Context
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cylonid.nativealpha.data.CredentialDao
@@ -8,6 +15,7 @@ import com.cylonid.nativealpha.manager.Credential
 import com.cylonid.nativealpha.manager.CredentialManager
 import com.cylonid.nativealpha.repository.WebAppRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +29,8 @@ import javax.inject.Inject
 class CredentialViewModel @Inject constructor(
     private val credentialDao: CredentialDao,
     private val credentialManager: CredentialManager,
-    private val webAppRepository: WebAppRepository
+    private val webAppRepository: WebAppRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private var currentWebAppId: Long? = null
@@ -51,6 +60,13 @@ class CredentialViewModel @Inject constructor(
 
     private val _showPinDialog = MutableStateFlow(false)
     val showPinDialog: StateFlow<Boolean> = _showPinDialog
+
+    // Auto-lock timer properties
+    private val autoLockHandler = Handler(Looper.getMainLooper())
+    private var autoLockTimeoutMs = (5 * 60 * 1000).toLong() // Default 5 minutes
+    private val autoLockRunnable = Runnable {
+        lockVault()
+    }
 
     fun loadCredentials(webAppId: Long?) {
         currentWebAppId = webAppId
@@ -157,5 +173,49 @@ class CredentialViewModel @Inject constructor(
 
     fun hidePinDialog() {
         _showPinDialog.value = false
+    }
+
+    // Auto-lock timer management
+    fun startAutoLockTimer() {
+        autoLockHandler.removeCallbacks(autoLockRunnable)
+        if (autoLockTimeoutMs > 0) {
+            autoLockHandler.postDelayed(autoLockRunnable, autoLockTimeoutMs)
+        }
+    }
+
+    fun resetAutoLockTimer() {
+        if (_isAuthenticated.value) {
+            autoLockHandler.removeCallbacks(autoLockRunnable)
+            autoLockHandler.postDelayed(autoLockRunnable, autoLockTimeoutMs)
+        }
+    }
+
+    fun cancelAutoLockTimer() {
+        autoLockHandler.removeCallbacks(autoLockRunnable)
+    }
+
+    private fun lockVault() {
+        _isAuthenticated.value = false
+        _showPinDialog.value = false
+        Toast.makeText(context, "Vault locked due to inactivity", Toast.LENGTH_SHORT).show()
+    }
+
+    fun hapticTap() {
+        try {
+            val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                vibrator?.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK))
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator?.vibrate(VibrationEffect.createOneShot(30, VibrationEffect.DEFAULT_AMPLITUDE))
+            } else {
+                @Suppress("DEPRECATION")
+                vibrator?.vibrate(30)
+            }
+        } catch (ignored: Exception) {}
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        cancelAutoLockTimer()
     }
 }
