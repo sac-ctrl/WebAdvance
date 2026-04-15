@@ -116,7 +116,13 @@ class CredentialViewModel @Inject constructor(
     fun checkAuthentication(webAppId: Long) {
         viewModelScope.launch {
             val webApp = webAppRepository.getWebAppById(webAppId).firstOrNull()
-            if (webApp?.isLocked == true && webApp.pin?.isNotBlank() == true) {
+            val hasPin = webApp?.pin?.isNotBlank() == true
+            if (webApp?.isLocked == true && hasPin) {
+                _isAuthenticated.value = false
+                _showPinDialog.value = false
+                _showBiometricButton.value = true
+            } else if (webApp?.isLocked == true && !hasPin) {
+                // Locked but no PIN configured — require biometric only
                 _isAuthenticated.value = false
                 _showPinDialog.value = false
                 _showBiometricButton.value = true

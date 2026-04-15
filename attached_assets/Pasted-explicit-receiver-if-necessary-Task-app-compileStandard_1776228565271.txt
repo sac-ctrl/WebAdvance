@@ -1,0 +1,19 @@
+explicit receiver if necessary.
+> Task :app:compileStandardDebugKotlin FAILED
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:851:40 Unresolved reference 'outlinedTextFieldColors'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/WebViewActivity.kt:933:44 Unresolved reference 'outlinedTextFieldColors'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardManagerScreen.kt:144:48 Unresolved reference 'outlinedTextFieldColors'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/ClipboardManagerScreen.kt:404:44 Unresolved reference 'outlinedTextFieldColors'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:160:52 Unresolved reference 'outlinedTextFieldColors'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:672:36 Unresolved reference 'outlinedTextFieldColors'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/CredentialVaultScreen.kt:727:44 Unresolved reference 'outlinedTextFieldColors'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:111:48 Unresolved reference 'outlinedTextFieldColors'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:176:53 Unresolved reference 'clickable'.
+e: file:///home/runner/work/WebAdvance/WebAdvance/app/src/main/kotlin/com/cylonid/nativealpha/ui/screens/DownloadHistoryScreen.kt:418:33 Unresolved reference 'matchParentSize'.
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileStandardDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for 

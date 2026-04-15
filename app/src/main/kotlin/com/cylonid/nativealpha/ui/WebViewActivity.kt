@@ -450,7 +450,7 @@ fun WebViewScreen(
                     webApp?.let { app ->
                         webView.settings.javaScriptEnabled = app.isJavaScriptEnabled
                         webView.settings.builtInZoomControls = app.isEnableZooming
-                        webView.settings.setSupportZoom(app.isEnableZooming)
+                        webView.settings.setSupportZoom(true)
                         webView.settings.displayZoomControls = false
                         if (!app.userAgent.isNullOrBlank() && !isDesktopMode) {
                             webView.settings.userAgentString = app.userAgent
@@ -495,6 +495,7 @@ fun WebViewScreen(
                         viewModel.clearActionFlags()
                     }
                     if (webViewState.shouldZoomIn) { webView.zoomIn(); viewModel.clearActionFlags() }
+                    if (webViewState.shouldZoomOut) { webView.zoomOut(); viewModel.clearActionFlags() }
                     if (webViewState.shouldTakeScreenshot) { viewModel.clearActionFlags() }
                 },
                 modifier = Modifier.fillMaxSize()

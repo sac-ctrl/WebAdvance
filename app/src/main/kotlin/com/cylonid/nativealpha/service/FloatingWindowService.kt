@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.IBinder
 import android.view.*
 import android.webkit.WebView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.cylonid.nativealpha.R
@@ -62,8 +63,7 @@ class FloatingWindowService : Service() {
             } else {
                 WindowManager.LayoutParams.TYPE_PHONE
             }
-            flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+            flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
                     WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
             format = PixelFormat.TRANSLUCENT
             gravity = Gravity.TOP or Gravity.START
@@ -73,6 +73,31 @@ class FloatingWindowService : Service() {
         val webView = view.findViewById<WebView>(R.id.floatingWebView)
         val titleText = view.findViewById<TextView>(R.id.titleText)
         titleText.text = webAppName
+
+        // Drag support via title bar
+        val titleBar = view.findViewById<LinearLayout>(R.id.titleBar)
+        var dragStartX = 0f
+        var dragStartY = 0f
+        var windowStartX = 0
+        var windowStartY = 0
+        titleBar?.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    dragStartX = event.rawX
+                    dragStartY = event.rawY
+                    windowStartX = layoutParams.x
+                    windowStartY = layoutParams.y
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    layoutParams.x = windowStartX + (event.rawX - dragStartX).toInt()
+                    layoutParams.y = windowStartY + (event.rawY - dragStartY).toInt()
+                    windowManager.updateViewLayout(view, layoutParams)
+                    true
+                }
+                else -> false
+            }
+        }
 
         // Configure WebView
         webView.settings.apply {
@@ -87,9 +112,9 @@ class FloatingWindowService : Service() {
         // TODO: Load actual web app URL
         webView.loadUrl(webAppUrl)
 
-        val closeButton = view.findViewById<android.widget.Button>(R.id.closeButton)
-        val minimizeButton = view.findViewById<android.widget.Button>(R.id.minimizeButton)
-        val maximizeButton = view.findViewById<android.widget.Button>(R.id.maximizeButton)
+        val closeButton = view.findViewById<android.widget.ImageButton>(R.id.closeButton)
+        val minimizeButton = view.findViewById<android.widget.ImageButton>(R.id.minimizeButton)
+        val maximizeButton = view.findViewById<android.widget.ImageButton>(R.id.maximizeButton)
 
         closeButton?.setOnClickListener {
             removeFloatingWindow(webAppId)

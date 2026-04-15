@@ -44,7 +44,7 @@ import com.cylonid.nativealpha.ui.WebViewActivity
 import com.cylonid.nativealpha.ui.theme.*
 import com.cylonid.nativealpha.viewmodel.MainViewModel
 import com.cylonid.nativealpha.viewmodel.SettingsViewModel
-import com.cylonid.nativealpha.waos.service.FloatingWindowService
+import com.cylonid.nativealpha.service.FloatingWindowService
 import com.cylonid.nativealpha.waos.ui.ClipboardManagerActivity
 import com.cylonid.nativealpha.waos.ui.CredentialVaultActivity
 import com.cylonid.nativealpha.waos.ui.DownloadHistoryActivity
@@ -122,7 +122,6 @@ fun MainDashboardScreen(
     val floatingWindowsEnabled = settingsViewModel.floatingWindowsEnabled
 
     var selectedCategory by remember { mutableStateOf("All") }
-    var fabExpanded by remember { mutableStateOf(false) }
     var showSortSheet by remember { mutableStateOf(false) }
     var contextMenuApp by remember { mutableStateOf<WebApp?>(null) }
     var showDeleteDialog by remember { mutableStateOf<WebApp?>(null) }
@@ -310,53 +309,19 @@ fun MainDashboardScreen(
                 }
             },
             floatingActionButton = {
-                Column(horizontalAlignment = Alignment.End) {
-                    AnimatedVisibility(
-                        visible = fabExpanded,
-                        enter = fadeIn() + slideInVertically { it },
-                        exit = fadeOut() + slideOutVertically { it }
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.End,
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        ) {
-                            ExtendedFloatingActionButton(
-                                onClick = {
-                                    fabExpanded = false
-                                    navController.navigate("add_webapp")
-                                },
-                                containerColor = CyanPrimary,
-                                contentColor = BgDeep,
-                                modifier = Modifier.height(44.dp)
-                            ) {
-                                Icon(Icons.Rounded.Add, null, modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.width(6.dp))
-                                Text("New Web App", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                            }
-                        }
-                    }
-
-                    FloatingActionButton(
-                        onClick = {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            fabExpanded = !fabExpanded
-                        },
-                        containerColor = CyanPrimary,
-                        contentColor = BgDeep,
-                        shape = RoundedCornerShape(16.dp)
-                    ) {
-                        val rotation by animateFloatAsState(
-                            if (fabExpanded) 45f else 0f,
-                            animationSpec = spring(stiffness = Spring.StiffnessMedium),
-                            label = "fabRot"
-                        )
-                        Icon(
-                            Icons.Rounded.Add,
-                            contentDescription = "Add",
-                            modifier = Modifier.rotate(rotation)
-                        )
-                    }
+                FloatingActionButton(
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        navController.navigate("add_webapp")
+                    },
+                    containerColor = CyanPrimary,
+                    contentColor = BgDeep,
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Icon(
+                        Icons.Rounded.Add,
+                        contentDescription = "Add web app"
+                    )
                 }
             }
         ) { padding ->
@@ -365,18 +330,6 @@ fun MainDashboardScreen(
                     .fillMaxSize()
                     .padding(padding)
             ) {
-                if (fabExpanded) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(BgDeep.copy(alpha = 0.6f))
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) { fabExpanded = false }
-                    )
-                }
-
                 if (filteredByCategory.isEmpty() && groupedWebApps.isEmpty()) {
                     EmptyStateView(onAdd = { navController.navigate("add_webapp") })
                 } else {
@@ -518,8 +471,12 @@ fun MainDashboardScreen(
                         )
                         context.startActivity(permIntent)
                     } else {
-                        val intent = Intent(context, FloatingWindowService::class.java)
-                            .apply { putExtra("webAppId", app.id) }
+                        val intent = Intent(context, FloatingWindowService::class.java).apply {
+                            action = FloatingWindowService.ACTION_ADD_WINDOW
+                            putExtra("webAppId", app.id)
+                            putExtra("webAppUrl", app.url)
+                            putExtra("webAppName", app.name)
+                        }
                         context.startService(intent)
                     }
                 },

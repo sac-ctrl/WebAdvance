@@ -3,8 +3,10 @@ package com.cylonid.nativealpha.service
 import android.content.Context
 import com.cylonid.nativealpha.data.AppDatabase
 import com.cylonid.nativealpha.manager.CredentialManager
+import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.repository.WebAppRepository
-import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -22,7 +24,10 @@ class BackupService @Inject constructor(
     private val credentialManager: CredentialManager
 ) {
 
-    private val gson = Gson()
+    private val gson = GsonBuilder()
+        .serializeNulls()
+        .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+        .create()
     private val backupDir = File(context.getExternalFilesDir(null), "backups")
 
     init {
@@ -59,8 +64,27 @@ class BackupService @Inject constructor(
             val backupFile = File(backupPath)
             if (!backupFile.exists()) return@withContext false
             val json = FileInputStream(backupFile).use { it.readBytes().toString(Charsets.UTF_8) }
-            val backupData = gson.fromJson(json, Map::class.java)
-            true
+
+            val root = gson.fromJson(json, com.google.gson.JsonObject::class.java)
+            val webAppsJson = root.getAsJsonArray("webApps") ?: return@withContext false
+
+            val webAppsType = object : TypeToken<List<WebApp>>() {}.type
+            val webApps: List<WebApp> = try {
+                gson.fromJson(webAppsJson, webAppsType)
+            } catch (e: Exception) {
+                emptyList()
+            }
+
+            webApps.forEach { app ->
+                try {
+                    // Reset id=0 so Room auto-generates a new primary key on insert
+                    webAppRepository.insertWebApp(app.copy(id = 0, thumbnail = null))
+                } catch (e: Exception) {
+                    // Skip apps that fail to insert individually
+                }
+            }
+
+            webApps.isNotEmpty()
         } catch (e: Exception) {
             false
         }
