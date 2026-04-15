@@ -973,7 +973,7 @@ private fun WaosBottomBar(
                 Icon(Icons.Default.ContentCopy, null, modifier = Modifier.size(18.dp))
             }
             WaosToolbarBtn(onClick = onOpenBrowser) {
-                Icon(Icons.Default.OpenInBrowser, null, modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.Launch, null, modifier = Modifier.size(18.dp))
             }
             WaosToolbarDivider()
             WaosToolbarBtn(onClick = onCredentials) {
