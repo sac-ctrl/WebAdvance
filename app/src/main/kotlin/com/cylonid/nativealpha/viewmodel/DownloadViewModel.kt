@@ -53,6 +53,8 @@ class DownloadViewModel @Inject constructor(
     val filterBy: StateFlow<FilterBy> = _filterBy
 
     private val _fileSystemItems = MutableStateFlow<List<FileSystemItem>>(emptyList())
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
     
     private var currentAppId: Long? = null
     private var currentAppName: String? = null
@@ -102,12 +104,14 @@ class DownloadViewModel @Inject constructor(
 
     fun loadDownloads(webAppId: Long) {
         viewModelScope.launch {
+            _isLoading.value = true
             currentAppId = webAppId
             val webApp = webAppRepository.getWebAppById(webAppId).firstOrNull()
             currentAppName = webApp?.name ?: "Unknown"
             
             // Scan the file system folder
             scanAppDownloadsFolder()
+            _isLoading.value = false
         }
     }
 
@@ -230,11 +234,7 @@ class DownloadViewModel @Inject constructor(
 
     fun getFileSize(item: FileSystemItem): String = StorageUtil.formatFileSize(item.size)
 
-    fun getScreenshotCount(): Int {
-        currentAppName?.let { appName ->
-            val screenshotsDir = StorageUtil.getScreenshotsDir(appName)
-            return screenshotsDir.listFiles()?.count() ?: 0
-        }
-        return 0
+    fun reloadFiles() {
+        scanAppDownloadsFolder()
     }
 }

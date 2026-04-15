@@ -13,7 +13,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.*
-import androidx.compose.material3.*
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +45,7 @@ fun DownloadHistoryScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val sortBy by viewModel.sortBy.collectAsState()
     val filterBy by viewModel.filterBy.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     LaunchedEffect(webAppId) {
         viewModel.loadDownloads(webAppId)
@@ -129,32 +131,44 @@ fun DownloadHistoryScreen(
                 ) {
                     Text("Sort:", color = TextMuted, fontSize = 12.sp)
                     var sortExpanded by remember { mutableStateOf(false) }
-                    Box {
-                        Row(
+                    ExposedDropdownMenuBox(
+                        expanded = sortExpanded,
+                        onExpandedChange = { sortExpanded = it }
+                    ) {
+                        OutlinedTextField(
+                            value = when (sortBy) {
+                                DownloadViewModel.SortBy.DATE_DESC -> "Newest"
+                                DownloadViewModel.SortBy.DATE_ASC -> "Oldest"
+                                DownloadViewModel.SortBy.NAME_ASC -> "A–Z"
+                                DownloadViewModel.SortBy.NAME_DESC -> "Z–A"
+                                DownloadViewModel.SortBy.SIZE_DESC -> "Largest"
+                                DownloadViewModel.SortBy.SIZE_ASC -> "Smallest"
+                            },
+                            onValueChange = {},
+                            readOnly = true,
                             modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(CardSurface)
-                                .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
-                                .padding(horizontal = 10.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                when (sortBy) {
-                                    DownloadViewModel.SortBy.DATE_DESC -> "Newest"
-                                    DownloadViewModel.SortBy.DATE_ASC -> "Oldest"
-                                    DownloadViewModel.SortBy.NAME_ASC -> "A–Z"
-                                    DownloadViewModel.SortBy.NAME_DESC -> "Z–A"
-                                    DownloadViewModel.SortBy.SIZE_DESC -> "Largest"
-                                    DownloadViewModel.SortBy.SIZE_ASC -> "Smallest"
-                                },
-                                color = CyanPrimary,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Spacer(Modifier.width(4.dp))
-                            Icon(Icons.Default.ArrowDropDown, null, tint = CyanPrimary, modifier = Modifier.size(16.dp))
-                        }
-                        DropdownMenu(
+                                .menuAnchor()
+                                .weight(1f),
+                            trailingIcon = {
+                                Icon(
+                                    if (sortExpanded) Icons.Default.ArrowDropUp else Icons.Default.ArrowDropDown,
+                                    null,
+                                    tint = CyanPrimary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = CyanPrimary,
+                                unfocusedBorderColor = CardBorder,
+                                focusedTextColor = TextPrimary,
+                                unfocusedTextColor = TextPrimary,
+                                focusedContainerColor = CardSurface,
+                                unfocusedContainerColor = CardSurface
+                            ),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = CyanPrimary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        )
+                        ExposedDropdownMenu(
                             expanded = sortExpanded,
                             onDismissRequest = { sortExpanded = false },
                             modifier = Modifier.background(CardSurface)
@@ -175,13 +189,6 @@ fun DownloadHistoryScreen(
                                     }) else null
                                 )
                             }
-                        }
-                        Box(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)).background(Color.Transparent)) {
-                            androidx.compose.material3.Surface(
-                                modifier = Modifier.fillMaxSize(),
-                                color = Color.Transparent,
-                                onClick = { sortExpanded = true }
-                            ) {}
                         }
                     }
                 }
@@ -227,8 +234,15 @@ fun DownloadHistoryScreen(
             }
         }
 
-        if (fileItems.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        // Debug text
+        Text("Files: ${fileItems.size}", color = Color.White, fontSize = 16.sp, modifier = Modifier.padding(16.dp))
+
+        if (isLoading) {
+            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = CyanPrimary)
+            }
+        } else if (fileItems.isEmpty()) {
+            Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(
                         modifier = Modifier
@@ -246,6 +260,7 @@ fun DownloadHistoryScreen(
             }
         } else {
             LazyColumn(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
@@ -408,8 +423,8 @@ fun FileSystemItemCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(CardSurface)
-            .border(1.dp, CardBorder, RoundedCornerShape(16.dp))
+            .background(Color.Red) // TEMP DEBUG
+            .border(1.dp, Color.White, RoundedCornerShape(16.dp)) // TEMP DEBUG
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -422,20 +437,20 @@ fun FileSystemItemCard(
                     modifier = Modifier
                         .size(44.dp)
                         .background(
-                            Brush.radialGradient(listOf(GradCyanStart.copy(0.35f), Color.Transparent)),
+                            Color.Blue, // TEMP DEBUG
                             RoundedCornerShape(12.dp)
                         )
-                        .border(1.dp, GradCyanStart.copy(0.4f), RoundedCornerShape(12.dp)),
+                        .border(1.dp, Color.White, RoundedCornerShape(12.dp)), // TEMP DEBUG
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(item.icon, fontSize = 24.sp)
+                    Text(item.icon, fontSize = 24.sp, color = Color.White) // TEMP DEBUG
                 }
 
                 // Name and size
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         item.name,
-                        color = TextPrimary,
+                        color = Color.White, // TEMP DEBUG
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
@@ -448,17 +463,17 @@ fun FileSystemItemCard(
                     ) {
                         Text(
                             if (item.isDirectory) "Folder" else StorageUtil.formatFileSize(item.size),
-                            color = TextMuted,
+                            color = Color.White, // TEMP DEBUG
                             fontSize = 12.sp
                         )
                         Text(
                             "•",
-                            color = TextMuted,
+                            color = Color.White, // TEMP DEBUG
                             fontSize = 10.sp
                         )
                         Text(
                             formatTimestamp(item.lastModified),
-                            color = TextMuted,
+                            color = Color.White, // TEMP DEBUG
                             fontSize = 11.sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
