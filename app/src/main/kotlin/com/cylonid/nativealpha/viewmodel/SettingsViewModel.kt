@@ -50,6 +50,8 @@ class SettingsViewModel @Inject constructor(
         private set
     var developerModeEnabled by mutableStateOf(prefs.getBoolean("developer_mode", false))
         private set
+    var autoScrollSpeed by mutableStateOf(prefs.getInt("auto_scroll_speed", 3))
+        private set
 
     var isExporting by mutableStateOf(false)
         private set
@@ -111,6 +113,11 @@ class SettingsViewModel @Inject constructor(
     fun updateDeveloperModeEnabled(value: Boolean) {
         developerModeEnabled = value
         prefs.edit().putBoolean("developer_mode", value).apply()
+    }
+
+    fun updateAutoScrollSpeed(value: Int) {
+        autoScrollSpeed = value
+        prefs.edit().putInt("auto_scroll_speed", value).apply()
     }
 
     fun exportData() {

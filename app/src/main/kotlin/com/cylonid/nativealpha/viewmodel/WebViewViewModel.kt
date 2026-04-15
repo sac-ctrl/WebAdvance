@@ -138,10 +138,14 @@ class WebViewViewModel @Inject constructor(
     fun addConsoleMessage(message: ConsoleMessageData) {
         val currentMessages = _consoleMessages.value.toMutableList()
         currentMessages.add(message)
-        if (currentMessages.size > 100) {
+        if (currentMessages.size > 500) {
             currentMessages.removeAt(0)
         }
         _consoleMessages.value = currentMessages
+    }
+
+    fun clearConsoleMessages() {
+        _consoleMessages.value = emptyList()
     }
 
     fun executeJavaScript(command: String) {
@@ -182,12 +186,12 @@ class WebViewViewModel @Inject constructor(
         _webViewState.value = _webViewState.value.copy(shouldReload = true)
     }
 
-    fun toggleAutoScroll() {
+    fun toggleAutoScroll(scrollSpeed: Int = 3) {
         _isAutoScrollEnabled.value = !_isAutoScrollEnabled.value
         if (_isAutoScrollEnabled.value) {
-            executeJavaScript("window.waosAutoScroll.start(2);")
+            executeJavaScript("window.waosAutoScroll && window.waosAutoScroll.start($scrollSpeed);")
         } else {
-            executeJavaScript("window.waosAutoScroll.stop();")
+            executeJavaScript("window.waosAutoScroll && window.waosAutoScroll.stop();")
         }
     }
 
@@ -326,6 +330,24 @@ class WebViewViewModel @Inject constructor(
 
     fun dismissImageLongPressDialog() {
         _webViewState.value = _webViewState.value.copy(shouldShowImageLongPressDialog = null)
+    }
+
+    fun handleLinkLongPress(linkUrl: String) {
+        _webViewState.value = _webViewState.value.copy(shouldShowLinkLongPressDialog = linkUrl)
+    }
+
+    fun dismissLinkLongPressDialog() {
+        _webViewState.value = _webViewState.value.copy(shouldShowLinkLongPressDialog = null)
+    }
+
+    fun handleTextSelected(text: String) {
+        if (text.isNotBlank()) {
+            _webViewState.value = _webViewState.value.copy(selectedText = text)
+        }
+    }
+
+    fun clearSelectedText() {
+        _webViewState.value = _webViewState.value.copy(selectedText = null)
     }
 
     fun takeScreenshot() {
@@ -531,6 +553,8 @@ data class WebViewState(
     val shouldTranslate: Boolean = false,
     val shouldToggleAdblock: Boolean = false,
     val shouldShowImageLongPressDialog: String? = null,
+    val shouldShowLinkLongPressDialog: String? = null,
+    val selectedText: String? = null,
     // WAOS Session isolation: export / import
     val shouldExportSession: Boolean = false,
     val shouldImportSession: SessionRestoreData? = null,

@@ -358,7 +358,10 @@ fun MainDashboardScreen(
                                             showStatusIndicator = showStatusIndicators,
                                             onClick = {
                                                 val intent = Intent(context, WebViewActivity::class.java)
-                                                    .apply { putExtra("webAppId", webApp.id) }
+                                                    .apply {
+                                                        putExtra("webAppId", webApp.id)
+                                                        addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                                                    }
                                                 context.startActivity(intent)
                                             },
                                             onLongClick = {
@@ -382,7 +385,10 @@ fun MainDashboardScreen(
                                             showStatusIndicator = showStatusIndicators,
                                             onClick = {
                                                 val intent = Intent(context, WebViewActivity::class.java)
-                                                    .apply { putExtra("webAppId", webApp.id) }
+                                                    .apply {
+                                                        putExtra("webAppId", webApp.id)
+                                                        addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                                                    }
                                                 context.startActivity(intent)
                                             },
                                             onLongClick = {
@@ -435,7 +441,10 @@ fun MainDashboardScreen(
                                         showStatusIndicator = showStatusIndicators,
                                         onClick = {
                                             val intent = Intent(context, WebViewActivity::class.java)
-                                                .apply { putExtra("webAppId", webApp.id) }
+                                                .apply {
+                                                    putExtra("webAppId", webApp.id)
+                                                    addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                                                }
                                             context.startActivity(intent)
                                         },
                                         onLongClick = {

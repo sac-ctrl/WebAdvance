@@ -29,7 +29,10 @@ object AppModule {
             context,
             AppDatabase::class.java,
             "waos_database"
-        ).build()
+        )
+            .addMigrations(com.cylonid.nativealpha.data.MIGRATION_5_6)
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides

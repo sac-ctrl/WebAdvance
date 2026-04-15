@@ -40,7 +40,11 @@ class MainViewModel @Inject constructor(
         val filtered = if (query.isBlank()) apps else apps.filter {
             it.name.contains(query, ignoreCase = true) || it.url.contains(query, ignoreCase = true)
         }
-        sortWebApps(filtered, sort)
+        val sorted = sortWebApps(filtered, sort)
+        // Pinned apps always appear first
+        val pinned = sorted.filter { it.isPinned }
+        val unpinned = sorted.filter { !it.isPinned }
+        pinned + unpinned
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val groupedWebApps: StateFlow<Map<String, List<WebApp>>> = combine(filteredWebApps, _groupBy) { apps, group ->
@@ -146,6 +150,18 @@ class MainViewModel @Inject constructor(
     fun deleteWebApp(webApp: WebApp) {
         viewModelScope.launch {
             repository.deleteWebApp(webApp)
+        }
+    }
+
+    fun pinWebApp(webApp: WebApp) {
+        viewModelScope.launch {
+            repository.updateWebApp(webApp.copy(isPinned = true))
+        }
+    }
+
+    fun unpinWebApp(webApp: WebApp) {
+        viewModelScope.launch {
+            repository.updateWebApp(webApp.copy(isPinned = false))
         }
     }
 

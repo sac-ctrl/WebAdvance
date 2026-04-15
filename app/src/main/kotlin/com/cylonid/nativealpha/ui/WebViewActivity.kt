@@ -220,6 +220,7 @@ fun WebViewScreen(
     val settingsPrefs = remember { context.getSharedPreferences("waos_settings", Context.MODE_PRIVATE) }
     val developerModeEnabled = remember { settingsPrefs.getBoolean("developer_mode", false) }
     val floatingWindowsEnabled = remember { settingsPrefs.getBoolean("floating_windows", true) }
+    val autoScrollSpeed = remember { settingsPrefs.getInt("auto_scroll_speed", 3) }
 
     LaunchedEffect(webAppId) {
         viewModel.loadWebApp(webAppId)
@@ -411,6 +412,114 @@ fun WebViewScreen(
         )
     }
 
+    webViewState.shouldShowLinkLongPressDialog?.let { linkUrl ->
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissLinkLongPressDialog() },
+            containerColor = CardSurface,
+            titleContentColor = TextPrimary,
+            textContentColor = TextSecondary,
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .background(
+                                Brush.radialGradient(listOf(CyanPrimary.copy(0.3f), Color.Transparent)),
+                                RoundedCornerShape(10.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Link, contentDescription = null, tint = CyanPrimary, modifier = Modifier.size(20.dp))
+                    }
+                    Spacer(Modifier.width(10.dp))
+                    Text("Link Options", fontWeight = FontWeight.Bold)
+                }
+            },
+            text = {
+                Column {
+                    Text("Link:", color = TextSecondary, fontSize = 12.sp)
+                    Spacer(Modifier.height(4.dp))
+                    Text(linkUrl, color = CyanPrimary, fontSize = 12.sp, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val clipboard = context.getSystemService(android.content.ClipboardManager::class.java)
+                        clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Link", linkUrl))
+                        android.widget.Toast.makeText(context, "Link copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
+                        viewModel.dismissLinkLongPressDialog()
+                    },
+                    modifier = Modifier.background(
+                        Brush.horizontalGradient(listOf(GradCyanStart, GradCyanEnd)),
+                        RoundedCornerShape(8.dp)
+                    )
+                ) { Text("Copy Link") }
+            },
+            dismissButton = {
+                Row {
+                    TextButton(onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(linkUrl))
+                        context.startActivity(intent)
+                        viewModel.dismissLinkLongPressDialog()
+                    }) { Text("Open in Browser", color = TextMuted) }
+                    TextButton(onClick = { viewModel.dismissLinkLongPressDialog() }) {
+                        Text("Cancel", color = TextMuted)
+                    }
+                }
+            },
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
+
+    webViewState.selectedText?.let { selectedText ->
+        androidx.compose.animation.AnimatedVisibility(
+            visible = true,
+            enter = androidx.compose.animation.slideInVertically { it } + androidx.compose.animation.fadeIn(),
+            exit = androidx.compose.animation.slideOutVertically { it } + androidx.compose.animation.fadeOut()
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 80.dp),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(CardSurface)
+                        .border(1.dp, CyanPrimary.copy(0.4f), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.ContentCopy, null, tint = CyanPrimary, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        selectedText.take(60) + if (selectedText.length > 60) "…" else "",
+                        color = TextSecondary,
+                        fontSize = 12.sp,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 2
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    TextButton(
+                        onClick = {
+                            val clipboard = context.getSystemService(android.content.ClipboardManager::class.java)
+                            clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Text", selectedText))
+                            android.widget.Toast.makeText(context, "Copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
+                            viewModel.clearSelectedText()
+                        },
+                        colors = androidx.compose.material3.ButtonDefaults.textButtonColors(contentColor = CyanPrimary)
+                    ) { Text("Copy", fontWeight = FontWeight.Bold, fontSize = 12.sp) }
+                    IconButton(onClick = { viewModel.clearSelectedText() }, modifier = Modifier.size(28.dp)) {
+                        Icon(Icons.Default.Close, null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                    }
+                }
+            }
+        }
+    }
+
     LaunchedEffect(webViewState.shouldOpenCredentialKeeper) {
         if (webViewState.shouldOpenCredentialKeeper) {
             val intent = Intent(context, CredentialVaultActivity::class.java).apply {
@@ -540,6 +649,47 @@ fun WebViewScreen(
                                         });
                                     })()
                                 """.trimIndent(), null)
+                                // Inject link long press functionality
+                                webViewRef.value?.evaluateJavascript("""
+                                    javascript:(function() {
+                                        if (window._waosLinkLongPressAttached) return;
+                                        window._waosLinkLongPressAttached = true;
+                                        var linkTimer;
+                                        var touchMoved = false;
+                                        document.addEventListener('touchstart', function(e) {
+                                            touchMoved = false;
+                                            var el = e.target;
+                                            while (el && el.tagName !== 'A') el = el.parentElement;
+                                            if (el && el.href) {
+                                                var href = el.href;
+                                                linkTimer = setTimeout(function() {
+                                                    if (!touchMoved && window.waosDownloadBlob) {
+                                                        window.waosDownloadBlob.linkLongPress(href);
+                                                    }
+                                                }, 600);
+                                            }
+                                        }, true);
+                                        document.addEventListener('touchend', function() { clearTimeout(linkTimer); }, true);
+                                        document.addEventListener('touchmove', function() { touchMoved = true; clearTimeout(linkTimer); }, true);
+                                    })()
+                                """.trimIndent(), null)
+                                // Inject text selection callback
+                                webViewRef.value?.evaluateJavascript("""
+                                    javascript:(function() {
+                                        if (window._waosTextSelAttached) return;
+                                        window._waosTextSelAttached = true;
+                                        var selTimer;
+                                        document.addEventListener('selectionchange', function() {
+                                            clearTimeout(selTimer);
+                                            selTimer = setTimeout(function() {
+                                                var sel = window.getSelection ? window.getSelection().toString().trim() : '';
+                                                if (sel.length > 0 && window.waosDownloadBlob) {
+                                                    window.waosDownloadBlob.textSelected(sel);
+                                                }
+                                            }, 300);
+                                        });
+                                    })()
+                                """.trimIndent(), null)
                             },
                             onDownloadStart = { filename, downloadUrl ->
                                 if (downloadUrl.startsWith("blob:")) {
@@ -610,6 +760,18 @@ fun WebViewScreen(
                         @JavascriptInterface
                         fun imageLongPress(imageUrl: String) {
                             viewModel.handleImageLongPress(imageUrl, webAppRef.value)
+                        }
+                        @JavascriptInterface
+                        fun linkLongPress(url: String) {
+                            if (url.isNotBlank()) {
+                                viewModel.handleLinkLongPress(url)
+                            }
+                        }
+                        @JavascriptInterface
+                        fun textSelected(text: String) {
+                            if (text.isNotBlank()) {
+                                viewModel.handleTextSelected(text)
+                            }
                         }
                     }, "waosDownloadBlob")
                     webView
@@ -788,7 +950,8 @@ fun WebViewScreen(
             WaosConsolePanel(
                 messages = consoleMessages,
                 onExecuteCommand = { viewModel.executeJavaScript(it) },
-                modifier = Modifier.height(200.dp)
+                onClearLogs = { viewModel.clearConsoleMessages() },
+                modifier = Modifier.height(280.dp)
             )
         }
 
@@ -812,7 +975,7 @@ fun WebViewScreen(
             onFind = { showFindBar = !showFindBar },
             onDesktop = { viewModel.toggleDesktopMode() },
             onAdblock = { viewModel.toggleAdblock() },
-            onAutoScroll = { viewModel.toggleAutoScroll() },
+            onAutoScroll = { viewModel.toggleAutoScroll(autoScrollSpeed) },
             onAutoClick = { viewModel.toggleAutoClick() },
             onConsole = { viewModel.toggleConsole() },
             onShare = { viewModel.sharePage() },
@@ -1214,28 +1377,82 @@ private fun WaosFindBar(
 private fun WaosConsolePanel(
     messages: List<ConsoleMessageData>,
     onExecuteCommand: (String) -> Unit,
+    onClearLogs: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     var command by remember { mutableStateOf("") }
+    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) listState.animateScrollToItem(messages.lastIndex)
+    }
+
     Column(
         modifier = modifier
-            .background(Color(0xFF080C15))
+            .background(Color(0xFF060A12))
             .border(1.dp, CardBorder, RoundedCornerShape(0.dp))
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(CardSurface)
-                .padding(horizontal = 12.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .background(Color(0xFF0D1421))
+                .padding(horizontal = 10.dp, vertical = 5.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Icon(Icons.Default.Code, null, tint = CyanPrimary, modifier = Modifier.size(14.dp))
-            Spacer(Modifier.width(6.dp))
-            Text("Console", color = CyanPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(CyanPrimary, androidx.compose.foundation.shape.CircleShape)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text("JS Console", color = CyanPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.width(8.dp))
+                if (messages.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .background(CyanPrimary.copy(0.15f), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 5.dp, vertical = 1.dp)
+                    ) {
+                        Text("${messages.size}", color = CyanPrimary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                IconButton(
+                    onClick = {
+                        val allLogs = messages.joinToString("\n") { msg ->
+                            val lvl = when (msg.level) {
+                                ConsoleMessage.MessageLevel.ERROR.ordinal -> "ERR"
+                                ConsoleMessage.MessageLevel.WARNING.ordinal -> "WRN"
+                                else -> "LOG"
+                            }
+                            "[$lvl] ${msg.sourceId}:${msg.lineNumber} ${msg.message}"
+                        }
+                        val cm = context.getSystemService(android.content.ClipboardManager::class.java)
+                        cm.setPrimaryClip(android.content.ClipData.newPlainText("Console", allLogs))
+                        android.widget.Toast.makeText(context, "Logs copied", android.widget.Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(Icons.Default.ContentCopy, null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                }
+                IconButton(
+                    onClick = onClearLogs,
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(Icons.Default.Close, null, tint = ErrorRed.copy(0.8f), modifier = Modifier.size(14.dp))
+                }
+            }
         }
+
         LazyColumn(
+            state = listState,
             modifier = Modifier.weight(1f),
-            contentPadding = PaddingValues(8.dp)
+            contentPadding = PaddingValues(6.dp),
+            verticalArrangement = Arrangement.spacedBy(1.dp)
         ) {
             items(messages) { message ->
                 val levelName = when (message.level) {
@@ -1243,50 +1460,86 @@ private fun WaosConsolePanel(
                     ConsoleMessage.MessageLevel.WARNING.ordinal -> "WRN"
                     else -> "LOG"
                 }
-                val color = when (message.level) {
+                val bgColor = when (message.level) {
+                    ConsoleMessage.MessageLevel.ERROR.ordinal -> ErrorRed.copy(0.07f)
+                    ConsoleMessage.MessageLevel.WARNING.ordinal -> Color(0xFFFFB800).copy(0.07f)
+                    else -> Color.Transparent
+                }
+                val textColor = when (message.level) {
                     ConsoleMessage.MessageLevel.ERROR.ordinal -> ErrorRed
                     ConsoleMessage.MessageLevel.WARNING.ordinal -> Color(0xFFFFB800)
-                    else -> TextSecondary
+                    else -> Color(0xFFAABBCC)
                 }
-                Text(
-                    "[$levelName] ${message.sourceId}:${message.lineNumber} ${message.message}",
-                    color = color,
-                    fontSize = 10.sp,
-                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
-                    modifier = Modifier.padding(vertical = 1.dp)
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(bgColor, RoundedCornerShape(3.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        "[$levelName]",
+                        color = textColor.copy(0.6f),
+                        fontSize = 9.sp,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.width(32.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        message.message,
+                        color = textColor,
+                        fontSize = 10.sp,
+                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
+
+        androidx.compose.material3.HorizontalDivider(color = CardBorder.copy(0.5f), thickness = 1.dp)
+
         Row(
-            modifier = Modifier.padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .padding(horizontal = 8.dp, vertical = 6.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.Bottom
         ) {
             OutlinedTextField(
                 value = command,
                 onValueChange = { command = it },
-                placeholder = { Text("JS command…", color = TextMuted, fontSize = 12.sp) },
-                modifier = Modifier.weight(1f).height(44.dp),
-                singleLine = true,
+                placeholder = { Text("// Enter JS snippet…", color = TextMuted, fontSize = 11.sp) },
+                modifier = Modifier.weight(1f),
+                minLines = 1,
+                maxLines = 4,
                 textStyle = androidx.compose.ui.text.TextStyle(
                     color = TextPrimary,
-                    fontSize = 12.sp,
+                    fontSize = 11.sp,
                     fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                 ),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = CyanPrimary,
-                    unfocusedBorderColor = CardBorder
-                )
+                    unfocusedBorderColor = CardBorder.copy(0.5f),
+                    focusedContainerColor = Color(0xFF0A1020),
+                    unfocusedContainerColor = Color(0xFF0A1020),
+                    cursorColor = CyanPrimary,
+                    focusedTextColor = TextPrimary,
+                    unfocusedTextColor = TextPrimary
+                ),
+                shape = RoundedCornerShape(8.dp)
             )
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(6.dp))
             IconButton(
                 onClick = {
                     if (command.isNotBlank()) { onExecuteCommand(command); command = "" }
                 },
                 modifier = Modifier
-                    .size(44.dp)
-                    .background(CyanPrimary.copy(0.15f), RoundedCornerShape(8.dp))
+                    .size(40.dp)
+                    .background(
+                        Brush.linearGradient(listOf(GradCyanStart, GradCyanEnd)),
+                        RoundedCornerShape(8.dp)
+                    )
             ) {
-                Icon(Icons.Default.PlayArrow, null, tint = CyanPrimary, modifier = Modifier.size(20.dp))
+                Icon(Icons.Default.PlayArrow, null, tint = Color.Black, modifier = Modifier.size(20.dp))
             }
         }
     }

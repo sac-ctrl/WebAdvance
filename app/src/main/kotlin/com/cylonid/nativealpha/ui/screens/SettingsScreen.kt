@@ -204,6 +204,59 @@ fun SettingsScreen(
                     }
                 }
 
+                SettingsSectionCard(title = "WebView Browsing", icon = Icons.Rounded.Speed) {
+                    Column(modifier = Modifier.padding(horizontal = 4.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    Icons.Rounded.Speed,
+                                    contentDescription = null,
+                                    tint = CyanPrimary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text("Auto-Scroll Speed", color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .background(CyanPrimary.copy(0.15f), RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    "${viewModel.autoScrollSpeed}",
+                                    color = CyanPrimary,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        Slider(
+                            value = viewModel.autoScrollSpeed.toFloat(),
+                            onValueChange = { viewModel.updateAutoScrollSpeed(it.toInt()) },
+                            valueRange = 1f..10f,
+                            steps = 8,
+                            colors = androidx.compose.material3.SliderDefaults.colors(
+                                thumbColor = CyanPrimary,
+                                activeTrackColor = CyanPrimary,
+                                inactiveTrackColor = CardBorder
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Slow", color = TextMuted, fontSize = 10.sp)
+                            Text("Fast", color = TextMuted, fontSize = 10.sp)
+                        }
+                    }
+                }
+
                 SettingsSectionCard(title = "Developer", icon = Icons.Rounded.Code) {
                     SettingsToggleRow(
                         "Developer Mode",
