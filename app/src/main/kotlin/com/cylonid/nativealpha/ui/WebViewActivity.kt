@@ -375,7 +375,6 @@ fun WebViewScreen(
         )
 
         Box(modifier = Modifier.weight(1f)) {
-            val webViewRef = remember { mutableStateOf<WebView?>(null) }
             AndroidView(
                 factory = { ctx ->
                     WebView(ctx).apply {

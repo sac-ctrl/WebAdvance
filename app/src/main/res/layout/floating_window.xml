@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@drawable/card_background">
+    android:background="@color/floating_window_background">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,10 +13,14 @@
         <LinearLayout
             android:id="@+id/titleBar"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="@android:color/black"
+            android:layout_height="52dp"
+            android:background="@color/floating_window_header"
             android:orientation="horizontal"
-            android:padding="8dp">
+            android:paddingStart="12dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:gravity="center_vertical">
 
             <TextView
                 android:id="@+id/titleText"
@@ -24,31 +28,35 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Web App"
-                android:textColor="@android:color/white"
-                android:textSize="14sp" />
+                android:textColor="@color/floating_window_header_text"
+                android:textSize="15sp"
+                android:textStyle="bold" />
 
             <ImageButton
                 android:id="@+id/minimizeButton"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:background="?android:attr/selectableItemBackground"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Minimize"
+                android:tint="@color/floating_window_icon_tint"
                 android:src="@drawable/ic_baseline_minimize_24" />
 
             <ImageButton
                 android:id="@+id/maximizeButton"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:background="?android:attr/selectableItemBackground"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Maximize"
+                android:tint="@color/floating_window_icon_tint"
                 android:src="@drawable/ic_baseline_fullscreen_24" />
 
             <ImageButton
                 android:id="@+id/closeButton"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:background="?android:attr/selectableItemBackground"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Close"
+                android:tint="@color/floating_window_icon_tint"
                 android:src="@drawable/ic_baseline_close_24" />
 
         </LinearLayout>
@@ -67,10 +75,12 @@
             <!-- Resize Handle (bottom-right corner) -->
             <View
                 android:id="@+id/resizeHandle"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:layout_gravity="bottom|end"
-                android:background="@android:color/transparent" />
+                android:layout_margin="8dp"
+                android:background="@color/floating_window_resize_handle"
+                android:rotation="45" />
 
         </FrameLayout>
 

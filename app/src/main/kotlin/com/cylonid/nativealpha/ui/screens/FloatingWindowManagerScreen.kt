@@ -27,17 +27,23 @@ fun FloatingWindowManagerScreen(
             TopAppBar(
                 title = { Text("Floating Window Manager", style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = {
-                    IconButton(onClick = { /* Navigate back */ }) {
+                    IconButton(
+                        onClick = { /* Navigate back */ },
+                        colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.onSurface)
+                    ) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.closeAllWindows() }) {
-                        Icon(Icons.Default.Clear, contentDescription = "Close all", tint = MaterialTheme.colorScheme.error)
+                    IconButton(
+                        onClick = { viewModel.closeAllWindows() },
+                        colors = IconButtonDefaults.iconButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Icon(Icons.Default.Clear, contentDescription = "Close all")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
                     titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
@@ -75,7 +81,7 @@ fun FloatingWindowManagerScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(120.dp),
-                        shape = RoundedCornerShape(16.dp),
+                        shape = RoundedCornerShape(18.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant
                         )

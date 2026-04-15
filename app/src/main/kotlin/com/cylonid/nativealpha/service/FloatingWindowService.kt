@@ -74,7 +74,8 @@ class FloatingWindowService : Service() {
             background = android.graphics.drawable.GradientDrawable().apply {
                 shape = android.graphics.drawable.GradientDrawable.RECTANGLE
                 cornerRadius = 24f
-                setColor(android.graphics.Color.WHITE) // Or use theme color
+                setColor(ContextCompat.getColor(this@FloatingWindowService, R.color.floating_window_background))
+                setStroke(2, ContextCompat.getColor(this@FloatingWindowService, R.color.floating_window_resize_handle))
             }
             // Clip to outline for proper clipping
             clipToOutline = true

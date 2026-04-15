@@ -155,4 +155,11 @@
     <color name="swipe_action_positive">#4DFF53</color>
     <color name="swipe_action_neutral">#EF6C00</color>
     <color name="swipe_action_negative">#FD2C2C</color>
+
+    <color name="floating_window_background">#111827</color>
+    <color name="floating_window_header">#1F2937</color>
+    <color name="floating_window_header_text">#E8F4FF</color>
+    <color name="floating_window_icon_tint">#E8F4FF</color>
+    <color name="floating_window_resize_handle">#00E5FF</color>
+    <color name="floating_window_resize_handle_background">#2000E5FF</color>
 </resources>
