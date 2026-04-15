@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cylonid.nativealpha.manager.DownloadItem
 import com.cylonid.nativealpha.ui.theme.*
+import com.cylonid.nativealpha.util.StorageUtil
 import com.cylonid.nativealpha.viewmodel.DownloadViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -36,28 +37,29 @@ import java.util.*
 @Composable
 fun DownloadHistoryScreen(
     webAppId: Long,
+    webAppDisplayName: String = "App",
     viewModel: DownloadViewModel = hiltViewModel()
 ) {
-    val downloads by viewModel.downloads.collectAsState()
+    val fileItems by viewModel.downloads.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val sortBy by viewModel.sortBy.collectAsState()
     val filterBy by viewModel.filterBy.collectAsState()
 
-    LaunchedEffect(webAppId) { viewModel.loadDownloads(webAppId) }
+    LaunchedEffect(webAppId) {
+        viewModel.loadDownloads(webAppId)
+    }
 
     val filterOptions = listOf(
         DownloadViewModel.FilterBy.ALL to "All",
-        DownloadViewModel.FilterBy.COMPLETED to "Done",
-        DownloadViewModel.FilterBy.DOWNLOADING to "Active",
-        DownloadViewModel.FilterBy.FAILED to "Failed",
+        DownloadViewModel.FilterBy.FOLDERS to "Folders",
+        DownloadViewModel.FilterBy.SCREENSHOTS to "Screenshots",
         DownloadViewModel.FilterBy.IMAGES to "Images",
         DownloadViewModel.FilterBy.VIDEOS to "Videos",
         DownloadViewModel.FilterBy.DOCUMENTS to "Docs"
     )
 
-    val completedCount = downloads.count { it.status == DownloadItem.Status.COMPLETED }
-    val totalSize = downloads.filter { it.status == DownloadItem.Status.COMPLETED }
-        .sumOf { it.fileSize }
+    val totalFileCount = fileItems.size
+    val totalSize = fileItems.sumOf { it.size }
 
     Column(
         modifier = Modifier
@@ -88,8 +90,8 @@ fun DownloadHistoryScreen(
                     }
                     Spacer(Modifier.width(12.dp))
                     Column {
-                        Text("Downloads", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        Text("$completedCount files · ${formatBytes(totalSize)}", color = TextMuted, fontSize = 12.sp)
+                        Text("$webAppDisplayName Files", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text("$totalFileCount items · ${StorageUtil.formatFileSize(totalSize)}", color = TextMuted, fontSize = 12.sp)
                     }
                 }
                 Spacer(Modifier.height(16.dp))
@@ -225,7 +227,7 @@ fun DownloadHistoryScreen(
             }
         }
 
-        if (downloads.isEmpty()) {
+        if (fileItems.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(
@@ -238,8 +240,8 @@ fun DownloadHistoryScreen(
                         Icon(Icons.Default.Download, null, tint = TextMuted, modifier = Modifier.size(40.dp))
                     }
                     Spacer(Modifier.height(16.dp))
-                    Text("No downloads yet", color = TextSecondary, fontSize = 16.sp, fontWeight = FontWeight.Medium)
-                    Text("Files you download will appear here", color = TextMuted, fontSize = 13.sp)
+                    Text("No files yet", color = TextSecondary, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                    Text("Files will appear here when downloaded", color = TextMuted, fontSize = 13.sp)
                 }
             }
         } else {
@@ -247,16 +249,11 @@ fun DownloadHistoryScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(downloads, key = { it.id }) { download ->
-                    DownloadItemCard(
-                        download = download,
-                        onOpen = { viewModel.openFile(download) },
-                        onShare = { viewModel.shareFile(download) },
-                        onDelete = { viewModel.deleteDownload(download) },
-                        onRetry = { viewModel.retryDownload(download) },
-                        onPause = { viewModel.pauseDownload(download) },
-                        onResume = { viewModel.resumeDownload(download) },
-                        onCancel = { viewModel.cancelDownload(download) }
+                items(fileItems, key = { it.path }) { item ->
+                    FileSystemItemCard(
+                        item = item,
+                        onOpen = { viewModel.openFile(item) },
+                        onDelete = { viewModel.deleteFile(item) }
                     )
                 }
             }
@@ -395,6 +392,108 @@ fun DownloadItemCard(
                 Spacer(Modifier.width(6.dp))
                 IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
                     Icon(Icons.Default.Delete, null, tint = ErrorRed.copy(0.7f), modifier = Modifier.size(16.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FileSystemItemCard(
+    item: com.cylonid.nativealpha.viewmodel.DownloadViewModel.FileSystemItem,
+    onOpen: () -> Unit,
+    onDelete: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(CardSurface)
+            .border(1.dp, CardBorder, RoundedCornerShape(16.dp))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Icon
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(
+                            Brush.radialGradient(listOf(GradCyanStart.copy(0.35f), Color.Transparent)),
+                            RoundedCornerShape(12.dp)
+                        )
+                        .border(1.dp, GradCyanStart.copy(0.4f), RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(item.icon, fontSize = 24.sp)
+                }
+
+                // Name and size
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        item.name,
+                        color = TextPrimary,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            if (item.isDirectory) "Folder" else StorageUtil.formatFileSize(item.size),
+                            color = TextMuted,
+                            fontSize = 12.sp
+                        )
+                        Text(
+                            "•",
+                            color = TextMuted,
+                            fontSize = 10.sp
+                        )
+                        Text(
+                            formatTimestamp(item.lastModified),
+                            color = TextMuted,
+                            fontSize = 11.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+                // Action buttons
+                Row(
+                    modifier = Modifier.fillMaxHeight(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = onOpen,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.OpenInNew,
+                            contentDescription = "Open",
+                            tint = CyanPrimary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            tint = ErrorRed,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
         }

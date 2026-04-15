@@ -188,6 +188,20 @@ fun SettingsScreen(
                         viewModel.updateGlobalClipboardEnabled(it)
                     }
                     SettingsInfoRow("Auto-lock Timeout", "5 minutes")
+                    Spacer(Modifier.height(8.dp))
+                    Button(
+                        onClick = { navController.navigate("settings/permissions") },
+                        modifier = Modifier.fillMaxWidth().height(44.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = CyanPrimary.copy(0.12f),
+                            contentColor = CyanPrimary
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Rounded.Security, null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("App Permissions", fontWeight = FontWeight.SemiBold)
+                    }
                 }
 
                 SettingsSectionCard(title = "Developer", icon = Icons.Rounded.Code) {

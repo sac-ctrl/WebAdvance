@@ -16,9 +16,10 @@ class DownloadHistoryActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val webAppId = intent.getLongExtra(WaosConstants.EXTRA_DOWNLOAD_APP_ID, 0L)
+        val webAppDisplayName = intent.getStringExtra("APP_DISPLAY_NAME") ?: "App"
 
         setContent {
-            DownloadHistoryScreen(webAppId = webAppId)
+            DownloadHistoryScreen(webAppId = webAppId, webAppDisplayName = webAppDisplayName)
         }
     }
 }

@@ -135,6 +135,7 @@ import com.cylonid.nativealpha.ui.theme.TextMuted
 import com.cylonid.nativealpha.ui.theme.TextPrimary
 import com.cylonid.nativealpha.ui.theme.TextSecondary
 import com.cylonid.nativealpha.ui.theme.VioletSecondary
+import com.cylonid.nativealpha.util.ScreenshotUtil
 import com.cylonid.nativealpha.viewmodel.ConsoleMessageData
 import com.cylonid.nativealpha.viewmodel.WebViewViewModel
 import com.cylonid.nativealpha.ui.DownloadHistoryActivity
@@ -355,6 +356,7 @@ fun WebViewScreen(
         if (webViewState.shouldOpenDownloadHistory) {
             val intent = Intent(context, DownloadHistoryActivity::class.java).apply {
                 putExtra(WaosConstants.EXTRA_DOWNLOAD_APP_ID, webAppId)
+                putExtra("APP_DISPLAY_NAME", webApp?.name ?: "App")
             }
             context.startActivity(intent)
             viewModel.clearActionFlags()
@@ -543,7 +545,13 @@ fun WebViewScreen(
                         val bitmap = Bitmap.createBitmap(webView.width, webView.height, Bitmap.Config.ARGB_8888)
                         val canvas = Canvas(bitmap)
                         webView.draw(canvas)
-                        viewModel.saveScreenshot(bitmap, context)
+                        val appName = webApp?.name?.replace(Regex("[^a-zA-Z0-9]"), "_") ?: "App"
+                        val filePath = ScreenshotUtil.saveScreenshot(context, appName, bitmap)
+                        if (filePath != null) {
+                            android.widget.Toast.makeText(context, "Screenshot saved to Downloads/WAOS/$appName/Screenshots/", android.widget.Toast.LENGTH_SHORT).show()
+                        } else {
+                            android.widget.Toast.makeText(context, "Failed to save screenshot", android.widget.Toast.LENGTH_SHORT).show()
+                        }
                         viewModel.clearActionFlags()
                     }
                     if (webViewState.shouldShowPageSource) {
