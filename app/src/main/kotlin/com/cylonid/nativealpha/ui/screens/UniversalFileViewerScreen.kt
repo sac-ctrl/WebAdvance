@@ -60,6 +60,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 
+@Composable
 private fun Modifier.viewerIconButtonStyle(enabled: Boolean = true, selected: Boolean = false): Modifier =
     this
         .size(36.dp)
@@ -81,11 +82,19 @@ private fun Modifier.viewerIconButtonStyle(enabled: Boolean = true, selected: Bo
             RoundedCornerShape(10.dp)
         )
 
-private fun Modifier.audioControlButtonStyle(): Modifier =
+@Composable
+private fun Modifier.audioControlButtonStyle(selected: Boolean = false): Modifier =
     this
         .size(44.dp)
-        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.96f), RoundedCornerShape(14.dp))
-        .border(1.dp, CardBorder.copy(alpha = 0.55f), RoundedCornerShape(14.dp))
+        .background(
+            if (selected) CyanPrimary.copy(alpha = 0.14f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.96f),
+            RoundedCornerShape(14.dp)
+        )
+        .border(
+            1.dp,
+            if (selected) CyanPrimary.copy(alpha = 0.35f) else CardBorder.copy(alpha = 0.55f),
+            RoundedCornerShape(14.dp)
+        )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
