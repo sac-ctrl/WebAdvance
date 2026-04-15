@@ -24,7 +24,7 @@ fun FloatingWindowManagerScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Floating Window Manager") },
+                title = { Text("Floating Window Manager", style = MaterialTheme.typography.headlineSmall) },
                 navigationIcon = {
                     IconButton(onClick = { /* Navigate back */ }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -32,73 +32,101 @@ fun FloatingWindowManagerScreen(
                 },
                 actions = {
                     IconButton(onClick = { viewModel.closeAllWindows() }) {
-                        Icon(Icons.Default.Clear, contentDescription = "Close all")
+                        Icon(Icons.Default.Clear, contentDescription = "Close all", tint = MaterialTheme.colorScheme.error)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { viewModel.saveCurrentLayout() }) {
+            FloatingActionButton(
+                onClick = { viewModel.saveCurrentLayout() },
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ) {
                 Icon(Icons.Default.Save, contentDescription = "Save layout")
             }
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(padding),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Open Windows Section
-            Text(
-                text = "Open Windows",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(16.dp)
-            )
+            item {
+                Text(
+                    text = "Open Windows",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
 
             if (openWindows.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("No floating windows open")
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    Icons.Default.Web,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(48.dp)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    "No floating windows open",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
                 }
             } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(openWindows) { window ->
-                        FloatingWindowCard(
-                            window = window,
-                            onClose = { viewModel.closeWindow(window.id) },
-                            onMinimize = { viewModel.minimizeWindow(window.id) },
-                            onMaximize = { viewModel.maximizeWindow(window.id) }
-                        )
-                    }
+                items(openWindows) { window ->
+                    FloatingWindowCard(
+                        window = window,
+                        onClose = { viewModel.closeWindow(window.id) },
+                        onMinimize = { viewModel.minimizeWindow(window.id) },
+                        onMaximize = { viewModel.maximizeWindow(window.id) }
+                    )
                 }
             }
 
             // Window Presets Section
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Saved Layouts",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Saved Layouts",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
 
-            LazyColumn(
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(windowPresets) { preset ->
-                    PresetCard(
-                        preset = preset,
-                        onLoad = { viewModel.loadPreset(preset.id) },
-                        onDelete = { viewModel.deletePreset(preset.id) }
-                    )
-                }
+            items(windowPresets) { preset ->
+                PresetCard(
+                    preset = preset,
+                    onLoad = { viewModel.loadPreset(preset.id) },
+                    onDelete = { viewModel.deletePreset(preset.id) }
+                )
             }
         }
     }
@@ -112,39 +140,76 @@ fun FloatingWindowCard(
     onMinimize: () -> Unit,
     onMaximize: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth()
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = window.appName,
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    text = "${window.width}x${window.height} at (${window.x}, ${window.y})",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+        Column(modifier = Modifier.padding(20.dp)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = window.appName,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "${window.width} × ${window.height} at (${window.x}, ${window.y})",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    if (window.isMinimized) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Minimized",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                IconButton(onClick = onMinimize) {
-                    Icon(Icons.Default.Remove, contentDescription = "Minimize")
-                }
-                IconButton(onClick = onMaximize) {
-                    Icon(Icons.Default.Fullscreen, contentDescription = "Maximize")
-                }
-                IconButton(onClick = onClose) {
-                    Icon(Icons.Default.Close, contentDescription = "Close")
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    FilledTonalIconButton(
+                        onClick = onMinimize,
+                        colors = IconButtonDefaults.filledTonalIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    ) {
+                        Icon(Icons.Default.Minimize, contentDescription = "Minimize", modifier = Modifier.size(20.dp))
+                    }
+                    FilledTonalIconButton(
+                        onClick = onMaximize,
+                        colors = IconButtonDefaults.filledTonalIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                        )
+                    ) {
+                        Icon(Icons.Default.Fullscreen, contentDescription = "Maximize", modifier = Modifier.size(20.dp))
+                    }
+                    FilledIconButton(
+                        onClick = onClose,
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        )
+                    ) {
+                        Icon(Icons.Default.Close, contentDescription = "Close", modifier = Modifier.size(20.dp))
+                    }
                 }
             }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = "💡 Tip: Drag the bottom-right corner to resize the window",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -156,31 +221,40 @@ fun PresetCard(
     onLoad: () -> Unit,
     onDelete: () -> Unit
 ) {
-    Card(
+    OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
         onClick = onLoad
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(20.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = preset.name,
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${preset.windows.size} windows",
-                    style = MaterialTheme.typography.bodySmall,
+                    text = "${preset.windows.size} window${if (preset.windows.size != 1) "s" else ""}",
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
-            IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete preset")
+            FilledTonalIconButton(
+                onClick = onDelete,
+                colors = IconButtonDefaults.filledTonalIconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                )
+            ) {
+                Icon(Icons.Default.Delete, contentDescription = "Delete preset", modifier = Modifier.size(20.dp))
             }
         }
     }

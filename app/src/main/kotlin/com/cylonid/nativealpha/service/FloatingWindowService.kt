@@ -69,7 +69,21 @@ class FloatingWindowService : Service() {
             gravity = Gravity.TOP or Gravity.START
         }
 
-        val view = LayoutInflater.from(this).inflate(R.layout.floating_window, null)
+        val view = LayoutInflater.from(this).inflate(R.layout.floating_window, null).apply {
+            // Add curved corners to the window
+            background = android.graphics.drawable.GradientDrawable().apply {
+                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                cornerRadius = 24f
+                setColor(android.graphics.Color.WHITE) // Or use theme color
+            }
+            // Clip to outline for proper clipping
+            clipToOutline = true
+            outlineProvider = object : android.view.ViewOutlineProvider() {
+                override fun getOutline(view: android.view.View?, outline: android.graphics.Outline?) {
+                    outline?.setRoundRect(0, 0, view?.width ?: 0, view?.height ?: 0, 24f)
+                }
+            }
+        }
         val webView = view.findViewById<WebView>(R.id.floatingWebView)
         val titleText = view.findViewById<TextView>(R.id.titleText)
         titleText.text = webAppName
