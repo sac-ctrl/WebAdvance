@@ -1028,7 +1028,10 @@ fun TextViewer(file: File) {
             modifier = Modifier.padding(horizontal = 12.dp)
         )
 
-        val annotatedText = remember(text, searchQuery) {
+        val primaryColor = MaterialTheme.colorScheme.primary
+        val onSurfaceColor = MaterialTheme.colorScheme.onSurface
+
+        val annotatedText = remember(text, searchQuery, primaryColor, onSurfaceColor) {
             if (searchQuery.isBlank()) {
                 androidx.compose.ui.text.AnnotatedString(text)
             } else {
@@ -1046,8 +1049,8 @@ fun TextViewer(file: File) {
                     builder.append(source.substring(searchStart, index))
                     builder.pushStyle(
                         androidx.compose.ui.text.SpanStyle(
-                            background = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
-                            color = MaterialTheme.colorScheme.onSurface
+                            background = primaryColor.copy(alpha = 0.25f),
+                            color = onSurfaceColor
                         )
                     )
                     builder.append(source.substring(index, index + query.length))
