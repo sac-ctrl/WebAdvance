@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.cylonid.nativealpha.ui.screens.CredentialVaultScreen
+import com.cylonid.nativealpha.waos.util.WaosConstants
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -14,7 +15,7 @@ class CredentialVaultActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val webAppId = intent.getLongExtra("WEB_APP_ID", 0L)
+        val webAppId = intent.getLongExtra(WaosConstants.EXTRA_WAOS_APP_ID, 0L)
 
         setContent {
             CredentialVaultScreen(

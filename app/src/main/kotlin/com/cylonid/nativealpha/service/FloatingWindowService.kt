@@ -21,6 +21,10 @@ import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.model.WindowEntity
 import com.cylonid.nativealpha.model.WindowPresetEntity
 import com.cylonid.nativealpha.repository.WebAppRepository
+import com.cylonid.nativealpha.ui.ClipboardManagerActivity
+import com.cylonid.nativealpha.ui.CredentialVaultActivity
+import com.cylonid.nativealpha.ui.DownloadHistoryActivity
+import com.cylonid.nativealpha.waos.util.WaosConstants
 import com.cylonid.nativealpha.webview.WebViewClientWithDownload
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -121,6 +125,7 @@ class FloatingWindowService : Service() {
             layoutParams = layoutParams,
             webView = webView,
             webViewClient = webViewClient,
+            appId = webAppId,
             appName = webAppName,
             isMinimized = false,
             isMaximized = false,
@@ -254,7 +259,10 @@ class FloatingWindowService : Service() {
             ACTION_TOOLBAR_AUTOCLICK to if (windowView.autoClickEnabled) "Auto click: On" else "Auto click: Off",
             ACTION_TOOLBAR_OPEN_BROWSER to "Open in browser",
             ACTION_TOOLBAR_SHARE to "Share URL",
-            ACTION_TOOLBAR_COPY_URL to "Copy URL"
+            ACTION_TOOLBAR_COPY_URL to "Copy URL",
+            ACTION_TOOLBAR_CREDENTIALS to "Credentials",
+            ACTION_TOOLBAR_CLIPBOARD to "Clipboard",
+            ACTION_TOOLBAR_DOWNLOADS to "Downloads"
         )
         toolbarItems.forEach { (id, title) ->
             popupMenu.menu.add(0, id, 0, title)
@@ -311,6 +319,30 @@ class FloatingWindowService : Service() {
                 val currentUrl = webView.url ?: webAppUrl
                 val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
                 clipboard?.setPrimaryClip(ClipData.newPlainText("URL", currentUrl))
+            }
+            ACTION_TOOLBAR_CREDENTIALS -> {
+                startActivity(
+                    Intent(this, CredentialVaultActivity::class.java).apply {
+                        putExtra(WaosConstants.EXTRA_WAOS_APP_ID, windowView.appId)
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                )
+            }
+            ACTION_TOOLBAR_CLIPBOARD -> {
+                startActivity(
+                    Intent(this, ClipboardManagerActivity::class.java).apply {
+                        putExtra(WaosConstants.EXTRA_CLIPBOARD_APP_ID, windowView.appId)
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                )
+            }
+            ACTION_TOOLBAR_DOWNLOADS -> {
+                startActivity(
+                    Intent(this, DownloadHistoryActivity::class.java).apply {
+                        putExtra(WaosConstants.EXTRA_DOWNLOAD_APP_ID, windowView.appId)
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    }
+                )
             }
         }
     }
@@ -555,6 +587,7 @@ data class FloatingWindowView(
     val layoutParams: WindowManager.LayoutParams,
     val webView: WebView,
     val webViewClient: WebViewClientWithDownload,
+    val appId: Long,
     var appName: String,
     var isMinimized: Boolean = false,
     var isMaximized: Boolean = false,

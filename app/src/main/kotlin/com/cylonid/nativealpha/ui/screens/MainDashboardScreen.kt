@@ -45,9 +45,9 @@ import com.cylonid.nativealpha.ui.theme.*
 import com.cylonid.nativealpha.viewmodel.MainViewModel
 import com.cylonid.nativealpha.viewmodel.SettingsViewModel
 import com.cylonid.nativealpha.service.FloatingWindowService
-import com.cylonid.nativealpha.waos.ui.ClipboardManagerActivity
-import com.cylonid.nativealpha.waos.ui.CredentialVaultActivity
-import com.cylonid.nativealpha.waos.ui.DownloadHistoryActivity
+import com.cylonid.nativealpha.ui.ClipboardManagerActivity
+import com.cylonid.nativealpha.ui.CredentialVaultActivity
+import com.cylonid.nativealpha.ui.DownloadHistoryActivity
 import com.cylonid.nativealpha.waos.util.WaosConstants
 
 enum class SortOption(val displayName: String) {
@@ -483,19 +483,19 @@ fun MainDashboardScreen(
                 onDownloads = {
                     contextMenuApp = null
                     val intent = Intent(context, DownloadHistoryActivity::class.java)
-                        .apply { putExtra(WaosConstants.EXTRA_DOWNLOAD_APP_ID, app.id.toInt()) }
+                        .apply { putExtra(WaosConstants.EXTRA_DOWNLOAD_APP_ID, app.id) }
                     context.startActivity(intent)
                 },
                 onClipboard = {
                     contextMenuApp = null
                     val intent = Intent(context, ClipboardManagerActivity::class.java)
-                        .apply { putExtra(WaosConstants.EXTRA_CLIPBOARD_APP_ID, app.id.toInt()) }
+                        .apply { putExtra(WaosConstants.EXTRA_CLIPBOARD_APP_ID, app.id) }
                     context.startActivity(intent)
                 },
                 onCredentials = {
                     contextMenuApp = null
                     val intent = Intent(context, CredentialVaultActivity::class.java)
-                        .apply { putExtra(WaosConstants.EXTRA_WAOS_APP_ID, app.id.toInt()) }
+                        .apply { putExtra(WaosConstants.EXTRA_WAOS_APP_ID, app.id) }
                     context.startActivity(intent)
                 },
                 onEdit = {

@@ -137,7 +137,8 @@ import com.cylonid.nativealpha.ui.theme.TextSecondary
 import com.cylonid.nativealpha.ui.theme.VioletSecondary
 import com.cylonid.nativealpha.viewmodel.ConsoleMessageData
 import com.cylonid.nativealpha.viewmodel.WebViewViewModel
-import com.cylonid.nativealpha.waos.ui.DownloadHistoryActivity
+import com.cylonid.nativealpha.ui.DownloadHistoryActivity
+import com.cylonid.nativealpha.waos.util.WaosConstants
 import com.cylonid.nativealpha.webview.WebViewClientWithDownload
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -330,7 +331,7 @@ fun WebViewScreen(
     LaunchedEffect(webViewState.shouldOpenCredentialKeeper) {
         if (webViewState.shouldOpenCredentialKeeper) {
             val intent = Intent(context, CredentialVaultActivity::class.java).apply {
-                putExtra("WEB_APP_ID", webAppId)
+                putExtra(WaosConstants.EXTRA_WAOS_APP_ID, webAppId)
             }
             (context as? ComponentActivity)?.startActivityForResult(
                 intent,
@@ -343,7 +344,7 @@ fun WebViewScreen(
     LaunchedEffect(webViewState.shouldOpenClipboardManager) {
         if (webViewState.shouldOpenClipboardManager) {
             val intent = Intent(context, ClipboardManagerActivity::class.java).apply {
-                putExtra("WEB_APP_ID", webAppId)
+                putExtra(WaosConstants.EXTRA_CLIPBOARD_APP_ID, webAppId)
             }
             context.startActivity(intent)
             viewModel.clearActionFlags()
@@ -353,7 +354,7 @@ fun WebViewScreen(
     LaunchedEffect(webViewState.shouldOpenDownloadHistory) {
         if (webViewState.shouldOpenDownloadHistory) {
             val intent = Intent(context, DownloadHistoryActivity::class.java).apply {
-                putExtra("WEB_APP_ID", webAppId)
+                putExtra(WaosConstants.EXTRA_DOWNLOAD_APP_ID, webAppId)
             }
             context.startActivity(intent)
             viewModel.clearActionFlags()
