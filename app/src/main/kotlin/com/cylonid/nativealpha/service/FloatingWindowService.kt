@@ -577,6 +577,9 @@ class FloatingWindowService : Service() {
         const val ACTION_TOOLBAR_OPEN_BROWSER = 109
         const val ACTION_TOOLBAR_SHARE = 110
         const val ACTION_TOOLBAR_COPY_URL = 111
+        const val ACTION_TOOLBAR_CREDENTIALS = 112
+        const val ACTION_TOOLBAR_CLIPBOARD = 113
+        const val ACTION_TOOLBAR_DOWNLOADS = 114
 
         const val DESKTOP_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
     }
