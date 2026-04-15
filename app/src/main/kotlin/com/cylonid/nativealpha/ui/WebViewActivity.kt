@@ -142,6 +142,7 @@ import com.cylonid.nativealpha.viewmodel.ConsoleMessageData
 import com.cylonid.nativealpha.viewmodel.WebViewViewModel
 import com.cylonid.nativealpha.ui.DownloadHistoryActivity
 import com.cylonid.nativealpha.waos.util.WaosConstants
+import com.cylonid.nativealpha.webview.SessionManager
 import com.cylonid.nativealpha.webview.WebViewClientWithDownload
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -153,6 +154,12 @@ class WebViewActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val webAppId = intent.getLongExtra("webAppId", 0L)
+
+        // WAOS Session Isolation: apply separate WebView data directory BEFORE
+        // setContent() so it takes effect before any WebView is instantiated.
+        // This ensures cookies, localStorage, IndexedDB, cache are fully isolated
+        // per app — no sharing across apps.
+        SessionManager.applyIsolation(webAppId)
 
         setContent {
             WebViewScreen(
@@ -255,6 +262,19 @@ fun WebViewScreen(
         if (autoFill != null) {
             viewModel.autoFillCredentials(autoFill.first, autoFill.second)
             WebViewActivity.pendingAutoFill = null
+        }
+    }
+
+    // Show toast when session export finishes
+    LaunchedEffect(webViewState.lastSessionExportPath) {
+        val path = webViewState.lastSessionExportPath
+        if (path != null) {
+            android.widget.Toast.makeText(
+                context,
+                "Session exported: ${path.substringAfterLast('/')}",
+                android.widget.Toast.LENGTH_LONG
+            ).show()
+            viewModel.clearSessionExportPath()
         }
     }
 
@@ -686,16 +706,42 @@ fun WebViewScreen(
                     }
                     // Reader mode, translate, adblock would need additional implementation
                     if (webViewState.shouldToggleReaderMode) {
-                        // Placeholder for reader mode toggle
                         viewModel.clearActionFlags()
                     }
                     if (webViewState.shouldTranslate) {
-                        // Placeholder for translate
                         viewModel.clearActionFlags()
                     }
                     if (webViewState.shouldToggleAdblock) {
-                        // Placeholder for adblock toggle
                         viewModel.clearActionFlags()
+                    }
+                    // WAOS Session Export: extract localStorage + sessionStorage via JS then save encrypted snapshot
+                    if (webViewState.shouldExportSession) {
+                        val currentUrl = webViewState.currentUrl.ifBlank { webApp?.url ?: "" }
+                        val ua = webView.settings.userAgentString ?: ""
+                        val app = webApp
+                        if (app != null && currentUrl.isNotBlank()) {
+                            webView.evaluateJavascript(SessionManager.buildLocalStorageExtractJs()) { lsJson ->
+                                webView.evaluateJavascript(SessionManager.buildSessionStorageExtractJs()) { ssJson ->
+                                    val sessionMgr = SessionManager(context, app.id, app.name)
+                                    val lsClean = lsJson?.trim('"')?.replace("\\\"", "\"") ?: "{}"
+                                    val ssClean = ssJson?.trim('"')?.replace("\\\"", "\"") ?: "{}"
+                                    val snapshot = sessionMgr.buildSessionSnapshot(currentUrl, ua, lsClean, ssClean)
+                                    sessionMgr.saveLastSessionSnapshot(snapshot)
+                                    val path = sessionMgr.exportSession(snapshot)
+                                    viewModel.onSessionExportComplete(path)
+                                }
+                            }
+                        } else {
+                            viewModel.onSessionExportComplete(null)
+                        }
+                    }
+                    // WAOS Session Import: inject localStorage + sessionStorage restore JS after page load
+                    webViewState.shouldImportSession?.let { restoreData ->
+                        if (!webViewState.isLoading) {
+                            webView.evaluateJavascript(restoreData.localStorageRestoreJs, null)
+                            webView.evaluateJavascript(restoreData.sessionStorageRestoreJs, null)
+                            viewModel.onSessionImportApplied()
+                        }
                     }
                 },
                 modifier = Modifier.fillMaxSize()
@@ -804,7 +850,23 @@ fun WebViewScreen(
             onSavePage = { viewModel.savePage() },
             onReaderMode = { viewModel.toggleReaderMode() },
             onTranslate = { viewModel.translate() },
-            onAdBlockSettings = { viewModel.toggleAdblockSettings() }
+            onAdBlockSettings = { viewModel.toggleAdblockSettings() },
+            onExportSession = { viewModel.requestSessionExport() },
+            onImportSession = {
+                // Import the most recently exported session for this app (self-import / transfer)
+                val app = webApp
+                if (app != null) {
+                    val sessionDir = java.io.File(context.filesDir, "waos_sessions/${app.id}")
+                    val latestExport = sessionDir.listFiles()
+                        ?.filter { it.name.endsWith(".waos") && it.name != "last_session.waos" }
+                        ?.maxByOrNull { it.lastModified() }
+                    if (latestExport != null) {
+                        viewModel.requestSessionImport(latestExport.absolutePath, context)
+                    } else {
+                        android.widget.Toast.makeText(context, "No exported session found. Export first.", android.widget.Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
         )
     }
 }
@@ -913,7 +975,9 @@ private fun WaosBottomBar(
     onSavePage: () -> Unit,
     onReaderMode: () -> Unit,
     onTranslate: () -> Unit,
-    onAdBlockSettings: () -> Unit
+    onAdBlockSettings: () -> Unit,
+    onExportSession: () -> Unit,
+    onImportSession: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -1042,6 +1106,17 @@ private fun WaosBottomBar(
                 text = { Text("AdBlock Settings", color = TextPrimary) },
                 onClick = { onAdBlockSettings(); onMoreMenuDismiss() },
                 leadingIcon = { Icon(Icons.Default.Block, null, tint = TextSecondary) }
+            )
+            Divider(color = CardBorder, thickness = 1.dp)
+            DropdownMenuItem(
+                text = { Text("Export Session", color = TextPrimary) },
+                onClick = { onExportSession(); onMoreMenuDismiss() },
+                leadingIcon = { Icon(Icons.Default.Save, null, tint = CyanPrimary) }
+            )
+            DropdownMenuItem(
+                text = { Text("Import Session", color = TextPrimary) },
+                onClick = { onImportSession(); onMoreMenuDismiss() },
+                leadingIcon = { Icon(Icons.Default.ContentPaste, null, tint = VioletSecondary) }
             )
         }
     }

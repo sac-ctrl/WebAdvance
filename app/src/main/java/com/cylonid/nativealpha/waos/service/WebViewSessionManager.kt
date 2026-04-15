@@ -2,17 +2,28 @@ package com.cylonid.nativealpha.waos.service
 
 import android.content.Context
 import android.webkit.CookieManager
-import android.webkit.WebStorage
 import android.webkit.WebView
 import com.cylonid.nativealpha.waos.model.WaosApp
 
 /**
- * Manages per-app WebView session isolation.
+ * WAOS WebView Session Manager
  *
- * True process-level isolation is provided by the build system which generates
- * separate WebViewActivity classes (android:process=":web_sandbox_N") for each
- * of the 8 container slots. This manager handles in-process state tracking and
- * scroll position persistence.
+ * Manages per-app WebView session isolation state and scroll/URL tracking.
+ *
+ * TRUE ISOLATION is achieved via two mechanisms:
+ *
+ * 1. Process-level isolation (sandbox containers):
+ *    Apps with a containerId run in separate Android processes
+ *    (:web_sandbox_0 … :web_sandbox_7). Each process gets its own
+ *    WebView data directory via App.applyWebViewIsolationIfSandboxProcess().
+ *
+ * 2. Data-directory suffix isolation (new Compose WebViewActivity):
+ *    SessionManager.applyIsolation(appId) is called in WebViewActivity.onCreate()
+ *    before any WebView is instantiated. This sets a unique suffix so cookies,
+ *    localStorage, IndexedDB, cache and service workers are fully separate.
+ *
+ * Result: no cookies, localStorage, IndexedDB, cache or service workers are
+ * shared between any two app instances.
  */
 object WebViewSessionManager {
     private val sessions = mutableMapOf<Int, WaosApp>()
@@ -45,28 +56,31 @@ object WebViewSessionManager {
     fun getLastUrl(appId: Int): String? = lastUrls[appId]
 
     /**
-     * Configure WebView for session isolation.
-     * For complete isolation, apps use separate processes (see build.gradle sandbox containers).
-     * This method applies per-app settings to the WebView instance.
+     * Configure WebView settings for the given app session.
+     * Storage isolation is already applied at the data-directory level
+     * (see class-level KDoc). This method applies per-app runtime settings.
      */
     fun configureWebViewIsolation(appId: Int, webView: WebView, context: Context) {
         val settings = webView.settings
         val session = sessions[appId]
 
+        // Always enable DOM storage so localStorage/sessionStorage work per-app
+        settings.domStorageEnabled = true
+        settings.databaseEnabled = true
+
         if (session != null) {
             settings.javaScriptEnabled = session.allowJs
-            settings.domStorageEnabled = true
-            settings.databaseEnabled = true
-
-            if (!session.allowJs) {
-                settings.blockNetworkImage = false
-            }
         }
+
+        // Ensure cookies are accepted and isolated to this data-directory suffix
+        CookieManager.getInstance().setAcceptCookie(true)
+        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, false)
     }
 
     /**
-     * Clear session data for a specific app.
-     * Full cookie/storage clearing happens in the sandbox process on next restart.
+     * Clear in-memory session state for a specific app.
+     * The on-disk WebView data directory is cleared separately by the system
+     * when the data-directory suffix is reset.
      */
     fun clearSessionData(appId: Int) {
         scrollPositions.remove(appId)
@@ -76,8 +90,7 @@ object WebViewSessionManager {
     }
 
     /**
-     * Verify that session isolation is working by checking registered sessions.
-     * Each appId should have at most one WebView instance.
+     * Verify that session isolation is active for all registered sessions.
      */
     fun verifyIsolation(): Map<Int, Boolean> {
         return sessions.keys.associateWith { appId ->
@@ -85,26 +98,9 @@ object WebViewSessionManager {
         }
     }
 
-    /**
-     * Information about multi-account isolation architecture:
-     *
-     * This app uses Android's process isolation for true multi-account support.
-     * The build.gradle generates 8 WebViewActivity classes, each in its own process:
-     *   android:process=":web_sandbox_0" through ":web_sandbox_7"
-     *
-     * Each process has completely separate:
-     *   - WebView cookie store (CookieManager is per-process)
-     *   - localStorage and sessionStorage (DOM storage is per-process)
-     *   - IndexedDB (per-process WebStorage)
-     *   - HTTP cache (per-process)
-     *   - Service workers (per-process)
-     *
-     * This means different web apps logged into the same website (e.g. two
-     * Google accounts) are fully isolated without any data leakage.
-     */
     fun getIsolationInfo(): String {
         return """
-            Session Isolation: Process-level (8 sandbox processes)
+            Session Isolation: setDataDirectorySuffix per-app + process isolation (sandbox containers)
             Registered sessions: ${sessions.size}
             Active WebViews: ${webViews.size}
             Saved scroll positions: ${scrollPositions.size}

@@ -15,6 +15,8 @@ import com.cylonid.nativealpha.links.LinkManagementSystem
 import com.cylonid.nativealpha.manager.DownloadManager
 import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.repository.WebAppRepository
+import com.cylonid.nativealpha.webview.SessionManager
+import com.cylonid.nativealpha.webview.SessionRestoreData
 import com.cylonid.nativealpha.worker.RefreshWorker
 import com.cylonid.nativealpha.worker.ScreenshotWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -355,6 +357,46 @@ class WebViewViewModel @Inject constructor(
         _webViewState.value = _webViewState.value.copy(shouldToggleAdblock = true)
     }
 
+    // -------------------------------------------------------------------------
+    // WAOS Session Export / Import
+    // -------------------------------------------------------------------------
+
+    /** Trigger session export: the WebViewScreen will collect localStorage + sessionStorage via JS */
+    fun requestSessionExport() {
+        _webViewState.value = _webViewState.value.copy(shouldExportSession = true)
+    }
+
+    /** Trigger session import from a file path */
+    fun requestSessionImport(sourcePath: String, context: Context) {
+        val app = _webApp.value ?: return
+        val sessionManager = SessionManager(context, app.id, app.name)
+        val snapshot = sessionManager.importSession(sourcePath)
+        if (snapshot != null) {
+            val restoreData = sessionManager.applySessionSnapshot(snapshot)
+            // Cookies are already injected; now restore JS storage + reload
+            _webViewState.value = _webViewState.value.copy(
+                shouldImportSession = restoreData,
+                shouldReload = true
+            )
+        }
+    }
+
+    /** Called by WebViewScreen once JS storage values have been collected and snapshot saved */
+    fun onSessionExportComplete(exportedPath: String?) {
+        _webViewState.value = _webViewState.value.copy(
+            shouldExportSession = false,
+            lastSessionExportPath = exportedPath
+        )
+    }
+
+    fun clearSessionExportPath() {
+        _webViewState.value = _webViewState.value.copy(lastSessionExportPath = null)
+    }
+
+    fun onSessionImportApplied() {
+        _webViewState.value = _webViewState.value.copy(shouldImportSession = null)
+    }
+
     fun updateNavigationState(canGoBack: Boolean, canGoForward: Boolean) {
         _webViewState.value = _webViewState.value.copy(
             canGoBack = canGoBack,
@@ -488,7 +530,11 @@ data class WebViewState(
     val shouldToggleReaderMode: Boolean = false,
     val shouldTranslate: Boolean = false,
     val shouldToggleAdblock: Boolean = false,
-    val shouldShowImageLongPressDialog: String? = null
+    val shouldShowImageLongPressDialog: String? = null,
+    // WAOS Session isolation: export / import
+    val shouldExportSession: Boolean = false,
+    val shouldImportSession: SessionRestoreData? = null,
+    val lastSessionExportPath: String? = null
 )
 
 data class ConsoleMessageData(
