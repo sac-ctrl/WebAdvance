@@ -114,7 +114,7 @@ class EnhancedWebViewViewModel @Inject constructor(
                     _canGoBack.value = canGoBack()
                     _canGoForward.value = canGoForward()
                     injectJavaScript(webView)
-                    sessionManager?.saveSessionState("page_loaded", url)
+                    // Page finished loading
                 },
                 onDownloadStart = { filename, url ->
                     addDownloadedFile(filename)
