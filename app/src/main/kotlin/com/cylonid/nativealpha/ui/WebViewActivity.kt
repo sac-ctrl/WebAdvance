@@ -3,6 +3,8 @@ package com.cylonid.nativealpha.ui
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -63,6 +65,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Launch
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Lock
@@ -670,7 +673,7 @@ fun WebViewScreen(
             onSavePage = { viewModel.savePage() },
             onReaderMode = { viewModel.toggleReaderMode() },
             onTranslate = { viewModel.translate() },
-            onAdBlockSettings = { viewModel.toggleAdblock() }
+            onAdBlockSettings = { viewModel.toggleAdblockSettings() }
         )
     }
 }
@@ -871,42 +874,42 @@ private fun WaosBottomBar(
 
         DropdownMenu(
             expanded = showMoreMenu,
-            onDismissRequest = { showMoreMenu = false },
+            onDismissRequest = onMoreMenuDismiss,
             modifier = Modifier.background(CardSurface)
         ) {
             DropdownMenuItem(
                 text = { Text("Print Page", color = TextPrimary) },
-                onClick = { onPrint(); showMoreMenu = false },
+                onClick = { onPrint(); onMoreMenuDismiss() },
                 leadingIcon = { Icon(Icons.Default.Print, null, tint = TextSecondary) }
             )
             DropdownMenuItem(
                 text = { Text("Page History", color = TextPrimary) },
-                onClick = { onHistory(); showMoreMenu = false },
+                onClick = { onHistory(); onMoreMenuDismiss() },
                 leadingIcon = { Icon(Icons.Default.History, null, tint = TextSecondary) }
             )
             DropdownMenuItem(
                 text = { Text("Page Source", color = TextPrimary) },
-                onClick = { onPageSource(); showMoreMenu = false },
+                onClick = { onPageSource(); onMoreMenuDismiss() },
                 leadingIcon = { Icon(Icons.Default.Code, null, tint = TextSecondary) }
             )
             DropdownMenuItem(
                 text = { Text("Save Page", color = TextPrimary) },
-                onClick = { onSavePage(); showMoreMenu = false },
+                onClick = { onSavePage(); onMoreMenuDismiss() },
                 leadingIcon = { Icon(Icons.Default.Save, null, tint = TextSecondary) }
             )
             DropdownMenuItem(
                 text = { Text("Reader Mode", color = TextPrimary) },
-                onClick = { onReaderMode(); showMoreMenu = false },
-                leadingIcon = { Icon(Icons.Default.Article, null, tint = TextSecondary) }
+                onClick = { onReaderMode(); onMoreMenuDismiss() },
+                leadingIcon = { Icon(Icons.Default.Description, null, tint = TextSecondary) }
             )
             DropdownMenuItem(
                 text = { Text("Translate", color = TextPrimary) },
-                onClick = { onTranslate(); showMoreMenu = false },
-                leadingIcon = { Icon(Icons.Default.Translate, null, tint = TextSecondary) }
+                onClick = { onTranslate(); onMoreMenuDismiss() },
+                leadingIcon = { Icon(Icons.Default.Language, null, tint = TextSecondary) }
             )
             DropdownMenuItem(
                 text = { Text("AdBlock Settings", color = TextPrimary) },
-                onClick = { onAdBlockSettings(); showMoreMenu = false },
+                onClick = { onAdBlockSettings(); onMoreMenuDismiss() },
                 leadingIcon = { Icon(Icons.Default.Block, null, tint = TextSecondary) }
             )
         }

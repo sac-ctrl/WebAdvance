@@ -1,6 +1,7 @@
 package com.cylonid.nativealpha.viewmodel
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.webkit.WebView
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -312,6 +313,10 @@ class WebViewViewModel @Inject constructor(
         _webViewState.value = _webViewState.value.copy(shouldDownloadUrl = null)
     }
 
+    fun takeScreenshot() {
+        _webViewState.value = _webViewState.value.copy(shouldTakeScreenshot = true)
+    }
+
     fun saveScreenshot(bitmap: Bitmap, context: Context) {
         val filename = "screenshot_${System.currentTimeMillis()}.png"
         downloadManager.saveScreenshot(filename, bitmap)
@@ -333,7 +338,7 @@ class WebViewViewModel @Inject constructor(
         _webViewState.value = _webViewState.value.copy(shouldTranslate = true)
     }
 
-    fun toggleAdblock() {
+    fun toggleAdblockSettings() {
         _webViewState.value = _webViewState.value.copy(shouldToggleAdblock = true)
     }
 
