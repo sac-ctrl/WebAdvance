@@ -513,8 +513,8 @@ fun WebViewScreen(
             AnimatedVisibility(
                 visible = showFindBar,
                 modifier = Modifier.align(Alignment.TopCenter),
-                enter = slideInVertically(offset = { -it }) + fadeIn(),
-                exit = slideOutVertically(offset = { -it }) + fadeOut()
+                enter = slideInVertically() { -it } + fadeIn(),
+                exit = slideOutVertically() { -it } + fadeOut()
             ) {
                 WaosFindBar(
                     query = findQuery,
