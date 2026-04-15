@@ -510,26 +510,27 @@ fun WebViewScreen(
                 )
             }
 
-            AnimatedVisibility(
-                visible = showFindBar,
-                modifier = Modifier.align(Alignment.TopCenter),
-                enter = slideInVertically() { -it } + fadeIn(),
-                exit = slideOutVertically() { -it } + fadeOut()
-            ) {
-                WaosFindBar(
-                    query = findQuery,
-                    onQueryChange = { q ->
-                        findQuery = q
-                        webViewRef.value?.findAllAsync(q)
-                    },
-                    onFindNext = { webViewRef.value?.findNext(true) },
-                    onFindPrev = { webViewRef.value?.findNext(false) },
-                    onClose = {
-                        showFindBar = false
-                        findQuery = ""
-                        webViewRef.value?.clearMatches()
-                    }
-                )
+            Column(modifier = Modifier.align(Alignment.TopCenter)) {
+                AnimatedVisibility(
+                    visible = showFindBar,
+                    enter = slideInVertically { height -> -height } + fadeIn(),
+                    exit = slideOutVertically { height -> -height } + fadeOut()
+                ) {
+                    WaosFindBar(
+                        query = findQuery,
+                        onQueryChange = { q ->
+                            findQuery = q
+                            webViewRef.value?.findAllAsync(q)
+                        },
+                        onFindNext = { webViewRef.value?.findNext(true) },
+                        onFindPrev = { webViewRef.value?.findNext(false) },
+                        onClose = {
+                            showFindBar = false
+                            findQuery = ""
+                            webViewRef.value?.clearMatches()
+                        }
+                    )
+                }
             }
 
             webViewState.error?.let { error ->
