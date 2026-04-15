@@ -11,6 +11,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -58,6 +59,33 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
+
+private fun Modifier.viewerIconButtonStyle(enabled: Boolean = true, selected: Boolean = false): Modifier =
+    this
+        .size(36.dp)
+        .background(
+            when {
+                selected -> CyanPrimary.copy(alpha = 0.18f)
+                enabled -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.92f)
+                else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+            },
+            RoundedCornerShape(10.dp)
+        )
+        .border(
+            1.dp,
+            when {
+                selected -> CyanPrimary.copy(alpha = 0.35f)
+                enabled -> CardBorder.copy(alpha = 0.55f)
+                else -> CardBorder.copy(alpha = 0.3f)
+            },
+            RoundedCornerShape(10.dp)
+        )
+
+private fun Modifier.audioControlButtonStyle(): Modifier =
+    this
+        .size(44.dp)
+        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.96f), RoundedCornerShape(14.dp))
+        .border(1.dp, CardBorder.copy(alpha = 0.55f), RoundedCornerShape(14.dp))
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -138,12 +166,7 @@ fun UniversalFileViewerScreen(
                                 }
                             },
                             enabled = activeFileIndex > 0,
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(
-                                    if (activeFileIndex > 0) CardSurface else CardSurface.copy(0.5f),
-                                    RoundedCornerShape(10.dp)
-                                )
+                            modifier = Modifier.viewerIconButtonStyle(activeFileIndex > 0)
                         ) {
                             Icon(
                                 Icons.Rounded.SkipPrevious,
@@ -161,12 +184,7 @@ fun UniversalFileViewerScreen(
                                 }
                             },
                             enabled = activeFileIndex < folderFiles.lastIndex,
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(
-                                    if (activeFileIndex < folderFiles.lastIndex) CardSurface else CardSurface.copy(0.5f),
-                                    RoundedCornerShape(10.dp)
-                                )
+                            modifier = Modifier.viewerIconButtonStyle(activeFileIndex < folderFiles.lastIndex)
                         ) {
                             Icon(
                                 Icons.Rounded.SkipNext,
@@ -188,18 +206,14 @@ fun UniversalFileViewerScreen(
                                 }
                                 context.startActivity(android.content.Intent.createChooser(intent, "Share file"))
                             },
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(CardSurface, RoundedCornerShape(10.dp))
+                            modifier = Modifier.viewerIconButtonStyle()
                         ) {
                             Icon(Icons.Rounded.Share, null, tint = VioletSecondary, modifier = Modifier.size(16.dp))
                         }
                         Spacer(Modifier.width(4.dp))
                         IconButton(
                             onClick = { FileViewerManager(context).openWithExternalApp(activeFile, mimeType) },
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(CardSurface, RoundedCornerShape(10.dp))
+                            modifier = Modifier.viewerIconButtonStyle()
                         ) {
                             Icon(Icons.Rounded.OpenInNew, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
                         }
@@ -211,9 +225,7 @@ fun UniversalFileViewerScreen(
                                 clipboard.setPrimaryClip(clip)
                                 android.widget.Toast.makeText(context, "Path copied", android.widget.Toast.LENGTH_SHORT).show()
                             },
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(CardSurface, RoundedCornerShape(10.dp))
+                            modifier = Modifier.viewerIconButtonStyle()
                         ) {
                             Icon(Icons.Rounded.ContentCopy, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
                         }
@@ -224,26 +236,14 @@ fun UniversalFileViewerScreen(
                                     android.widget.Toast.makeText(context, "Duplicated: ${it.name}", android.widget.Toast.LENGTH_SHORT).show()
                                 } ?: android.widget.Toast.makeText(context, "Failed to duplicate", android.widget.Toast.LENGTH_SHORT).show()
                             },
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(CardSurface, RoundedCornerShape(10.dp))
+                            modifier = Modifier.viewerIconButtonStyle()
                         ) {
                             Icon(Icons.Rounded.FileCopy, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
                         }
                         Spacer(Modifier.width(4.dp))
                         IconButton(
                             onClick = { darkMode = !darkMode },
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(
-                                    if (darkMode) CyanPrimary.copy(0.15f) else CardSurface,
-                                    RoundedCornerShape(10.dp)
-                                )
-                                .border(
-                                    1.dp,
-                                    if (darkMode) CyanPrimary.copy(0.4f) else Color.Transparent,
-                                    RoundedCornerShape(10.dp)
-                                )
+                            modifier = Modifier.viewerIconButtonStyle(selected = darkMode)
                         ) {
                             Icon(
                                 if (darkMode) Icons.Rounded.DarkMode else Icons.Rounded.LightMode,
@@ -255,17 +255,7 @@ fun UniversalFileViewerScreen(
                         Spacer(Modifier.width(4.dp))
                         IconButton(
                             onClick = { showInfoPanel = !showInfoPanel },
-                            modifier = Modifier
-                                .size(36.dp)
-                                .background(
-                                    if (showInfoPanel) VioletSecondary.copy(0.15f) else CardSurface,
-                                    RoundedCornerShape(10.dp)
-                                )
-                                .border(
-                                    1.dp,
-                                    if (showInfoPanel) VioletSecondary.copy(0.4f) else Color.Transparent,
-                                    RoundedCornerShape(10.dp)
-                                )
+                            modifier = Modifier.viewerIconButtonStyle(selected = showInfoPanel)
                         ) {
                             Icon(
                                 Icons.Rounded.Info,
@@ -609,64 +599,107 @@ fun ImageViewer(
             }
         }
 
+        var controlsExpanded by remember { mutableStateOf(false) }
+        val controlPanelBackground = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.92f)
+        val controlPanelShape = RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp)
+
         Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.75f))
-                .padding(12.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(controlPanelBackground, controlPanelShape)
+                    .clickable { controlsExpanded = !controlsExpanded }
+                    .padding(14.dp)
             ) {
-                ExtendedFloatingActionButton(
-                    onClick = { rotation = (rotation + 90f) % 360f },
-                    icon = { Icon(Icons.Default.ScreenRotation, contentDescription = "Rotate") },
-                    text = { Text("Rotate") }
-                )
-                ExtendedFloatingActionButton(
-                    onClick = { filterMode = when (filterMode) {
-                        "Normal" -> "Grayscale"
-                        "Grayscale" -> "Sepia"
-                        else -> "Normal"
-                    } },
-                    icon = { Icon(Icons.Default.Tune, contentDescription = "Filter") },
-                    text = { Text(filterMode) }
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (controlsExpanded) "Hide image controls" else "Show image controls",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextPrimary
+                    )
+                    Icon(
+                        if (controlsExpanded) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
+                        contentDescription = null,
+                        tint = TextSecondary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text("Brightness", style = MaterialTheme.typography.bodySmall)
-                Slider(
-                    value = brightness,
-                    onValueChange = { brightness = it },
-                    valueRange = -0.5f..0.5f,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text("Contrast", style = MaterialTheme.typography.bodySmall)
-                Slider(
-                    value = contrast,
-                    onValueChange = { contrast = it },
-                    valueRange = 0.5f..2f,
-                    modifier = Modifier.weight(1f)
-                )
-            }
+            if (controlsExpanded) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(controlPanelBackground, controlPanelShape)
+                        .padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ExtendedFloatingActionButton(
+                            onClick = { rotation = (rotation + 90f) % 360f },
+                            icon = { Icon(Icons.Default.ScreenRotation, contentDescription = "Rotate") },
+                            text = { Text("Rotate") }
+                        )
+                        ExtendedFloatingActionButton(
+                            onClick = {
+                                filterMode = when (filterMode) {
+                                    "Normal" -> "Grayscale"
+                                    "Grayscale" -> "Sepia"
+                                    else -> "Normal"
+                                }
+                            },
+                            icon = { Icon(Icons.Default.Tune, contentDescription = "Filter") },
+                            text = { Text(filterMode) }
+                        )
+                    }
 
-            if (exifData.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("EXIF: ${exifData.entries.joinToString { "${it.key}=${it.value}" }}", style = MaterialTheme.typography.bodySmall)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text("Brightness", style = MaterialTheme.typography.bodySmall)
+                        Slider(
+                            value = brightness,
+                            onValueChange = { brightness = it },
+                            valueRange = -0.5f..0.5f,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text("Contrast", style = MaterialTheme.typography.bodySmall)
+                        Slider(
+                            value = contrast,
+                            onValueChange = { contrast = it },
+                            valueRange = 0.5f..2f,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    if (exifData.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "EXIF: ${exifData.entries.joinToString { "${it.key}=${it.value}" }}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
             }
         }
     }
@@ -953,27 +986,33 @@ fun AudioPlayer(
             }
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            IconButton(onClick = onOpenPrevious) { Icon(Icons.Default.SkipPrevious, contentDescription = "Previous track") }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            IconButton(onClick = onOpenPrevious, modifier = Modifier.audioControlButtonStyle()) {
+                Icon(Icons.Default.SkipPrevious, contentDescription = "Previous track", modifier = Modifier.size(22.dp), tint = TextPrimary)
+            }
             IconButton(onClick = {
                 if (isPlaying) mediaPlayer?.pause() else mediaPlayer?.start()
                 isPlaying = !isPlaying
-            }) { Icon(if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow, contentDescription = "Play/Pause") }
-            IconButton(onClick = onOpenNext) { Icon(Icons.Default.SkipNext, contentDescription = "Next track") }
+            }, modifier = Modifier.audioControlButtonStyle()) {
+                Icon(if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow, contentDescription = "Play/Pause", modifier = Modifier.size(24.dp), tint = TextPrimary)
+            }
+            IconButton(onClick = onOpenNext, modifier = Modifier.audioControlButtonStyle()) {
+                Icon(Icons.Default.SkipNext, contentDescription = "Next track", modifier = Modifier.size(22.dp), tint = TextPrimary)
+            }
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            IconButton(onClick = { mediaPlayer?.seekTo((currentPosition - 10000).coerceAtLeast(0)) }) {
-                Icon(Icons.Default.Replay10, contentDescription = "Back 10 seconds")
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            IconButton(onClick = { mediaPlayer?.seekTo((currentPosition - 10000).coerceAtLeast(0)) }, modifier = Modifier.audioControlButtonStyle()) {
+                Icon(Icons.Default.Replay10, contentDescription = "Back 10 seconds", modifier = Modifier.size(20.dp), tint = TextSecondary)
             }
-            IconButton(onClick = { mediaPlayer?.seekTo((currentPosition + 10000).coerceAtMost(duration)) }) {
-                Icon(Icons.Default.Forward10, contentDescription = "Forward 10 seconds")
+            IconButton(onClick = { mediaPlayer?.seekTo((currentPosition + 10000).coerceAtMost(duration)) }, modifier = Modifier.audioControlButtonStyle()) {
+                Icon(Icons.Default.Forward10, contentDescription = "Forward 10 seconds", modifier = Modifier.size(20.dp), tint = TextSecondary)
             }
-            IconButton(onClick = { shuffle = !shuffle }) {
-                Icon(Icons.Default.Shuffle, contentDescription = "Shuffle")
+            IconButton(onClick = { shuffle = !shuffle }, modifier = Modifier.audioControlButtonStyle(selected = shuffle)) {
+                Icon(Icons.Default.Shuffle, contentDescription = "Shuffle", modifier = Modifier.size(20.dp), tint = if (shuffle) CyanPrimary else TextSecondary)
             }
-            IconButton(onClick = { repeatOne = !repeatOne }) {
-                Icon(Icons.Default.Repeat, contentDescription = "Repeat")
+            IconButton(onClick = { repeatOne = !repeatOne }, modifier = Modifier.audioControlButtonStyle(selected = repeatOne)) {
+                Icon(Icons.Default.Repeat, contentDescription = "Repeat", modifier = Modifier.size(20.dp), tint = if (repeatOne) CyanPrimary else TextSecondary)
             }
         }
 

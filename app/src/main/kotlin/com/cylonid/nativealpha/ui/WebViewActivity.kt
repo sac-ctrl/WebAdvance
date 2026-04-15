@@ -1,8 +1,10 @@
 package com.cylonid.nativealpha.ui
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.net.Uri
@@ -20,8 +22,10 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -123,6 +127,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.ui.theme.BgDeep
@@ -214,6 +219,31 @@ fun WebViewScreen(
     val webAppRef = remember { mutableStateOf<WebApp?>(null) }
     var initialUrlLoaded by remember { mutableStateOf(false) }
     var showMoreMenu by remember { mutableStateOf(false) }
+    var pendingPermissionRequest by remember { mutableStateOf<PermissionRequest?>(null) }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        val request = pendingPermissionRequest
+        if (request != null) {
+            val grantedResources = request.resources.orEmpty().filter { resource ->
+                val permissionName = when (resource) {
+                    PermissionRequest.RESOURCE_VIDEO_CAPTURE -> Manifest.permission.CAMERA
+                    PermissionRequest.RESOURCE_AUDIO_CAPTURE -> Manifest.permission.RECORD_AUDIO
+                    else -> null
+                }
+                permissionName != null && results[permissionName] == true
+            }
+            if (grantedResources.isNotEmpty()) {
+                request.grant(grantedResources.toTypedArray())
+                android.widget.Toast.makeText(context, "Permission granted", android.widget.Toast.LENGTH_SHORT).show()
+            } else {
+                request.deny()
+                android.widget.Toast.makeText(context, "Permission denied", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
+        pendingPermissionRequest = null
+    }
 
     var pinUnlocked by remember { mutableStateOf(false) }
     var showPinDialog by remember { mutableStateOf(false) }
@@ -750,15 +780,38 @@ fun WebViewScreen(
                             ): Boolean = true
                             override fun onPermissionRequest(request: PermissionRequest?) {
                                 val app = webAppRef.value
-                                val granted = request?.resources?.filter { resource ->
+                                val requestedResources = request?.resources?.filter { resource ->
                                     when (resource) {
                                         PermissionRequest.RESOURCE_VIDEO_CAPTURE -> app?.isCameraPermission == true
                                         PermissionRequest.RESOURCE_AUDIO_CAPTURE -> app?.isMicrophonePermission == true
                                         else -> false
                                     }
+                                } ?: emptyList()
+
+                                if (requestedResources.isEmpty()) {
+                                    request?.deny()
+                                    return
                                 }
-                                if (!granted.isNullOrEmpty()) request?.grant(granted.toTypedArray())
-                                else request?.deny()
+
+                                val androidPermissions = requestedResources.mapNotNull { resource ->
+                                    when (resource) {
+                                        PermissionRequest.RESOURCE_VIDEO_CAPTURE -> Manifest.permission.CAMERA
+                                        PermissionRequest.RESOURCE_AUDIO_CAPTURE -> Manifest.permission.RECORD_AUDIO
+                                        else -> null
+                                    }
+                                }
+
+                                val alreadyGranted = androidPermissions.all { permission ->
+                                    ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+                                }
+
+                                if (alreadyGranted) {
+                                    request?.grant(requestedResources.toTypedArray())
+                                    return
+                                }
+
+                                pendingPermissionRequest = request
+                                permissionLauncher.launch(androidPermissions.toTypedArray())
                             }
                         }
                     webView.addJavascriptInterface(object {
