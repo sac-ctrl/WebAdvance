@@ -1,12 +1,16 @@
 package com.cylonid.nativealpha.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cylonid.nativealpha.data.DownloadItemDao
 import com.cylonid.nativealpha.manager.DownloadItem
 import com.cylonid.nativealpha.manager.DownloadManager
 import com.cylonid.nativealpha.manager.FileViewerManager
+import com.cylonid.nativealpha.repository.WebAppRepository
+import com.cylonid.nativealpha.util.StorageUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.io.File
@@ -14,9 +18,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DownloadViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val downloadDao: DownloadItemDao,
     private val downloadManager: DownloadManager,
-    private val fileViewerManager: FileViewerManager
+    private val fileViewerManager: FileViewerManager,
+    private val webAppRepository: WebAppRepository
 ) : ViewModel() {
 
     enum class SortBy {
@@ -24,8 +30,18 @@ class DownloadViewModel @Inject constructor(
     }
 
     enum class FilterBy {
-        ALL, COMPLETED, DOWNLOADING, FAILED, IMAGES, VIDEOS, DOCUMENTS
+        ALL, COMPLETED, DOWNLOADING, FAILED, IMAGES, VIDEOS, DOCUMENTS, FOLDERS, SCREENSHOTS
     }
+
+    data class FileSystemItem(
+        val name: String,
+        val path: String,
+        val isDirectory: Boolean,
+        val size: Long = 0,
+        val lastModified: Long = System.currentTimeMillis(),
+        val mimeType: String? = null,
+        val icon: String = if (isDirectory) "📁" else "📄"
+    )
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
@@ -36,53 +52,126 @@ class DownloadViewModel @Inject constructor(
     private val _filterBy = MutableStateFlow(FilterBy.ALL)
     val filterBy: StateFlow<FilterBy> = _filterBy
 
-    private val _downloads = MutableStateFlow<List<DownloadItem>>(emptyList())
-    val downloads: StateFlow<List<DownloadItem>> = combine(
-        _downloads,
+    private val _fileSystemItems = MutableStateFlow<List<FileSystemItem>>(emptyList())
+    
+    private var currentAppId: Long? = null
+    private var currentAppName: String? = null
+
+    val downloads: StateFlow<List<FileSystemItem>> = combine(
+        _fileSystemItems,
         _searchQuery,
         _sortBy,
         _filterBy
-    ) { downloads, query, sort, filter ->
-        var filtered = downloads
+    ) { items, query, sort, filter ->
+        var filtered = items
 
         // Apply search filter
         if (query.isNotBlank()) {
-            filtered = filtered.filter { it.fileName.contains(query, ignoreCase = true) }
+            filtered = filtered.filter { it.name.contains(query, ignoreCase = true) }
         }
 
-        // Apply status/type filter
+        // Apply filter
         filtered = filtered.filter { item ->
             when (filter) {
                 FilterBy.ALL -> true
-                FilterBy.COMPLETED -> item.status == DownloadItem.Status.COMPLETED
-                FilterBy.DOWNLOADING -> item.status == DownloadItem.Status.DOWNLOADING
-                FilterBy.FAILED -> item.status == DownloadItem.Status.FAILED
-                FilterBy.IMAGES -> item.mimeType?.startsWith("image/") == true
-                FilterBy.VIDEOS -> item.mimeType?.startsWith("video/") == true
-                FilterBy.DOCUMENTS -> item.mimeType?.startsWith("text/") == true ||
-                        item.mimeType == "application/pdf" ||
-                        item.mimeType?.contains("document") == true
+                FilterBy.FOLDERS -> item.isDirectory
+                FilterBy.SCREENSHOTS -> item.path.contains("Screenshots", ignoreCase = true)
+                FilterBy.IMAGES -> !item.isDirectory && item.mimeType?.startsWith("image/") == true
+                FilterBy.VIDEOS -> !item.isDirectory && item.mimeType?.startsWith("video/") == true
+                FilterBy.DOCUMENTS -> !item.isDirectory && (
+                    item.mimeType?.startsWith("text/") == true ||
+                    item.mimeType == "application/pdf" ||
+                    item.mimeType?.contains("document") == true
+                )
+                FilterBy.COMPLETED, FilterBy.DOWNLOADING, FilterBy.FAILED -> true // Legacy support
             }
         }
 
         // Apply sorting
         filtered.sortedWith { a, b ->
             when (sort) {
-                SortBy.DATE_DESC -> b.timestamp.compareTo(a.timestamp)
-                SortBy.DATE_ASC -> a.timestamp.compareTo(b.timestamp)
-                SortBy.NAME_ASC -> a.fileName.compareTo(b.fileName, ignoreCase = true)
-                SortBy.NAME_DESC -> b.fileName.compareTo(a.fileName, ignoreCase = true)
-                SortBy.SIZE_DESC -> b.fileSize.compareTo(a.fileSize)
-                SortBy.SIZE_ASC -> a.fileSize.compareTo(b.fileSize)
+                SortBy.DATE_DESC -> b.lastModified.compareTo(a.lastModified)
+                SortBy.DATE_ASC -> a.lastModified.compareTo(b.lastModified)
+                SortBy.NAME_ASC -> a.name.compareTo(b.name, ignoreCase = true)
+                SortBy.NAME_DESC -> b.name.compareTo(a.name, ignoreCase = true)
+                SortBy.SIZE_DESC -> b.size.compareTo(a.size)
+                SortBy.SIZE_ASC -> a.size.compareTo(b.size)
             }
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     fun loadDownloads(webAppId: Long) {
         viewModelScope.launch {
-            downloadDao.getDownloadsForApp(webAppId).collect { downloads ->
-                _downloads.value = downloads
+            currentAppId = webAppId
+            val webApp = webAppRepository.getWebAppById(webAppId).firstOrNull()
+            currentAppName = webApp?.name ?: "Unknown"
+            
+            // Scan the file system folder
+            scanAppDownloadsFolder()
+        }
+    }
+
+    private fun scanAppDownloadsFolder() {
+        currentAppName?.let { appName ->
+            val storageItems = mutableListOf<FileSystemItem>()
+            
+            // Scan main downloads folder
+            val mainDir = StorageUtil.getAppDownloadsDir(appName)
+            if (mainDir.exists()) {
+                mainDir.listFiles()?.forEach { file ->
+                    val mimeType = if (file.isDirectory) null else getMimeType(file.name)
+                    storageItems.add(
+                        FileSystemItem(
+                            name = file.name,
+                            path = file.absolutePath,
+                            isDirectory = file.isDirectory,
+                            size = if (file.isDirectory) calculateDirSize(file) else file.length(),
+                            lastModified = file.lastModified(),
+                            mimeType = mimeType,
+                            icon = getIconForMimeType(mimeType, file.isDirectory)
+                        )
+                    )
+                }
             }
+            
+            _fileSystemItems.value = storageItems
+        }
+    }
+
+    private fun calculateDirSize(dir: File): Long {
+        var size = 0L
+        if (dir.isDirectory) {
+            dir.listFiles()?.forEach { file ->
+                size += if (file.isDirectory) calculateDirSize(file) else file.length()
+            }
+        }
+        return size
+    }
+
+    private fun getMimeType(fileName: String): String {
+        return when {
+            fileName.matches(Regex(".*\\.(jpg|jpeg|png|gif|webp|bmp)$", RegexOption.IGNORE_CASE)) -> "image/*"
+            fileName.matches(Regex(".*\\.(mp4|mkv|webm|avi|mov|flv|wmv)$", RegexOption.IGNORE_CASE)) -> "video/*"
+            fileName.matches(Regex(".*\\.(mp3|wav|aac|flac|opus|m4a|ogg)$", RegexOption.IGNORE_CASE)) -> "audio/*"
+            fileName.matches(Regex(".*\\.pdf$", RegexOption.IGNORE_CASE)) -> "application/pdf"
+            fileName.matches(Regex(".*\\.(txt|log|md|csv|json|xml|html)$", RegexOption.IGNORE_CASE)) -> "text/*"
+            fileName.matches(Regex(".*\\.(zip|rar|7z|tar|gz)$", RegexOption.IGNORE_CASE)) -> "application/archive"
+            fileName.matches(Regex(".*\\.apk$", RegexOption.IGNORE_CASE)) -> "application/vnd.android.package-archive"
+            else -> "application/octet-stream"
+        }
+    }
+
+    private fun getIconForMimeType(mimeType: String?, isDirectory: Boolean): String {
+        return when {
+            isDirectory -> "📁"
+            mimeType?.startsWith("image/") == true -> "🖼️"
+            mimeType?.startsWith("video/") == true -> "🎬"
+            mimeType?.startsWith("audio/") == true -> "🎵"
+            mimeType == "application/pdf" -> "📕"
+            mimeType?.startsWith("text/") == true -> "📄"
+            mimeType?.contains("archive") == true -> "📦"
+            mimeType?.contains("android.package") == true -> "🔧"
+            else -> "📄"
         }
     }
 
@@ -98,47 +187,54 @@ class DownloadViewModel @Inject constructor(
         _filterBy.value = filterBy
     }
 
-    fun openFile(download: DownloadItem) {
-        download.filePath?.let { path ->
-            val file = File(path)
-            if (file.exists()) {
-                fileViewerManager.openFile(file)
-            }
-        }
-    }
-
-    fun shareFile(download: DownloadItem) {
-        download.filePath?.let { path ->
-            val file = File(path)
-            if (file.exists()) {
-                // TODO: Implement share functionality using Android Sharesheet
-            }
-        }
-    }
-
-    fun pauseDownload(download: DownloadItem) {
-        downloadManager.pauseDownload(download.id)
-    }
-
-    fun resumeDownload(download: DownloadItem) {
-        downloadManager.resumeDownload(download)
-    }
-
-    fun cancelDownload(download: DownloadItem) {
-        downloadManager.cancelDownload(download.id)
-    }
-
-    fun deleteDownload(download: DownloadItem) {
+    fun openFile(item: FileSystemItem) {
         viewModelScope.launch {
-            downloadDao.deleteDownload(download.id)
-            // Also delete file if exists
-            download.filePath?.let { path ->
-                File(path).delete()
+            if (!item.isDirectory) {
+                fileViewerManager.openFile(File(item.path))
             }
         }
     }
 
-    fun retryDownload(download: DownloadItem) {
-        downloadManager.downloadFile(download.webAppId, download.url, download.fileName)
+    fun shareFile(item: FileSystemItem) {
+        viewModelScope.launch {
+            if (!item.isDirectory) {
+                // TODO: Implement share functionality
+            }
+        }
+    }
+
+    fun deleteFile(item: FileSystemItem) {
+        viewModelScope.launch {
+            val file = File(item.path)
+            if (file.exists()) {
+                if (file.isDirectory) {
+                    file.deleteRecursively()
+                } else {
+                    file.delete()
+                }
+                scanAppDownloadsFolder()
+            }
+        }
+    }
+
+    fun renameFile(item: FileSystemItem, newName: String) {
+        viewModelScope.launch {
+            val file = File(item.path)
+            val newFile = File(file.parent, newName)
+            if (file.exists() && !newFile.exists()) {
+                file.renameTo(newFile)
+                scanAppDownloadsFolder()
+            }
+        }
+    }
+
+    fun getFileSize(item: FileSystemItem): String = StorageUtil.formatFileSize(item.size)
+
+    fun getScreenshotCount(): Int {
+        currentAppName?.let { appName ->
+            val screenshotsDir = StorageUtil.getScreenshotsDir(appName)
+            return screenshotsDir.listFiles()?.count() ?: 0
+        }
+        return 0
     }
 }
