@@ -288,15 +288,7 @@ class WebViewViewModel @Inject constructor(
                 val bitmap = webView.drawingCache
                 if (bitmap != null) {
                     val filename = "screenshot_${System.currentTimeMillis()}.png"
-                    val file = java.io.File(context.getExternalFilesDir(null), filename)
-                    val stream = java.io.FileOutputStream(file)
-                    bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
-                    stream.close()
-
-                    webApp.value?.let { app ->
-                        val updatedApp = app.copy(thumbnail = bitmap)
-                        repository.updateWebApp(updatedApp)
-                    }
+                    downloadManager.saveScreenshot(filename, bitmap)
                 }
             } catch (e: Exception) {
                 // Handle error silently

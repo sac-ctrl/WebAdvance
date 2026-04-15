@@ -248,4 +248,35 @@ class DownloadManager @Inject constructor(
             else -> "Others"
         }
     }
+
+    fun saveScreenshot(fileName: String, bitmap: android.graphics.Bitmap) {
+        scope.launch {
+            try {
+                val baseDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "WAOS")
+                val screenshotsDir = File(baseDir, "Screenshots")
+                screenshotsDir.mkdirs()
+
+                val file = File(screenshotsDir, fileName)
+                val stream = java.io.FileOutputStream(file)
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+                stream.close()
+
+                // Optionally save to database as download
+                val item = DownloadItem(
+                    webAppId = 0L, // Screenshots not tied to specific app
+                    url = "",
+                    fileName = fileName,
+                    fileSize = file.length(),
+                    downloadedBytes = file.length(),
+                    status = DownloadItem.Status.COMPLETED,
+                    filePath = file.absolutePath,
+                    mimeType = "image/png",
+                    timestamp = System.currentTimeMillis()
+                )
+                dao.insertDownload(item)
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
 }

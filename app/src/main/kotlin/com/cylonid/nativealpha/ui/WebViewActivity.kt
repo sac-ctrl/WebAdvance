@@ -399,6 +399,26 @@ fun WebViewScreen(
                                 webAppRef.value?.let { app ->
                                     if (app.isDarkModeEnabled) injectDarkMode(this)
                                 }
+                                // Inject auto scroll functionality
+                                webView.evaluateJavascript("""
+                                    javascript:(function() {
+                                        window.waosAutoScroll = {
+                                            interval: null,
+                                            start: function(speed) {
+                                                this.stop();
+                                                this.interval = setInterval(function() {
+                                                    window.scrollBy(0, speed);
+                                                }, 50);
+                                            },
+                                            stop: function() {
+                                                if (this.interval) {
+                                                    clearInterval(this.interval);
+                                                    this.interval = null;
+                                                }
+                                            }
+                                        };
+                                    })()
+                                """.trimIndent(), null)
                             },
                             onDownloadStart = { _, downloadUrl ->
                                 viewModel.handleDownload(downloadUrl, webAppRef.value)
@@ -461,6 +481,25 @@ fun WebViewScreen(
                             "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
                         webView.settings.useWideViewPort = true
                         webView.settings.loadWithOverviewMode = true
+                        // Inject desktop mode enhancements
+                        webView.evaluateJavascript("""
+                            javascript:(function() {
+                                var meta = document.querySelector('meta[name=viewport]');
+                                if (!meta) {
+                                    meta = document.createElement('meta');
+                                    meta.name = 'viewport';
+                                    document.head.appendChild(meta);
+                                }
+                                meta.content = 'width=device-width, initial-scale=0.5, maximum-scale=3.0, user-scalable=yes';
+                                document.body.style.transform = 'scale(0.8)';
+                                document.body.style.transformOrigin = 'top left';
+                                document.body.style.width = '125%';
+                                // Force desktop layout
+                                var style = document.createElement('style');
+                                style.textContent = 'body { min-width: 100vw !important; }';
+                                document.head.appendChild(style);
+                            })()
+                        """.trimIndent(), null)
                     } else {
                         webView.settings.useWideViewPort = true
                         webView.settings.loadWithOverviewMode = true
@@ -576,14 +615,20 @@ fun WebViewScreen(
                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(currentUrl)))
             },
             onFloat = {
-                webApp?.let { app ->
-                    val intent = Intent(context, com.cylonid.nativealpha.service.FloatingWindowService::class.java).apply {
-                        action = com.cylonid.nativealpha.service.FloatingWindowService.ACTION_ADD_WINDOW
-                        putExtra("webAppId", app.id)
-                        putExtra("webAppUrl", app.url)
-                        putExtra("webAppName", app.name)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !android.provider.Settings.canDrawOverlays(context)) {
+                    // Request overlay permission
+                    val intent = Intent(android.provider.Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${context.packageName}"))
+                    context.startActivity(intent)
+                } else {
+                    webApp?.let { app ->
+                        val intent = Intent(context, com.cylonid.nativealpha.service.FloatingWindowService::class.java).apply {
+                            action = com.cylonid.nativealpha.service.FloatingWindowService.ACTION_ADD_WINDOW
+                            putExtra("webAppId", app.id)
+                            putExtra("webAppUrl", app.url)
+                            putExtra("webAppName", app.name)
+                        }
+                        context.startService(intent)
                     }
-                    context.startService(intent)
                 }
             },
             onCredentials = { viewModel.openCredentialKeeper() },
@@ -777,6 +822,9 @@ private fun WaosBottomBar(
                 WaosToolbarBtn(onClick = onFloat) {
                     Icon(Icons.Default.Launch, null, modifier = Modifier.size(18.dp))
                 }
+            }
+            WaosToolbarBtn(onClick = onMoreMenuToggle) {
+                Icon(Icons.Default.MoreVert, null, modifier = Modifier.size(18.dp))
             }
         }
     }
