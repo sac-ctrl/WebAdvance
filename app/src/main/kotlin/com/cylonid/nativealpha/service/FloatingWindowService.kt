@@ -139,6 +139,7 @@ class FloatingWindowService : Service() {
         titleBar?.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
+                    bringWindowToFront(webAppId)
                     dragStartX = event.rawX
                     dragStartY = event.rawY
                     windowStartX = layoutParams.x
@@ -310,6 +311,14 @@ class FloatingWindowService : Service() {
         } else {
             windowView.originalUserAgent ?: webView.settings.userAgentString
         }
+        webView.settings.useWideViewPort = true
+        webView.settings.loadWithOverviewMode = true
+        if (windowView.desktopModeEnabled) {
+            webView.evaluateJavascript(
+                "javascript:(function(){var meta=document.querySelector('meta[name=viewport]'); if(!meta){meta=document.createElement('meta'); meta.name='viewport'; document.head.appendChild(meta);} meta.content='width=device-width, initial-scale=0.5, maximum-scale=3.0, user-scalable=yes'; var style=document.createElement('style'); style.textContent='body{min-width:100vw!important;overflow-x:auto;} @media (max-width:768px){body{font-size:14px;}}'; document.head.appendChild(style);})()",
+                null
+            )
+        }
         webView.reload()
     }
 
@@ -358,17 +367,22 @@ class FloatingWindowService : Service() {
                 webView.settings.builtInZoomControls = webApp.isEnableZooming
                 webView.settings.setSupportZoom(true)
                 webView.settings.displayZoomControls = false
+                webView.settings.useWideViewPort = true
+                webView.settings.loadWithOverviewMode = true
 
+                val requestedUserAgent = webApp.userAgent?.takeIf { it.isNotBlank() }
+                val isSavedDesktopMode = requestedUserAgent?.contains("Mozilla/5.0 (X11; Linux x86_64)") == true || webApp.isRequestDesktop
                 var shouldReload = false
-                if (webApp.isUseCustomUserAgent && !webApp.userAgent.isNullOrBlank()) {
-                    webView.settings.userAgentString = webApp.userAgent!!
+                if (requestedUserAgent != null) {
+                    webView.settings.userAgentString = requestedUserAgent
                     shouldReload = true
-                } else if (webApp.isRequestDesktop) {
+                } else if (isSavedDesktopMode) {
                     webView.settings.userAgentString = DESKTOP_USER_AGENT
+                    shouldReload = true
                 }
 
                 windowView.originalUserAgent = webView.settings.userAgentString
-                windowView.desktopModeEnabled = webApp.isRequestDesktop
+                windowView.desktopModeEnabled = isSavedDesktopMode
                 windowView.adblockEnabled = webApp.isUseAdblock || webApp.isAdblockEnabled
                 windowView.webViewClient.adblockEnabled = windowView.adblockEnabled
 
@@ -459,6 +473,16 @@ class FloatingWindowService : Service() {
         floatingWindows.clear()
         updateOpenWindows()
         stopSelf()
+    }
+
+    private fun bringWindowToFront(windowId: Long) {
+        floatingWindows[windowId]?.let { windowView ->
+            try {
+                windowView.view.bringToFront()
+                windowManager.updateViewLayout(windowView.view, windowView.layoutParams)
+            } catch (ignored: Exception) {
+            }
+        }
     }
 
     fun getCurrentWindows(): List<WindowEntity> {
