@@ -313,6 +313,19 @@ class WebViewViewModel @Inject constructor(
         _webViewState.value = _webViewState.value.copy(shouldDownloadUrl = null)
     }
 
+    fun handleBlobDownload(filename: String, base64Data: String, webApp: WebApp? = null) {
+        downloadManager.saveBlobFile(webApp?.id ?: 0L, filename, base64Data, webApp)
+        _webViewState.value = _webViewState.value.copy(shouldDownloadUrl = null)
+    }
+
+    fun handleImageLongPress(imageUrl: String, webApp: WebApp? = null) {
+        _webViewState.value = _webViewState.value.copy(shouldShowImageLongPressDialog = imageUrl)
+    }
+
+    fun dismissImageLongPressDialog() {
+        _webViewState.value = _webViewState.value.copy(shouldShowImageLongPressDialog = null)
+    }
+
     fun takeScreenshot() {
         _webViewState.value = _webViewState.value.copy(shouldTakeScreenshot = true)
     }
@@ -474,7 +487,8 @@ data class WebViewState(
     val shouldSavePage: Boolean = false,
     val shouldToggleReaderMode: Boolean = false,
     val shouldTranslate: Boolean = false,
-    val shouldToggleAdblock: Boolean = false
+    val shouldToggleAdblock: Boolean = false,
+    val shouldShowImageLongPressDialog: String? = null
 )
 
 data class ConsoleMessageData(

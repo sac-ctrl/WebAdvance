@@ -119,6 +119,43 @@ class DownloadManager @Inject constructor(
         return downloadId
     }
 
+    fun saveBlobFile(webAppId: Long, filename: String, base64Data: String, webApp: WebApp? = null): Long {
+        val mimeType = getMimeTypeFromUrl(filename)
+        val fileTypeFolder = getFileTypeFolder(mimeType)
+        val appName = webApp?.name?.replace(Regex("[^a-zA-Z0-9]"), "_") ?: "Unknown"
+
+        // Create directory structure: /sdcard/WAOS/{AppName}/{FileType}/
+        val baseDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "WAOS")
+        val appDir = File(baseDir, appName)
+        val typeDir = File(appDir, fileTypeFolder)
+        typeDir.mkdirs()
+
+        val file = File(typeDir, filename)
+        
+        // Decode base64 and save to file
+        scope.launch {
+            try {
+                val bytes = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT)
+                file.writeBytes(bytes)
+                
+                // Save to database
+                val item = DownloadItem(
+                    webAppId = webAppId,
+                    url = "blob:data", // Placeholder URL for blob
+                    fileName = filename,
+                    mimeType = mimeType,
+                    filePath = file.absolutePath,
+                    id = System.currentTimeMillis() // Use timestamp as ID
+                )
+                dao.insertDownload(item)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        return System.currentTimeMillis()
+    }
+
     fun getDownloadsForApp(webAppId: Long): Flow<List<DownloadItem>> {
         return dao.getDownloadsForApp(webAppId).map { downloads ->
             downloads.map { updateDownloadProgress(it) }

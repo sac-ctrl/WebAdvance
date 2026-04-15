@@ -34,6 +34,11 @@ fun PermissionsScreen(
         mutableStateOf(PermissionsManager.getAllPermissionsStatus(context))
     }
 
+    // Refresh permissions when screen is composed
+    LaunchedEffect(Unit) {
+        permissionsStatus = PermissionsManager.getAllPermissionsStatus(context)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -49,6 +54,11 @@ fun PermissionsScreen(
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 IconButton(onClick = onBackPressed, modifier = Modifier.size(40.dp)) {
                     Icon(Icons.Default.ArrowBack, "Back", tint = TextPrimary, modifier = Modifier.size(24.dp))
+                }
+                IconButton(onClick = { 
+                    permissionsStatus = PermissionsManager.getAllPermissionsStatus(context)
+                }, modifier = Modifier.size(40.dp)) {
+                    Icon(Icons.Default.Refresh, "Refresh", tint = TextPrimary, modifier = Modifier.size(24.dp))
                 }
                 Box(
                     modifier = Modifier
@@ -155,15 +165,35 @@ fun PermissionsScreen(
                         if (!isGranted) {
                             Button(
                                 onClick = {
-                                    activity?.let {
-                                        PermissionsManager.requestPermission(it, permission, 1001)
+                                    activity?.let { act ->
+                                        when (permission) {
+                                            PermissionsManager.Permission.SYSTEM_ALERT_WINDOW,
+                                            PermissionsManager.Permission.MANAGE_STORAGE -> {
+                                                // These permissions require opening settings
+                                                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                                                    data = Uri.fromParts("package", context.packageName, null)
+                                                }
+                                                context.startActivity(intent)
+                                            }
+                                            else -> {
+                                                PermissionsManager.requestPermission(act, permission, 1001)
+                                            }
+                                        }
                                     }
                                 },
                                 modifier = Modifier.height(36.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = GradVioletEnd),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
-                                Text("Grant", fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                                Text(
+                                    when (permission) {
+                                        PermissionsManager.Permission.SYSTEM_ALERT_WINDOW,
+                                        PermissionsManager.Permission.MANAGE_STORAGE -> "Open Settings"
+                                        else -> "Grant"
+                                    },
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
                             }
                         } else {
                             Icon(

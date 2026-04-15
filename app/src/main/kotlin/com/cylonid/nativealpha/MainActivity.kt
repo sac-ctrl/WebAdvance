@@ -18,6 +18,7 @@ import com.cylonid.nativealpha.ui.theme.WAOSTheme
 import com.cylonid.nativealpha.ui.screens.MainDashboardScreen
 import com.cylonid.nativealpha.ui.screens.AddWebAppScreen
 import com.cylonid.nativealpha.ui.screens.SettingsScreen
+import com.cylonid.nativealpha.ui.screens.PermissionsScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -65,6 +66,9 @@ fun WAOSNavGraph() {
         }
         composable("settings") {
             SettingsScreen(navController = navController)
+        }
+        composable("settings/permissions") {
+            PermissionsScreen(onBackPressed = { navController.popBackStack() })
         }
     }
 }

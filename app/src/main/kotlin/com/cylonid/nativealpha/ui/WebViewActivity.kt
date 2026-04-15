@@ -329,6 +329,66 @@ fun WebViewScreen(
         )
     }
 
+    webViewState.shouldShowImageLongPressDialog?.let { imageUrl ->
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissImageLongPressDialog() },
+            containerColor = CardSurface,
+            titleContentColor = TextPrimary,
+            textContentColor = TextSecondary,
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .background(
+                                Brush.radialGradient(listOf(VioletSecondary.copy(0.3f), Color.Transparent)),
+                                RoundedCornerShape(10.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Image, contentDescription = null, tint = VioletSecondary, modifier = Modifier.size(20.dp))
+                    }
+                    Spacer(Modifier.width(10.dp))
+                    Text("Image Options", fontWeight = FontWeight.Bold)
+                }
+            },
+            text = {
+                Text("What would you like to do with this image?", color = TextSecondary, fontSize = 14.sp)
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.handleDownload(imageUrl, webApp)
+                        viewModel.dismissImageLongPressDialog()
+                    },
+                    modifier = Modifier.background(
+                        Brush.horizontalGradient(listOf(GradVioletStart, GradVioletEnd)),
+                        RoundedCornerShape(8.dp)
+                    )
+                ) { Text("Download") }
+            },
+            dismissButton = {
+                Row {
+                    TextButton(onClick = {
+                        // Share image URL
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, imageUrl)
+                        }
+                        context.startActivity(Intent.createChooser(intent, "Share Image URL"))
+                        viewModel.dismissImageLongPressDialog()
+                    }) {
+                        Text("Share URL", color = TextMuted)
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    TextButton(onClick = { viewModel.dismissImageLongPressDialog() }) {
+                        Text("Cancel", color = TextMuted)
+                    }
+                }
+            }
+        )
+    }
+
     LaunchedEffect(webViewState.shouldOpenCredentialKeeper) {
         if (webViewState.shouldOpenCredentialKeeper) {
             val intent = Intent(context, CredentialVaultActivity::class.java).apply {
@@ -428,9 +488,58 @@ fun WebViewScreen(
                                         };
                                     })()
                                 """.trimIndent(), null)
+                                // Inject image long press functionality
+                                webViewRef.value?.evaluateJavascript("""
+                                    javascript:(function() {
+                                        var longPressTimer;
+                                        var longPressElement;
+                                        
+                                        function handleLongPress(element) {
+                                            if (element.tagName === 'IMG') {
+                                                var src = element.src;
+                                                if (src) {
+                                                    window.waosDownloadBlob && window.waosDownloadBlob.imageLongPress(src);
+                                                }
+                                            }
+                                        }
+                                        
+                                        document.addEventListener('touchstart', function(e) {
+                                            longPressTimer = setTimeout(function() {
+                                                handleLongPress(e.target);
+                                            }, 500);
+                                        });
+                                        
+                                        document.addEventListener('touchend', function(e) {
+                                            clearTimeout(longPressTimer);
+                                        });
+                                        
+                                        document.addEventListener('touchmove', function(e) {
+                                            clearTimeout(longPressTimer);
+                                        });
+                                    })()
+                                """.trimIndent(), null)
                             },
-                            onDownloadStart = { _, downloadUrl ->
-                                viewModel.handleDownload(downloadUrl, webAppRef.value)
+                            onDownloadStart = { filename, downloadUrl ->
+                                if (downloadUrl.startsWith("blob:")) {
+                                    // Handle blob URL download
+                                    webViewRef.value?.evaluateJavascript("""
+                                        (function() {
+                                            fetch('$downloadUrl')
+                                                .then(response => response.blob())
+                                                .then(blob => {
+                                                    const reader = new FileReader();
+                                                    reader.onload = function() {
+                                                        const base64 = reader.result.split(',')[1];
+                                                        window.waosDownloadBlob && window.waosDownloadBlob('$filename', base64);
+                                                    };
+                                                    reader.readAsDataURL(blob);
+                                                })
+                                                .catch(error => console.error('Blob download failed:', error));
+                                        })();
+                                    """.trimIndent(), null)
+                                } else {
+                                    viewModel.handleDownload(downloadUrl, webAppRef.value)
+                                }
                             }
                         )
                         setDownloadListener { url, _, _, _, _ ->
@@ -471,6 +580,16 @@ fun WebViewScreen(
                                 else request?.deny()
                             }
                         }
+                        addJavascriptInterface(object {
+                            @JavascriptInterface
+                            fun downloadBlob(filename: String, base64Data: String) {
+                                viewModel.handleBlobDownload(filename, base64Data, webAppRef.value)
+                            }
+                            @JavascriptInterface
+                            fun imageLongPress(imageUrl: String) {
+                                viewModel.handleImageLongPress(imageUrl, webAppRef.value)
+                            }
+                        }, "waosDownloadBlob")
                     }.also { webViewRef.value = it }
                 },
                 update = { webView ->

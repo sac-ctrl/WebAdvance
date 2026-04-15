@@ -26,6 +26,14 @@ object PermissionsManager {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             "Access to write files to storage"
         ),
+        MANAGE_STORAGE(
+            "MANAGE_STORAGE",
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+                Manifest.permission.MANAGE_EXTERNAL_STORAGE
+            else
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            "Full access to all files on device"
+        ),
         CAMERA(
             "CAMERA",
             Manifest.permission.CAMERA,
@@ -45,15 +53,76 @@ object PermissionsManager {
             "ACCESS_FINE_LOCATION",
             Manifest.permission.ACCESS_FINE_LOCATION,
             "Access to GPS location"
+        ),
+        ACCESS_COARSE_LOCATION(
+            "ACCESS_COARSE_LOCATION",
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            "Access to network-based location"
+        ),
+        READ_MEDIA_VIDEO(
+            "READ_MEDIA_VIDEO",
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                Manifest.permission.READ_MEDIA_VIDEO
+            else
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+            "Access to read video files"
+        ),
+        READ_MEDIA_AUDIO(
+            "READ_MEDIA_AUDIO",
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                Manifest.permission.READ_MEDIA_AUDIO
+            else
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+            "Access to read audio files"
+        ),
+        SYSTEM_ALERT_WINDOW(
+            "SYSTEM_ALERT_WINDOW",
+            Manifest.permission.SYSTEM_ALERT_WINDOW,
+            "Display over other apps"
+        ),
+        POST_NOTIFICATIONS(
+            "POST_NOTIFICATIONS",
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                Manifest.permission.POST_NOTIFICATIONS
+            else
+                "",
+            "Send notifications"
         )
     }
 
     // Check if permission is granted
     fun hasPermission(context: Context, permission: Permission): Boolean {
-        return ContextCompat.checkSelfPermission(
-            context,
-            permission.androidPermission
-        ) == PackageManager.PERMISSION_GRANTED
+        // Skip permissions that don't exist on this Android version
+        if (permission.androidPermission.isEmpty()) return true
+        
+        return when (permission) {
+            Permission.SYSTEM_ALERT_WINDOW -> {
+                // Special check for SYSTEM_ALERT_WINDOW
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    android.provider.Settings.canDrawOverlays(context)
+                } else {
+                    true // Granted by default on older versions
+                }
+            }
+            Permission.MANAGE_STORAGE -> {
+                // Special check for MANAGE_EXTERNAL_STORAGE
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    android.os.Environment.isExternalStorageManager()
+                } else {
+                    // On older versions, check WRITE_EXTERNAL_STORAGE
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    ) == PackageManager.PERMISSION_GRANTED
+                }
+            }
+            else -> {
+                ContextCompat.checkSelfPermission(
+                    context,
+                    permission.androidPermission
+                ) == PackageManager.PERMISSION_GRANTED
+            }
+        }
     }
 
     // Check multiple permissions
@@ -73,7 +142,7 @@ object PermissionsManager {
 
     // Get denied permissions
     fun getDeniedPermissions(context: Context): List<Permission> {
-        return Permission.values().filter { !hasPermission(context, it) }
+        return Permission.values().filter { !hasPermission(context, it) && it.androidPermission.isNotEmpty() }
     }
 
     // Request permissions
@@ -83,7 +152,7 @@ object PermissionsManager {
         requestCode: Int
     ) {
         val permissionsToRequest = permissions
-            .filter { !hasPermission(activity, it) }
+            .filter { !hasPermission(activity, it) && it.androidPermission.isNotEmpty() }
             .map { it.androidPermission }
             .toTypedArray()
 
