@@ -50,6 +50,7 @@ class FloatingWindowService : Service() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val floatingWindows = mutableMapOf<Long, FloatingWindowView>()
+    private var currentFrontWindow: Long? = null
     private val _openWindows = MutableStateFlow<List<WindowEntity>>(emptyList())
     val openWindows: StateFlow<List<WindowEntity>> = _openWindows.asStateFlow()
 
@@ -144,7 +145,9 @@ class FloatingWindowService : Service() {
         titleBar?.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    bringWindowToFront(webAppId)
+                    if (currentFrontWindow != webAppId) {
+                        bringWindowToFront(webAppId)
+                    }
                     dragStartX = event.rawX
                     dragStartY = event.rawY
                     windowStartX = layoutParams.x
@@ -163,14 +166,18 @@ class FloatingWindowService : Service() {
 
         view.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
-                bringWindowToFront(webAppId)
+                if (currentFrontWindow != webAppId) {
+                    bringWindowToFront(webAppId)
+                }
             }
             false
         }
 
         webView.setOnTouchListener { _, event ->
             if (event.action == MotionEvent.ACTION_DOWN) {
-                bringWindowToFront(webAppId)
+                if (currentFrontWindow != webAppId) {
+                    bringWindowToFront(webAppId)
+                }
             }
             false
         }
@@ -459,6 +466,9 @@ class FloatingWindowService : Service() {
         floatingWindows[windowId]?.let { windowView ->
             windowManager.removeView(windowView.view)
             floatingWindows.remove(windowId)
+            if (currentFrontWindow == windowId) {
+                currentFrontWindow = null
+            }
             updateOpenWindows()
         }
     }
@@ -517,6 +527,7 @@ class FloatingWindowService : Service() {
             windowManager.removeView(windowView.view)
         }
         floatingWindows.clear()
+        currentFrontWindow = null
         updateOpenWindows()
         stopSelf()
     }
@@ -526,6 +537,7 @@ class FloatingWindowService : Service() {
             try {
                 windowManager.removeView(windowView.view)
                 windowManager.addView(windowView.view, windowView.layoutParams)
+                currentFrontWindow = windowId
             } catch (ignored: Exception) {
             }
         }
