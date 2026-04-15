@@ -3,8 +3,10 @@ package com.cylonid.nativealpha.ui.screens
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
+import android.media.PlaybackParams
 import android.os.Build
 import android.widget.MediaController
+import android.widget.VideoView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -675,11 +677,7 @@ fun VideoViewer(
             update = { view ->
                 if (isPlaying && !view.isPlaying) view.start()
                 if (!isPlaying && view.isPlaying) view.pause()
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    val params = android.media.PlaybackParams()
-                    params.setSpeed(playbackSpeed)
-                    view.setPlaybackParams(params)
-                }
+                // Playback speed not supported for VideoView
             },
             modifier = Modifier.fillMaxSize()
         )
