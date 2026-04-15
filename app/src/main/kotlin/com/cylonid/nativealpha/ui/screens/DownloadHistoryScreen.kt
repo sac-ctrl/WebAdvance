@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -33,6 +34,7 @@ import com.cylonid.nativealpha.manager.DownloadItem
 import com.cylonid.nativealpha.ui.theme.*
 import com.cylonid.nativealpha.util.StorageUtil
 import com.cylonid.nativealpha.viewmodel.DownloadViewModel
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -48,6 +50,8 @@ fun DownloadHistoryScreen(
     val sortBy by viewModel.sortBy.collectAsState()
     val filterBy by viewModel.filterBy.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val currentFolderPath by viewModel.currentFolderPath.collectAsState()
+    val rootFolderPath by viewModel.rootFolderPath.collectAsState()
 
     LaunchedEffect(webAppId) {
         viewModel.loadDownloads(webAppId)
@@ -96,6 +100,33 @@ fun DownloadHistoryScreen(
                     Column {
                         Text("$webAppDisplayName Files", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         Text("$totalFileCount items · ${StorageUtil.formatFileSize(totalSize)}", color = TextMuted, fontSize = 12.sp)
+                        Spacer(Modifier.height(8.dp))
+                        if (currentFolderPath != null) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                if (currentFolderPath != rootFolderPath) {
+                                    IconButton(
+                                        onClick = { viewModel.navigateUp() },
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = CyanPrimary)
+                                    }
+                                }
+                                Text(
+                                    text = if (currentFolderPath == rootFolderPath) {
+                                        "Current folder: $webAppDisplayName"
+                                    } else {
+                                        File(currentFolderPath ?: "").name.ifBlank { currentFolderPath ?: "Downloads" }
+                                    },
+                                    color = TextSecondary,
+                                    fontSize = 12.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
                     }
                 }
                 Spacer(Modifier.height(16.dp))
@@ -236,9 +267,6 @@ fun DownloadHistoryScreen(
             }
         }
 
-        // Debug text
-        Text("Files: ${fileItems.size}", color = Color.White, fontSize = 16.sp, modifier = Modifier.padding(16.dp))
-
         if (isLoading) {
             Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = CyanPrimary)
@@ -269,7 +297,9 @@ fun DownloadHistoryScreen(
                 items(fileItems, key = { it.path }) { item ->
                     FileSystemItemCard(
                         item = item,
-                        onOpen = { viewModel.openFile(item) },
+                        onOpen = {
+                            if (item.isDirectory) viewModel.openFolder(item) else viewModel.openFile(item)
+                        },
                         onDelete = { viewModel.deleteFile(item) }
                     )
                 }
@@ -425,8 +455,9 @@ fun FileSystemItemCard(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(Color.Red) // TEMP DEBUG
-            .border(1.dp, Color.White, RoundedCornerShape(16.dp)) // TEMP DEBUG
+            .background(CardSurface)
+            .border(1.dp, CardBorder, RoundedCornerShape(16.dp))
+            .clickable(onClick = onOpen)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -439,20 +470,20 @@ fun FileSystemItemCard(
                     modifier = Modifier
                         .size(44.dp)
                         .background(
-                            Color.Blue, // TEMP DEBUG
+                            Brush.radialGradient(listOf(GradCyanStart.copy(0.35f), Color.Transparent)),
                             RoundedCornerShape(12.dp)
                         )
-                        .border(1.dp, Color.White, RoundedCornerShape(12.dp)), // TEMP DEBUG
+                        .border(1.dp, GradCyanStart.copy(0.4f), RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(item.icon, fontSize = 24.sp, color = Color.White) // TEMP DEBUG
+                    Text(item.icon, fontSize = 24.sp)
                 }
 
                 // Name and size
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         item.name,
-                        color = Color.White, // TEMP DEBUG
+                        color = TextPrimary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 1,
@@ -465,17 +496,17 @@ fun FileSystemItemCard(
                     ) {
                         Text(
                             if (item.isDirectory) "Folder" else StorageUtil.formatFileSize(item.size),
-                            color = Color.White, // TEMP DEBUG
+                            color = TextMuted,
                             fontSize = 12.sp
                         )
                         Text(
                             "•",
-                            color = Color.White, // TEMP DEBUG
+                            color = TextMuted,
                             fontSize = 10.sp
                         )
                         Text(
                             formatTimestamp(item.lastModified),
-                            color = Color.White, // TEMP DEBUG
+                            color = TextMuted,
                             fontSize = 11.sp,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis

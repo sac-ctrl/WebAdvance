@@ -55,6 +55,12 @@ class DownloadViewModel @Inject constructor(
     private val _fileSystemItems = MutableStateFlow<List<FileSystemItem>>(emptyList())
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _currentFolderPath = MutableStateFlow<String?>(null)
+    val currentFolderPath: StateFlow<String?> = _currentFolderPath
+
+    private val _rootFolderPath = MutableStateFlow<String?>(null)
+    val rootFolderPath: StateFlow<String?> = _rootFolderPath
     
     private var currentAppId: Long? = null
     private var currentAppName: String? = null
@@ -108,36 +114,61 @@ class DownloadViewModel @Inject constructor(
             currentAppId = webAppId
             val webApp = webAppRepository.getWebAppById(webAppId).firstOrNull()
             currentAppName = webApp?.name ?: "Unknown"
-            
+
+            currentAppName?.let { appName ->
+                val rootDir = StorageUtil.getAppDownloadsDir(appName)
+                _rootFolderPath.value = rootDir.absolutePath
+                _currentFolderPath.value = rootDir.absolutePath
+            }
+
             // Scan the file system folder
-            scanAppDownloadsFolder()
+            scanAppDownloadsFolder(_currentFolderPath.value)
             _isLoading.value = false
         }
     }
 
-    private fun scanAppDownloadsFolder() {
-        currentAppName?.let { appName ->
+    fun navigateToFolder(folderPath: String) {
+        viewModelScope.launch {
+            _currentFolderPath.value = folderPath
+            scanAppDownloadsFolder(folderPath)
+        }
+    }
+
+    fun navigateUp() {
+        val currentPath = _currentFolderPath.value
+        val rootPath = _rootFolderPath.value
+        if (currentPath == null || rootPath == null || currentPath == rootPath) return
+
+        val parentFile = File(currentPath).parentFile
+        if (parentFile != null && parentFile.exists() && parentFile.absolutePath.startsWith(rootPath)) {
+            _currentFolderPath.value = parentFile.absolutePath
+            scanAppDownloadsFolder(parentFile.absolutePath)
+        }
+    }
+
+    private fun scanAppDownloadsFolder(folderPath: String?) {
+        currentAppName?.let { _ ->
             val storageItems = mutableListOf<FileSystemItem>()
-            
-            // Scan main downloads folder
-            val mainDir = StorageUtil.getAppDownloadsDir(appName)
-            if (mainDir.exists()) {
-                mainDir.listFiles()?.forEach { file ->
-                    val mimeType = if (file.isDirectory) null else getMimeType(file.name)
-                    storageItems.add(
-                        FileSystemItem(
-                            name = file.name,
-                            path = file.absolutePath,
-                            isDirectory = file.isDirectory,
-                            size = if (file.isDirectory) calculateDirSize(file) else file.length(),
-                            lastModified = file.lastModified(),
-                            mimeType = mimeType,
-                            icon = getIconForMimeType(mimeType, file.isDirectory)
+            if (folderPath != null) {
+                val folder = File(folderPath)
+                if (folder.exists() && folder.isDirectory) {
+                    folder.listFiles()?.forEach { file ->
+                        val mimeType = if (file.isDirectory) null else getMimeType(file.name)
+                        storageItems.add(
+                            FileSystemItem(
+                                name = file.name,
+                                path = file.absolutePath,
+                                isDirectory = file.isDirectory,
+                                size = if (file.isDirectory) calculateDirSize(file) else file.length(),
+                                lastModified = file.lastModified(),
+                                mimeType = mimeType,
+                                icon = getIconForMimeType(mimeType, file.isDirectory)
+                            )
                         )
-                    )
+                    }
                 }
             }
-            
+
             _fileSystemItems.value = storageItems
         }
     }
@@ -197,6 +228,15 @@ class DownloadViewModel @Inject constructor(
                 fileViewerManager.openFile(File(item.path))
             }
         }
+    }
+
+    fun openFolder(item: FileSystemItem) {
+        if (!item.isDirectory) return
+        navigateToFolder(item.path)
+    }
+
+    fun reloadFiles() {
+        scanAppDownloadsFolder(_currentFolderPath.value)
     }
 
     fun shareFile(item: FileSystemItem) {
