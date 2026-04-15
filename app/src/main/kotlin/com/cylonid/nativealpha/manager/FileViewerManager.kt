@@ -70,6 +70,7 @@ class FileViewerManager @Inject constructor(
             mimeType?.startsWith("audio/") == true -> true
             mimeType == "application/pdf" -> true
             mimeType?.startsWith("text/") == true -> true
+            mimeType == "multipart/related" -> true
             else -> false
         }
     }
@@ -117,14 +118,33 @@ class FileViewerManager @Inject constructor(
             "png" -> "image/png"
             "gif" -> "image/gif"
             "webp" -> "image/webp"
+            "svg" -> "image/svg+xml"
+            "bmp" -> "image/bmp"
+            "tiff", "tif" -> "image/tiff"
             "mp4" -> "video/mp4"
+            "webm" -> "video/webm"
+            "mkv" -> "video/x-matroska"
             "avi" -> "video/avi"
+            "mov" -> "video/quicktime"
+            "flv" -> "video/x-flv"
             "mp3" -> "audio/mpeg"
             "wav" -> "audio/wav"
+            "ogg", "oga" -> "audio/ogg"
+            "aac" -> "audio/aac"
+            "flac" -> "audio/flac"
+            "m4a" -> "audio/mp4"
             "pdf" -> "application/pdf"
             "txt" -> "text/plain"
-            "html" -> "text/html"
+            "html", "htm" -> "text/html"
+            "mhtml" -> "multipart/related"
+            "json" -> "application/json"
+            "xml" -> "application/xml"
+            "csv" -> "text/csv"
+            "md" -> "text/markdown"
             "zip" -> "application/zip"
+            "rar" -> "application/x-rar-compressed"
+            "7z" -> "application/x-7z-compressed"
+            "tar" -> "application/x-tar"
             "apk" -> "application/vnd.android.package-archive"
             else -> null
         }

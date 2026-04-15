@@ -300,6 +300,8 @@ fun DownloadHistoryScreen(
                         onOpen = {
                             if (item.isDirectory) viewModel.openFolder(item) else viewModel.openFile(item)
                         },
+                        onShare = { viewModel.shareFile(item) },
+                        onDuplicate = { viewModel.duplicateFile(item) },
                         onDelete = { viewModel.deleteFile(item) }
                     )
                 }
@@ -449,6 +451,8 @@ fun DownloadItemCard(
 fun FileSystemItemCard(
     item: com.cylonid.nativealpha.viewmodel.DownloadViewModel.FileSystemItem,
     onOpen: () -> Unit,
+    onShare: () -> Unit,
+    onDuplicate: () -> Unit,
     onDelete: () -> Unit
 ) {
     Box(
@@ -521,13 +525,24 @@ fun FileSystemItemCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        onClick = onOpen,
+                        onClick = onShare,
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
-                            Icons.Default.OpenInNew,
-                            contentDescription = "Open",
+                            Icons.Default.Share,
+                            contentDescription = "Share",
                             tint = CyanPrimary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                    IconButton(
+                        onClick = onDuplicate,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.FileCopy,
+                            contentDescription = "Duplicate",
+                            tint = TextSecondary,
                             modifier = Modifier.size(18.dp)
                         )
                     }

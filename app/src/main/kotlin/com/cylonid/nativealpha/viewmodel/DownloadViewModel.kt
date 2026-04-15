@@ -242,7 +242,7 @@ class DownloadViewModel @Inject constructor(
     fun shareFile(item: FileSystemItem) {
         viewModelScope.launch {
             if (!item.isDirectory) {
-                // TODO: Implement share functionality
+                fileViewerManager.shareFile(File(item.path))
             }
         }
     }
@@ -256,7 +256,21 @@ class DownloadViewModel @Inject constructor(
                 } else {
                     file.delete()
                 }
-                scanAppDownloadsFolder()
+                scanAppDownloadsFolder(_currentFolderPath.value)
+            }
+        }
+    }
+
+    fun duplicateFile(item: FileSystemItem) {
+        viewModelScope.launch {
+            val file = File(item.path)
+            if (file.exists() && !file.isDirectory) {
+                val copyName = file.nameWithoutExtension + " (copy)" + if (file.extension.isNotBlank()) ".${file.extension}" else ""
+                val duplicateFile = File(file.parentFile, copyName)
+                if (!duplicateFile.exists()) {
+                    file.copyTo(duplicateFile)
+                    scanAppDownloadsFolder(_currentFolderPath.value)
+                }
             }
         }
     }
@@ -267,14 +281,10 @@ class DownloadViewModel @Inject constructor(
             val newFile = File(file.parent, newName)
             if (file.exists() && !newFile.exists()) {
                 file.renameTo(newFile)
-                scanAppDownloadsFolder()
+                scanAppDownloadsFolder(_currentFolderPath.value)
             }
         }
     }
 
     fun getFileSize(item: FileSystemItem): String = StorageUtil.formatFileSize(item.size)
-
-    fun reloadFiles() {
-        scanAppDownloadsFolder()
-    }
 }
