@@ -467,8 +467,16 @@ fun MainDashboardScreen(
                 onOpen = {
                     contextMenuApp = null
                     val intent = Intent(context, WebViewActivity::class.java)
-                        .apply { putExtra("webAppId", app.id) }
+                        .apply {
+                            putExtra("webAppId", app.id)
+                            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                        }
                     context.startActivity(intent)
+                },
+                isPinned = app.isPinned,
+                onPin = {
+                    contextMenuApp = null
+                    if (app.isPinned) viewModel.unpinWebApp(app) else viewModel.pinWebApp(app)
                 },
                 onFloat = {
                     contextMenuApp = null
@@ -633,7 +641,11 @@ fun AppGridCard(
             .aspectRatio(0.85f)
             .clip(RoundedCornerShape(20.dp))
             .background(CardSurface)
-            .border(1.dp, CardBorder, RoundedCornerShape(20.dp))
+            .border(
+                1.dp,
+                if (webApp.isPinned) CyanPrimary.copy(0.5f) else CardBorder,
+                RoundedCornerShape(20.dp)
+            )
             .combinedClickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -651,6 +663,24 @@ fun AppGridCard(
                     )
                 )
         )
+
+        if (webApp.isPinned) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+                    .size(20.dp)
+                    .background(CyanPrimary, androidx.compose.foundation.shape.CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Rounded.PushPin,
+                    contentDescription = "Pinned",
+                    tint = BgDeep,
+                    modifier = Modifier.size(11.dp)
+                )
+            }
+        }
 
         Column(
             modifier = Modifier
@@ -787,7 +817,11 @@ fun AppListCard(
             .scale(scale)
             .clip(RoundedCornerShape(18.dp))
             .background(CardSurface)
-            .border(1.dp, CardBorder, RoundedCornerShape(18.dp))
+            .border(
+                1.dp,
+                if (webApp.isPinned) CyanPrimary.copy(0.4f) else CardBorder,
+                RoundedCornerShape(18.dp)
+            )
             .combinedClickable(
                 interactionSource = interactionSource,
                 indication = null,
@@ -813,14 +847,26 @@ fun AppListCard(
         Spacer(Modifier.width(14.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                webApp.name,
-                color = TextPrimary,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    webApp.name,
+                    color = TextPrimary,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                if (webApp.isPinned) {
+                    Spacer(Modifier.width(4.dp))
+                    Icon(
+                        Icons.Rounded.PushPin,
+                        contentDescription = "Pinned",
+                        tint = CyanPrimary,
+                        modifier = Modifier.size(12.dp)
+                    )
+                }
+            }
             Spacer(Modifier.height(2.dp))
             Text(
                 webApp.url.replace("https://", "").replace("http://", "").replace("www.", ""),
@@ -881,7 +927,9 @@ private fun AppContextMenu(
     onClipboard: () -> Unit,
     onCredentials: () -> Unit,
     onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    isPinned: Boolean = false,
+    onPin: () -> Unit = {}
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Column(
@@ -1001,6 +1049,42 @@ private fun AppContextMenu(
             }
 
             Spacer(Modifier.height(14.dp))
+            HorizontalDivider(color = CardBorder)
+            Spacer(Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { onPin() }
+                    .padding(vertical = 12.dp, horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    if (isPinned) Icons.Rounded.PushPin else Icons.Rounded.PushPin,
+                    null,
+                    tint = if (isPinned) CyanPrimary else TextSecondary,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    if (isPinned) "Unpin App" else "Pin to Top",
+                    color = if (isPinned) CyanPrimary else TextPrimary,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                if (isPinned) {
+                    Spacer(Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .background(CyanPrimary.copy(0.15f), RoundedCornerShape(6.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text("Pinned", color = CyanPrimary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
             HorizontalDivider(color = CardBorder)
             Spacer(Modifier.height(6.dp))
 

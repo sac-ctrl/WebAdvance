@@ -7,32 +7,34 @@ import android.media.PlaybackParams
 import android.os.Build
 import android.widget.MediaController
 import android.widget.VideoView
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
-
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import android.content.Context
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -44,6 +46,7 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.exifinterface.media.ExifInterface
 import com.cylonid.nativealpha.manager.FileViewerManager
+import com.cylonid.nativealpha.ui.theme.*
 import com.github.barteksc.pdfviewer.PDFView
 import dagger.hilt.android.lifecycle.HiltViewModel
 import androidx.lifecycle.ViewModel
@@ -80,102 +83,207 @@ fun UniversalFileViewerScreen(
         viewModel.loadFile(activeFile)
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(activeFile.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    IconButton(
-                        onClick = {
-                            if (activeFileIndex > 0) {
-                                activeFileIndex -= 1
-                                activeFile = folderFiles[activeFileIndex]
-                            }
-                        },
-                        enabled = activeFileIndex > 0
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BgDeep)
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .background(BgDeep)
+            ) {
+                Column {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.SkipPrevious, contentDescription = "Previous file")
-                    }
-
-                    IconButton(
-                        onClick = {
-                            if (activeFileIndex < folderFiles.lastIndex) {
-                                activeFileIndex += 1
-                                activeFile = folderFiles[activeFileIndex]
-                            }
-                        },
-                        enabled = activeFileIndex < folderFiles.lastIndex
-                    ) {
-                        Icon(Icons.Default.SkipNext, contentDescription = "Next file")
-                    }
-
-                    IconButton(onClick = {
-                        val uri = FileProvider.getUriForFile(
-                            context,
-                            "${context.packageName}.fileprovider",
-                            activeFile
-                        )
-                        val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-                            type = mimeType ?: "*/*"
-                            putExtra(android.content.Intent.EXTRA_STREAM, uri)
-                            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        IconButton(
+                            onClick = onBackPressed,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(CardSurface, RoundedCornerShape(12.dp))
+                                .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+                        ) {
+                            Icon(Icons.Rounded.ArrowBack, null, tint = TextPrimary, modifier = Modifier.size(18.dp))
                         }
-                        context.startActivity(android.content.Intent.createChooser(intent, "Share file"))
-                    }) {
-                        Icon(Icons.Default.Share, contentDescription = "Share")
+                        Spacer(Modifier.width(8.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                activeFile.name,
+                                color = TextPrimary,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Text(
+                                "${activeFileIndex + 1} of ${folderFiles.size}  •  ${
+                                    getMimeType(activeFile.extension)?.substringAfter("/")?.uppercase() ?: activeFile.extension.uppercase()
+                                }",
+                                color = TextMuted,
+                                fontSize = 10.sp
+                            )
+                        }
+                        Spacer(Modifier.width(4.dp))
+                        IconButton(
+                            onClick = {
+                                if (activeFileIndex > 0) {
+                                    activeFileIndex -= 1
+                                    activeFile = folderFiles[activeFileIndex]
+                                }
+                            },
+                            enabled = activeFileIndex > 0,
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(
+                                    if (activeFileIndex > 0) CardSurface else CardSurface.copy(0.5f),
+                                    RoundedCornerShape(10.dp)
+                                )
+                        ) {
+                            Icon(
+                                Icons.Rounded.SkipPrevious,
+                                null,
+                                tint = if (activeFileIndex > 0) CyanPrimary else TextMuted,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                        Spacer(Modifier.width(4.dp))
+                        IconButton(
+                            onClick = {
+                                if (activeFileIndex < folderFiles.lastIndex) {
+                                    activeFileIndex += 1
+                                    activeFile = folderFiles[activeFileIndex]
+                                }
+                            },
+                            enabled = activeFileIndex < folderFiles.lastIndex,
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(
+                                    if (activeFileIndex < folderFiles.lastIndex) CardSurface else CardSurface.copy(0.5f),
+                                    RoundedCornerShape(10.dp)
+                                )
+                        ) {
+                            Icon(
+                                Icons.Rounded.SkipNext,
+                                null,
+                                tint = if (activeFileIndex < folderFiles.lastIndex) CyanPrimary else TextMuted,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                        Spacer(Modifier.width(4.dp))
+                        IconButton(
+                            onClick = {
+                                val uri = FileProvider.getUriForFile(
+                                    context, "${context.packageName}.fileprovider", activeFile
+                                )
+                                val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                    type = mimeType ?: "*/*"
+                                    putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+                                context.startActivity(android.content.Intent.createChooser(intent, "Share file"))
+                            },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(CardSurface, RoundedCornerShape(10.dp))
+                        ) {
+                            Icon(Icons.Rounded.Share, null, tint = VioletSecondary, modifier = Modifier.size(16.dp))
+                        }
+                        Spacer(Modifier.width(4.dp))
+                        IconButton(
+                            onClick = { FileViewerManager(context).openWithExternalApp(activeFile, mimeType) },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(CardSurface, RoundedCornerShape(10.dp))
+                        ) {
+                            Icon(Icons.Rounded.OpenInNew, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                        }
+                        Spacer(Modifier.width(4.dp))
+                        IconButton(
+                            onClick = {
+                                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                val clip = android.content.ClipData.newPlainText("File Path", activeFile.absolutePath)
+                                clipboard.setPrimaryClip(clip)
+                                android.widget.Toast.makeText(context, "Path copied", android.widget.Toast.LENGTH_SHORT).show()
+                            },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(CardSurface, RoundedCornerShape(10.dp))
+                        ) {
+                            Icon(Icons.Rounded.ContentCopy, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                        }
+                        Spacer(Modifier.width(4.dp))
+                        IconButton(
+                            onClick = {
+                                viewModel.duplicateFile(activeFile)?.let {
+                                    android.widget.Toast.makeText(context, "Duplicated: ${it.name}", android.widget.Toast.LENGTH_SHORT).show()
+                                } ?: android.widget.Toast.makeText(context, "Failed to duplicate", android.widget.Toast.LENGTH_SHORT).show()
+                            },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(CardSurface, RoundedCornerShape(10.dp))
+                        ) {
+                            Icon(Icons.Rounded.FileCopy, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                        }
+                        Spacer(Modifier.width(4.dp))
+                        IconButton(
+                            onClick = { darkMode = !darkMode },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(
+                                    if (darkMode) CyanPrimary.copy(0.15f) else CardSurface,
+                                    RoundedCornerShape(10.dp)
+                                )
+                                .border(
+                                    1.dp,
+                                    if (darkMode) CyanPrimary.copy(0.4f) else Color.Transparent,
+                                    RoundedCornerShape(10.dp)
+                                )
+                        ) {
+                            Icon(
+                                if (darkMode) Icons.Rounded.DarkMode else Icons.Rounded.LightMode,
+                                null,
+                                tint = if (darkMode) CyanPrimary else TextSecondary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                        Spacer(Modifier.width(4.dp))
+                        IconButton(
+                            onClick = { showInfoPanel = !showInfoPanel },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(
+                                    if (showInfoPanel) VioletSecondary.copy(0.15f) else CardSurface,
+                                    RoundedCornerShape(10.dp)
+                                )
+                                .border(
+                                    1.dp,
+                                    if (showInfoPanel) VioletSecondary.copy(0.4f) else Color.Transparent,
+                                    RoundedCornerShape(10.dp)
+                                )
+                        ) {
+                            Icon(
+                                Icons.Rounded.Info,
+                                null,
+                                tint = if (showInfoPanel) VioletSecondary else TextSecondary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
-
-                    IconButton(onClick = {
-                        FileViewerManager(context).openWithExternalApp(activeFile, mimeType)
-                    }) {
-                        Icon(Icons.Default.OpenInNew, contentDescription = "Open externally")
-                    }
-
-                    IconButton(onClick = {
-                        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                        val clip = android.content.ClipData.newPlainText("File Path", activeFile.absolutePath)
-                        clipboard.setPrimaryClip(clip)
-                        android.widget.Toast.makeText(context, "File path copied", android.widget.Toast.LENGTH_SHORT).show()
-                    }) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy path")
-                    }
-
-                    IconButton(onClick = {
-                        viewModel.duplicateFile(activeFile)?.let {
-                            android.widget.Toast.makeText(context, "Duplicated as ${it.name}", android.widget.Toast.LENGTH_SHORT).show()
-                        } ?: android.widget.Toast.makeText(context, "Failed to duplicate", android.widget.Toast.LENGTH_SHORT).show()
-                    }) {
-                        Icon(Icons.Default.FileCopy, contentDescription = "Duplicate")
-                    }
-
-                    IconButton(onClick = { darkMode = !darkMode }) {
-                        Icon(
-                            if (darkMode) Icons.Default.DarkMode else Icons.Default.LightMode,
-                            contentDescription = "Toggle theme"
-                        )
-                    }
-
-                    IconButton(onClick = { showInfoPanel = !showInfoPanel }) {
-                        Icon(
-                            imageVector = if (showInfoPanel) Icons.Default.Info else Icons.Outlined.Info,
-                            contentDescription = "Toggle info"
-                        )
-                    }
+                    HorizontalDivider(color = CardBorder)
                 }
-            )
-        }
-    ) { padding ->
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            color = if (darkMode) Color.Black else MaterialTheme.colorScheme.background
-        ) {
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(if (darkMode) Color.Black else BgDeep)
+            ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 when {
                     mimeType == "image/svg+xml" -> {
@@ -267,6 +375,7 @@ fun UniversalFileViewerScreen(
                             .padding(8.dp)
                     )
                 }
+            }
             }
         }
     }

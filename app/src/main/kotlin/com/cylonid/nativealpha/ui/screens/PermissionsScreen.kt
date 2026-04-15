@@ -167,11 +167,22 @@ fun PermissionsScreen(
                                 onClick = {
                                     activity?.let { act ->
                                         when (permission) {
-                                            PermissionsManager.Permission.SYSTEM_ALERT_WINDOW,
+                                            PermissionsManager.Permission.SYSTEM_ALERT_WINDOW -> {
+                                                val intent = Intent(
+                                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                                    Uri.fromParts("package", context.packageName, null)
+                                                )
+                                                context.startActivity(intent)
+                                            }
                                             PermissionsManager.Permission.MANAGE_STORAGE -> {
-                                                // These permissions require opening settings
-                                                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
-                                                    data = Uri.fromParts("package", context.packageName, null)
+                                                val intent = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                                                    Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                                                        data = Uri.fromParts("package", context.packageName, null)
+                                                    }
+                                                } else {
+                                                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                                        data = Uri.fromParts("package", context.packageName, null)
+                                                    }
                                                 }
                                                 context.startActivity(intent)
                                             }

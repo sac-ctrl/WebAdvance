@@ -37,12 +37,14 @@ class BackupService @Inject constructor(
     suspend fun createBackup(): String? = withContext(Dispatchers.IO) {
         try {
             val timestamp = System.currentTimeMillis()
-            val backupFile = File(backupDir, "backup_$timestamp.json")
+            val backupFile = File(backupDir, "waos_backup_$timestamp.waos")
 
             val webApps = webAppRepository.getAllWebApps().first()
             val settings = mapOf(
-                "version" to 1,
-                "timestamp" to timestamp
+                "version" to 2,
+                "timestamp" to timestamp,
+                "format" to "waos",
+                "appName" to "WAOS - Web App Operating System"
             )
 
             val backupData = mapOf(
