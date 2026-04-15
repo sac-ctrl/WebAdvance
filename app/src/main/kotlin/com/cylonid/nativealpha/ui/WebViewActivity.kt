@@ -493,12 +493,9 @@ fun WebViewScreen(
                                     document.head.appendChild(meta);
                                 }
                                 meta.content = 'width=device-width, initial-scale=0.5, maximum-scale=3.0, user-scalable=yes';
-                                document.body.style.transform = 'scale(0.8)';
-                                document.body.style.transformOrigin = 'top left';
-                                document.body.style.width = '125%';
-                                // Force desktop layout
+                                // Force desktop layout without breaking the page
                                 var style = document.createElement('style');
-                                style.textContent = 'body { min-width: 100vw !important; }';
+                                style.textContent = 'body { min-width: 100vw !important; overflow-x: auto; } @media (max-width: 768px) { body { font-size: 14px; } }';
                                 document.head.appendChild(style);
                             })()
                         """.trimIndent(), null)
@@ -537,7 +534,35 @@ fun WebViewScreen(
                     }
                     if (webViewState.shouldZoomIn) { webView.zoomIn(); viewModel.clearActionFlags() }
                     if (webViewState.shouldZoomOut) { webView.zoomOut(); viewModel.clearActionFlags() }
-                    if (webViewState.shouldTakeScreenshot) { viewModel.clearActionFlags() }
+                    if (webViewState.shouldTakeScreenshot) {
+                        val bitmap = Bitmap.createBitmap(webView.width, webView.height, Bitmap.Config.ARGB_8888)
+                        val canvas = Canvas(bitmap)
+                        webView.draw(canvas)
+                        viewModel.saveScreenshot(bitmap, context)
+                        viewModel.clearActionFlags()
+                    }
+                    if (webViewState.shouldShowPageSource) {
+                        webView.loadUrl("view-source:" + webView.url)
+                        viewModel.clearActionFlags()
+                    }
+                    if (webViewState.shouldSavePage) {
+                        val filename = "page_${System.currentTimeMillis()}.mht"
+                        webView.saveWebArchive(filename)
+                        viewModel.clearActionFlags()
+                    }
+                    // Reader mode, translate, adblock would need additional implementation
+                    if (webViewState.shouldToggleReaderMode) {
+                        // Placeholder for reader mode toggle
+                        viewModel.clearActionFlags()
+                    }
+                    if (webViewState.shouldTranslate) {
+                        // Placeholder for translate
+                        viewModel.clearActionFlags()
+                    }
+                    if (webViewState.shouldToggleAdblock) {
+                        // Placeholder for adblock toggle
+                        viewModel.clearActionFlags()
+                    }
                 },
                 modifier = Modifier.fillMaxSize()
             )
@@ -638,7 +663,14 @@ fun WebViewScreen(
             onDownloads = { viewModel.openDownloadHistory() },
             onScreenshot = { viewModel.takeScreenshot() },
             onZoomIn = { viewModel.zoomIn() },
-            onZoomOut = { viewModel.zoomOut() }
+            onZoomOut = { viewModel.zoomOut() },
+            onPrint = { viewModel.printPage() },
+            onHistory = { /* TODO: Implement history */ },
+            onPageSource = { viewModel.showPageSource() },
+            onSavePage = { viewModel.savePage() },
+            onReaderMode = { viewModel.toggleReaderMode() },
+            onTranslate = { viewModel.translate() },
+            onAdBlockSettings = { viewModel.toggleAdblock() }
         )
     }
 }
@@ -740,7 +772,14 @@ private fun WaosBottomBar(
     onDownloads: () -> Unit,
     onScreenshot: () -> Unit,
     onZoomIn: () -> Unit,
-    onZoomOut: () -> Unit
+    onZoomOut: () -> Unit,
+    onPrint: () -> Unit,
+    onHistory: () -> Unit,
+    onPageSource: () -> Unit,
+    onSavePage: () -> Unit,
+    onReaderMode: () -> Unit,
+    onTranslate: () -> Unit,
+    onAdBlockSettings: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -828,6 +867,48 @@ private fun WaosBottomBar(
             WaosToolbarBtn(onClick = onMoreMenuToggle) {
                 Icon(Icons.Default.MoreVert, null, modifier = Modifier.size(18.dp))
             }
+        }
+
+        DropdownMenu(
+            expanded = showMoreMenu,
+            onDismissRequest = { showMoreMenu = false },
+            modifier = Modifier.background(CardSurface)
+        ) {
+            DropdownMenuItem(
+                text = { Text("Print Page", color = TextPrimary) },
+                onClick = { onPrint(); showMoreMenu = false },
+                leadingIcon = { Icon(Icons.Default.Print, null, tint = TextSecondary) }
+            )
+            DropdownMenuItem(
+                text = { Text("Page History", color = TextPrimary) },
+                onClick = { onHistory(); showMoreMenu = false },
+                leadingIcon = { Icon(Icons.Default.History, null, tint = TextSecondary) }
+            )
+            DropdownMenuItem(
+                text = { Text("Page Source", color = TextPrimary) },
+                onClick = { onPageSource(); showMoreMenu = false },
+                leadingIcon = { Icon(Icons.Default.Code, null, tint = TextSecondary) }
+            )
+            DropdownMenuItem(
+                text = { Text("Save Page", color = TextPrimary) },
+                onClick = { onSavePage(); showMoreMenu = false },
+                leadingIcon = { Icon(Icons.Default.Save, null, tint = TextSecondary) }
+            )
+            DropdownMenuItem(
+                text = { Text("Reader Mode", color = TextPrimary) },
+                onClick = { onReaderMode(); showMoreMenu = false },
+                leadingIcon = { Icon(Icons.Default.Article, null, tint = TextSecondary) }
+            )
+            DropdownMenuItem(
+                text = { Text("Translate", color = TextPrimary) },
+                onClick = { onTranslate(); showMoreMenu = false },
+                leadingIcon = { Icon(Icons.Default.Translate, null, tint = TextSecondary) }
+            )
+            DropdownMenuItem(
+                text = { Text("AdBlock Settings", color = TextPrimary) },
+                onClick = { onAdBlockSettings(); showMoreMenu = false },
+                leadingIcon = { Icon(Icons.Default.Block, null, tint = TextSecondary) }
+            )
         }
     }
 }

@@ -312,8 +312,29 @@ class WebViewViewModel @Inject constructor(
         _webViewState.value = _webViewState.value.copy(shouldDownloadUrl = null)
     }
 
-    fun takeScreenshot() {
-        _webViewState.value = _webViewState.value.copy(shouldTakeScreenshot = true)
+    fun saveScreenshot(bitmap: Bitmap, context: Context) {
+        val filename = "screenshot_${System.currentTimeMillis()}.png"
+        downloadManager.saveScreenshot(filename, bitmap)
+    }
+
+    fun showPageSource() {
+        _webViewState.value = _webViewState.value.copy(shouldShowPageSource = true)
+    }
+
+    fun savePage() {
+        _webViewState.value = _webViewState.value.copy(shouldSavePage = true)
+    }
+
+    fun toggleReaderMode() {
+        _webViewState.value = _webViewState.value.copy(shouldToggleReaderMode = true)
+    }
+
+    fun translate() {
+        _webViewState.value = _webViewState.value.copy(shouldTranslate = true)
+    }
+
+    fun toggleAdblock() {
+        _webViewState.value = _webViewState.value.copy(shouldToggleAdblock = true)
     }
 
     fun updateNavigationState(canGoBack: Boolean, canGoForward: Boolean) {
@@ -340,7 +361,12 @@ class WebViewViewModel @Inject constructor(
             shouldOpenClipboardManager = false,
             shouldOpenDownloadHistory = false,
             shouldTakeScreenshot = false,
-            shouldDownloadUrl = null
+            shouldDownloadUrl = null,
+            shouldShowPageSource = false,
+            shouldSavePage = false,
+            shouldToggleReaderMode = false,
+            shouldTranslate = false,
+            shouldToggleAdblock = false
         )
     }
 
@@ -438,7 +464,12 @@ data class WebViewState(
     val shouldOpenClipboardManager: Boolean = false,
     val shouldOpenDownloadHistory: Boolean = false,
     val shouldTakeScreenshot: Boolean = false,
-    val shouldDownloadUrl: String? = null
+    val shouldDownloadUrl: String? = null,
+    val shouldShowPageSource: Boolean = false,
+    val shouldSavePage: Boolean = false,
+    val shouldToggleReaderMode: Boolean = false,
+    val shouldTranslate: Boolean = false,
+    val shouldToggleAdblock: Boolean = false
 )
 
 data class ConsoleMessageData(
