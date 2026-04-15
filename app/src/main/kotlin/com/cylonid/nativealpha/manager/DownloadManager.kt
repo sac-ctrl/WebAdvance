@@ -1,6 +1,7 @@
 package com.cylonid.nativealpha.manager
 
 import android.content.Context
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Environment
 import androidx.room.Entity
@@ -137,6 +138,9 @@ class DownloadManager @Inject constructor(
             try {
                 val bytes = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT)
                 file.writeBytes(bytes)
+                
+                // Scan the file so it appears in system media/gallery
+                MediaScannerConnection.scanFile(context, arrayOf(file.absolutePath), arrayOf(mimeType), null)
                 
                 // Save to database
                 val item = DownloadItem(
@@ -297,6 +301,9 @@ class DownloadManager @Inject constructor(
                 val stream = java.io.FileOutputStream(file)
                 bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
                 stream.close()
+
+                // Scan the screenshot so it appears in gallery
+                MediaScannerConnection.scanFile(context, arrayOf(file.absolutePath), arrayOf("image/png"), null)
 
                 // Optionally save to database as download
                 val item = DownloadItem(
