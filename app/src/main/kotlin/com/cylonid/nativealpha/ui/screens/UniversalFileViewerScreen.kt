@@ -17,6 +17,8 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -158,7 +160,7 @@ fun UniversalFileViewerScreen(
 
                     IconButton(onClick = { showInfoPanel = !showInfoPanel }) {
                         Icon(
-                            imageVector = if (showInfoPanel) Icons.Default.Info else Icons.Default.InfoOutline,
+                            imageVector = if (showInfoPanel) Icons.Default.Info else Icons.Outlined.Info,
                             contentDescription = "Toggle info"
                         )
                     }
@@ -382,23 +384,25 @@ private fun getImageExifData(file: File): Map<String, String> {
 }
 
 private fun createColorMatrix(filterMode: String, brightness: Float, contrast: Float): ColorMatrix {
-    val matrix = ColorMatrix().apply {
-        set(floatArrayOf(
-            contrast, 0f, 0f, 0f, brightness * 255f,
-            0f, contrast, 0f, 0f, brightness * 255f,
-            0f, 0f, contrast, 0f, brightness * 255f,
-            0f, 0f, 0f, 1f, 0f
-        ))
-    }
+    val baseMatrix = floatArrayOf(
+        contrast, 0f, 0f, 0f, brightness * 255f,
+        0f, contrast, 0f, 0f, brightness * 255f,
+        0f, 0f, contrast, 0f, brightness * 255f,
+        0f, 0f, 0f, 1f, 0f
+    )
 
-    when (filterMode) {
-        "Grayscale" -> matrix.setToSaturation(0f)
-        "Sepia" -> matrix.set(floatArrayOf(
+    val matrix = when (filterMode) {
+        "Grayscale" -> {
+            val gray = ColorMatrix().apply { setToSaturation(0f) }
+            gray
+        }
+        "Sepia" -> ColorMatrix(floatArrayOf(
             0.393f * contrast, 0.769f * contrast, 0.189f * contrast, 0f, brightness * 255f,
             0.349f * contrast, 0.686f * contrast, 0.168f * contrast, 0f, brightness * 255f,
             0.272f * contrast, 0.534f * contrast, 0.131f * contrast, 0f, brightness * 255f,
             0f, 0f, 0f, 1f, 0f
         ))
+        else -> ColorMatrix(baseMatrix)
     }
 
     return matrix
@@ -672,7 +676,9 @@ fun VideoViewer(
                 if (isPlaying && !view.isPlaying) view.start()
                 if (!isPlaying && view.isPlaying) view.pause()
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    view.playbackParams = view.playbackParams.setSpeed(playbackSpeed)
+                    val params = android.media.PlaybackParams()
+                    params.setSpeed(playbackSpeed)
+                    view.setPlaybackParams(params)
                 }
             },
             modifier = Modifier.fillMaxSize()
@@ -1241,6 +1247,22 @@ private fun formatFileSize(bytes: Long): String {
     val sizes = arrayOf("B", "KB", "MB", "GB", "TB")
     val i = (Math.log(bytes.toDouble()) / Math.log(k)).toInt()
     return String.format("%.1f %s", bytes / Math.pow(k, i.toDouble()), sizes[i])
+}
+
+private fun formatDuration(millis: Int): String {
+    val seconds = millis / 1000
+    val minutes = seconds / 60
+    val hours = minutes / 60
+    return if (hours > 0) {
+        String.format("%d:%02d:%02d", hours, minutes % 60, seconds % 60)
+    } else {
+        String.format("%d:%02d", minutes, seconds % 60)
+    }
+}
+
+private fun formatModifiedDate(timestamp: Long): String {
+    val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault())
+    return sdf.format(java.util.Date(timestamp))
 }
 
 private fun getArchiveContents(file: File): List<String> {
