@@ -10,7 +10,14 @@ import android.os.Build
 import android.os.Bundle
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.webkit.ConsoleMessage
 import android.webkit.JavascriptInterface
+import android.webkit.PermissionRequest
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -193,7 +200,7 @@ fun WebViewScreen(
     var showFindBar by remember { mutableStateOf(false) }
     var findQuery by remember { mutableStateOf("") }
     var findResultCount by remember { mutableStateOf(0) }
-    val webViewRef = remember { mutableStateOf<WebView?>(null) }
+    val webViewRef = remember { mutableStateOf<android.webkit.WebView?>(null) }
     val webAppRef = remember { mutableStateOf<WebApp?>(null) }
     var initialUrlLoaded by remember { mutableStateOf(false) }
     var showMoreMenu by remember { mutableStateOf(false) }
@@ -435,42 +442,42 @@ fun WebViewScreen(
         Box(modifier = Modifier.weight(1f)) {
             AndroidView(
                 factory = { ctx ->
-                    WebView(ctx).apply {
-                        webViewRef.value = this
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                        )
-                        settings.apply {
-                            javaScriptEnabled = true
-                            domStorageEnabled = true
-                            databaseEnabled = true
-                            allowFileAccess = true
-                            allowContentAccess = true
-                            mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-                            builtInZoomControls = true
-                            displayZoomControls = false
-                            setSupportZoom(true)
-                            loadWithOverviewMode = true
-                            useWideViewPort = true
-                            mediaPlaybackRequiresUserGesture = false
-                        }
-                        webViewClient = WebViewClientWithDownload(
-                            context = ctx,
-                            onPageStarted = { url -> viewModel.onPageStarted(url) },
-                            onPageFinished = { url ->
-                                viewModel.onPageFinished(url)
-                                webAppRef.value?.let { app ->
-                                    if (app.isDarkModeEnabled) injectDarkMode(this)
-                                }
-                                // Inject auto scroll functionality
-                                webViewRef.value?.evaluateJavascript("""
-                                    javascript:(function() {
-                                        window.waosAutoScroll = {
-                                            interval: null,
-                                            start: function(speed) {
-                                                this.stop();
-                                                this.interval = setInterval(function() {
+                    val webView = WebView(ctx)
+                    webViewRef.value = webView
+                    webView.layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    webView.settings.apply {
+                        javaScriptEnabled = true
+                        domStorageEnabled = true
+                        databaseEnabled = true
+                        allowFileAccess = true
+                        allowContentAccess = true
+                        mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                        builtInZoomControls = true
+                        displayZoomControls = false
+                        setSupportZoom(true)
+                        loadWithOverviewMode = true
+                        useWideViewPort = true
+                        mediaPlaybackRequiresUserGesture = false
+                    }
+                    webView.webViewClient = WebViewClientWithDownload(
+                        context = ctx,
+                        onPageStarted = { url -> viewModel.onPageStarted(url) },
+                        onPageFinished = { url ->
+                            viewModel.onPageFinished(url)
+                            webAppRef.value?.let { app ->
+                                if (app.isDarkModeEnabled) injectDarkMode(webView)
+                            }
+                            // Inject auto scroll functionality
+                            webViewRef.value?.evaluateJavascript("""
+                                javascript:(function() {
+                                    window.waosAutoScroll = {
+                                        interval: null,
+                                        start: function(speed) {
+                                            this.stop();
+                                            this.interval = setInterval(function() {
                                                     window.scrollBy(0, speed);
                                                 }, 50);
                                             },
@@ -537,10 +544,10 @@ fun WebViewScreen(
                                 }
                             }
                         )
-                        setDownloadListener { url, _, _, _, _ ->
-                            viewModel.handleDownload(url, webAppRef.value)
-                        }
-                        webChromeClient = object : WebChromeClient() {
+                    webView.setDownloadListener { url, _, _, _, _ ->
+                        viewModel.handleDownload(url, webAppRef.value)
+                    }
+                    webView.webChromeClient = object : WebChromeClient() {
                             override fun onConsoleMessage(msg: ConsoleMessage?): Boolean {
                                 msg?.let {
                                     viewModel.addConsoleMessage(
@@ -575,17 +582,17 @@ fun WebViewScreen(
                                 else request?.deny()
                             }
                         }
-                        addJavascriptInterface(object {
-                            @JavascriptInterface
-                            fun downloadBlob(filename: String, base64Data: String) {
-                                viewModel.handleBlobDownload(filename, base64Data, webAppRef.value)
-                            }
-                            @JavascriptInterface
-                            fun imageLongPress(imageUrl: String) {
-                                viewModel.handleImageLongPress(imageUrl, webAppRef.value)
-                            }
-                        }, "waosDownloadBlob")
-                    }.also { webViewRef.value = it }
+                    webView.addJavascriptInterface(object {
+                        @JavascriptInterface
+                        fun downloadBlob(filename: String, base64Data: String) {
+                            viewModel.handleBlobDownload(filename, base64Data, webAppRef.value)
+                        }
+                        @JavascriptInterface
+                        fun imageLongPress(imageUrl: String) {
+                            viewModel.handleImageLongPress(imageUrl, webAppRef.value)
+                        }
+                    }, "waosDownloadBlob")
+                    webView
                 },
                 update = { webView ->
                     webAppRef.value = webApp
