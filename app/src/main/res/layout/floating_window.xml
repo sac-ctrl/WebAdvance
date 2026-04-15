@@ -59,6 +59,16 @@
                 android:tint="@color/floating_window_icon_tint"
                 android:src="@drawable/ic_baseline_close_24" />
 
+            <ImageButton
+                android:id="@+id/toolbarOverflowButton"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="4dp"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Toolbar menu"
+                android:tint="@color/floating_window_icon_tint"
+                android:src="@android:drawable/arrow_down_float" />
+
         </LinearLayout>
 
         <!-- WebView Container -->
