@@ -147,7 +147,8 @@ fun ClipboardManagerScreen(
                         cursorColor = VioletSecondary,
                         focusedTextColor = TextPrimary,
                         unfocusedTextColor = TextPrimary,
-                        containerColor = CardSurface
+                        focusedContainerColor = CardSurface,
+                        unfocusedContainerColor = CardSurface
                     ),
                     textStyle = androidx.compose.ui.text.TextStyle(color = TextPrimary, fontSize = 14.sp)
                 )
@@ -407,7 +408,8 @@ private fun ClipboardEditDialog(
                     focusedTextColor = TextPrimary,
                     unfocusedTextColor = TextPrimary,
                     cursorColor = VioletSecondary,
-                    containerColor = BgDark
+                    focusedContainerColor = BgDark,
+                    unfocusedContainerColor = BgDark
                 ),
                 textStyle = androidx.compose.ui.text.TextStyle(color = TextPrimary, fontSize = 13.sp)
             )

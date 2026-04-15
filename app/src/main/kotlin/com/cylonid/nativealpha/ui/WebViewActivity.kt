@@ -88,6 +88,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -282,7 +283,7 @@ fun WebViewScreen(
                         isError = pinError,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
                         singleLine = true,
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                        colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = VioletSecondary,
                             unfocusedBorderColor = CardBorder,
                             cursorColor = VioletSecondary,
@@ -848,7 +849,7 @@ private fun WaosFindBar(
             singleLine = true,
             textStyle = androidx.compose.ui.text.TextStyle(color = TextPrimary, fontSize = 14.sp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
+            colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = CyanPrimary,
                 unfocusedBorderColor = CardBorder,
                 cursorColor = CyanPrimary,

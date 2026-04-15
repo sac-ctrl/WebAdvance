@@ -116,7 +116,8 @@ fun DownloadHistoryScreen(
                         cursorColor = CyanPrimary,
                         focusedTextColor = TextPrimary,
                         unfocusedTextColor = TextPrimary,
-                        containerColor = CardSurface
+                        focusedContainerColor = CardSurface,
+                        unfocusedContainerColor = CardSurface
                     ),
                     textStyle = androidx.compose.ui.text.TextStyle(color = TextPrimary, fontSize = 14.sp)
                 )

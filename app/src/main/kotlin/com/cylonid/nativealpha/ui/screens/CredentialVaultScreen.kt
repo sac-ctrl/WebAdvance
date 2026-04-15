@@ -163,7 +163,8 @@ fun CredentialVaultScreen(
                             cursorColor = GradGreenEnd,
                             focusedTextColor = TextPrimary,
                             unfocusedTextColor = TextPrimary,
-                            containerColor = CardSurface
+                            focusedContainerColor = CardSurface,
+                            unfocusedContainerColor = CardSurface
                         ),
                         textStyle = androidx.compose.ui.text.TextStyle(color = TextPrimary, fontSize = 14.sp)
                     )
@@ -675,7 +676,8 @@ private fun VaultInputField(
             cursorColor = GradGreenEnd,
             focusedTextColor = TextPrimary,
             unfocusedTextColor = TextPrimary,
-            containerColor = BgDark,
+            focusedContainerColor = BgDark,
+            unfocusedContainerColor = BgDark,
             focusedLabelColor = GradGreenEnd
         ),
         textStyle = androidx.compose.ui.text.TextStyle(color = TextPrimary, fontSize = 14.sp)
