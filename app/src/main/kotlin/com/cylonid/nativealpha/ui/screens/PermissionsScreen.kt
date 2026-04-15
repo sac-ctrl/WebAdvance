@@ -120,99 +120,138 @@ fun PermissionsScreen(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(100.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardSurface),
+                        .then(
+                            if (isGranted) 
+                                Modifier.border(1.dp, Color(0xFF4CAF50).copy(0.3f), RoundedCornerShape(12.dp))
+                            else 
+                                Modifier
+                        ),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isGranted) Color(0xFF4CAF50).copy(0.05f) else CardSurface
+                    ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                            .fillMaxWidth()
+                            .padding(16.dp)
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    if (isGranted) Icons.Default.CheckCircle else Icons.Default.Cancel,
-                                    contentDescription = null,
-                                    tint = if (isGranted) Color(0xFF4CAF50) else Color(0xFFf44336),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(Modifier.width(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.Top,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(28.dp)
+                                            .background(
+                                                if (isGranted) Color(0xFF4CAF50).copy(0.15f) else Color(0xFFf44336).copy(0.15f),
+                                                RoundedCornerShape(8.dp)
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            if (isGranted) Icons.Default.CheckCircle else Icons.Default.Cancel,
+                                            contentDescription = null,
+                                            tint = if (isGranted) Color(0xFF4CAF50) else Color(0xFFf44336),
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                    Spacer(Modifier.width(12.dp))
+                                    Column {
+                                        Text(
+                                            permission.id.replace("_", " ").uppercase(),
+                                            color = TextPrimary,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            letterSpacing = 0.5.sp
+                                        )
+                                        Spacer(Modifier.height(2.dp))
+                                        Text(
+                                            if (isGranted) "✓ Granted" else "Not Granted",
+                                            color = if (isGranted) Color(0xFF4CAF50) else Color(0xFFf44336),
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    }
+                                }
+                                Spacer(Modifier.height(8.dp))
                                 Text(
-                                    permission.id.replace("_", " "),
-                                    color = TextPrimary,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.SemiBold
+                                    permission.description,
+                                    color = TextMuted,
+                                    fontSize = 11.sp,
+                                    lineHeight = 14.sp
                                 )
                             }
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                permission.description,
-                                color = TextMuted,
-                                fontSize = 12.sp
-                            )
-                            Spacer(Modifier.height(6.dp))
-                            Text(
-                                if (isGranted) "✓ Granted" else "✗ Not Granted",
-                                color = if (isGranted) Color(0xFF4CAF50) else Color(0xFFf44336),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-                        
-                        if (!isGranted) {
-                            Button(
-                                onClick = {
-                                    activity?.let { act ->
-                                        when (permission) {
-                                            PermissionsManager.Permission.SYSTEM_ALERT_WINDOW -> {
-                                                val intent = Intent(
-                                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                                                    Uri.fromParts("package", context.packageName, null)
-                                                )
-                                                context.startActivity(intent)
-                                            }
-                                            PermissionsManager.Permission.MANAGE_STORAGE -> {
-                                                val intent = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                                                    Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
-                                                        data = Uri.fromParts("package", context.packageName, null)
-                                                    }
-                                                } else {
-                                                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                                        data = Uri.fromParts("package", context.packageName, null)
+                            
+                            if (!isGranted) {
+                                Button(
+                                    onClick = {
+                                        activity?.let { act ->
+                                            when (permission) {
+                                                PermissionsManager.Permission.SYSTEM_ALERT_WINDOW -> {
+                                                    try {
+                                                        val intent = Intent(
+                                                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                                            Uri.fromParts("package", context.packageName, null)
+                                                        )
+                                                        context.startActivity(intent)
+                                                        android.widget.Toast.makeText(context, "Enable overlay permission in settings", android.widget.Toast.LENGTH_SHORT).show()
+                                                    } catch (e: Exception) {
+                                                        android.widget.Toast.makeText(context, "Could not open settings", android.widget.Toast.LENGTH_SHORT).show()
                                                     }
                                                 }
-                                                context.startActivity(intent)
-                                            }
-                                            else -> {
-                                                PermissionsManager.requestPermission(act, permission, 1001)
+                                                PermissionsManager.Permission.MANAGE_STORAGE -> {
+                                                    try {
+                                                        val intent = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                                                            Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                                                                data = Uri.fromParts("package", context.packageName, null)
+                                                            }
+                                                        } else {
+                                                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                                                data = Uri.fromParts("package", context.packageName, null)
+                                                            }
+                                                        }
+                                                        context.startActivity(intent)
+                                                        android.widget.Toast.makeText(context, "Enable storage permissions in settings", android.widget.Toast.LENGTH_SHORT).show()
+                                                    } catch (e: Exception) {
+                                                        android.widget.Toast.makeText(context, "Could not open settings", android.widget.Toast.LENGTH_SHORT).show()
+                                                    }
+                                                }
+                                                else -> {
+                                                    try {
+                                                        PermissionsManager.requestPermission(act, permission, 1001)
+                                                        android.widget.Toast.makeText(context, "Permission request sent", android.widget.Toast.LENGTH_SHORT).show()
+                                                    } catch (e: Exception) {
+                                                        android.widget.Toast.makeText(context, "Could not request permission", android.widget.Toast.LENGTH_SHORT).show()
+                                                    }
+                                                }
                                             }
                                         }
-                                    }
-                                },
-                                modifier = Modifier.height(36.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = GradVioletEnd),
-                                shape = RoundedCornerShape(8.dp)
-                            ) {
-                                Text(
-                                    when (permission) {
-                                        PermissionsManager.Permission.SYSTEM_ALERT_WINDOW,
-                                        PermissionsManager.Permission.MANAGE_STORAGE -> "Open Settings"
-                                        else -> "Grant"
                                     },
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
+                                    modifier = Modifier
+                                        .height(36.dp)
+                                        .fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = GradVioletEnd
+                                    ),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Icon(Icons.Default.Lock, null, modifier = Modifier.size(14.dp))
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        when (permission) {
+                                            PermissionsManager.Permission.SYSTEM_ALERT_WINDOW,
+                                            PermissionsManager.Permission.MANAGE_STORAGE -> "Open Settings"
+                                            else -> "Request"
+                                        },
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
                             }
-                        } else {
-                            Icon(
-                                Icons.Default.Check,
-                                contentDescription = null,
-                                tint = Color(0xFF4CAF50),
-                                modifier = Modifier.size(24.dp)
-                            )
                         }
                     }
                 }

@@ -665,20 +665,34 @@ fun AppGridCard(
         )
 
         if (webApp.isPinned) {
+            val pinPulse by infiniteTransition.animateFloat(
+                1f, 1.15f,
+                infiniteRepeatable(tween(1200, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+                label = "pinPulse${webApp.id}"
+            )
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
-                    .size(20.dp)
-                    .background(CyanPrimary, androidx.compose.foundation.shape.CircleShape),
+                    .size(24.dp)
+                    .scale(pinPulse)
+                    .background(CyanPrimary.copy(0.2f), androidx.compose.foundation.shape.CircleShape)
+                    .border(1.5.dp, CyanPrimary, androidx.compose.foundation.shape.CircleShape),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Rounded.PushPin,
-                    contentDescription = "Pinned",
-                    tint = BgDeep,
-                    modifier = Modifier.size(11.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .size(18.dp)
+                        .background(CyanPrimary, androidx.compose.foundation.shape.CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Rounded.PushPin,
+                        contentDescription = "Pinned",
+                        tint = BgDeep,
+                        modifier = Modifier.size(10.dp)
+                    )
+                }
             }
         }
 
@@ -858,13 +872,21 @@ fun AppListCard(
                     modifier = Modifier.weight(1f, fill = false)
                 )
                 if (webApp.isPinned) {
-                    Spacer(Modifier.width(4.dp))
-                    Icon(
-                        Icons.Rounded.PushPin,
-                        contentDescription = "Pinned",
-                        tint = CyanPrimary,
-                        modifier = Modifier.size(12.dp)
-                    )
+                    Spacer(Modifier.width(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .background(CyanPrimary.copy(0.15f), RoundedCornerShape(6.dp))
+                            .border(0.5.dp, CyanPrimary.copy(0.5f), RoundedCornerShape(6.dp))
+                            .padding(4.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Rounded.PushPin,
+                            contentDescription = "Pinned",
+                            tint = CyanPrimary,
+                            modifier = Modifier.size(11.dp)
+                        )
+                    }
                 }
             }
             Spacer(Modifier.height(2.dp))

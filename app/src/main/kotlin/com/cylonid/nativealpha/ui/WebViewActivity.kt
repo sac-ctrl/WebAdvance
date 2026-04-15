@@ -8,6 +8,7 @@ import android.graphics.Canvas
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.webkit.ConsoleMessage
@@ -270,11 +271,17 @@ fun WebViewScreen(
     LaunchedEffect(webViewState.lastSessionExportPath) {
         val path = webViewState.lastSessionExportPath
         if (path != null) {
+            val filename = path.substringAfterLast('/')
+            val appName = webApp?.name ?: "App"
+            // Show detailed export message
             android.widget.Toast.makeText(
                 context,
-                "Session exported: ${path.substringAfterLast('/')}",
+                "✓ Session backup created\n$appName session saved as: $filename",
                 android.widget.Toast.LENGTH_LONG
             ).show()
+            
+            // Also show a snackbar-like notification (via logcat for reference)
+            Log.i("SessionExport", "Session exported for $appName to $path")
             viewModel.clearSessionExportPath()
         }
     }
@@ -1397,7 +1404,7 @@ private fun WaosConsolePanel(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFF0D1421))
-                .padding(horizontal = 10.dp, vertical = 5.dp),
+                .padding(horizontal = 10.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -1408,42 +1415,94 @@ private fun WaosConsolePanel(
                         .background(CyanPrimary, androidx.compose.foundation.shape.CircleShape)
                 )
                 Spacer(Modifier.width(6.dp))
-                Text("JS Console", color = CyanPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.width(8.dp))
+                Column {
+                    Text("JS Console", color = CyanPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text("Advanced Debugger with ${messages.size} messages", color = TextMuted, fontSize = 9.sp)
+                }
+                Spacer(Modifier.width(12.dp))
                 if (messages.isNotEmpty()) {
                     Box(
                         modifier = Modifier
-                            .background(CyanPrimary.copy(0.15f), RoundedCornerShape(4.dp))
-                            .padding(horizontal = 5.dp, vertical = 1.dp)
+                            .background(
+                                if (messages.any { it.level == ConsoleMessage.MessageLevel.ERROR.ordinal }) 
+                                    ErrorRed.copy(0.2f) 
+                                else CyanPrimary.copy(0.15f),
+                                RoundedCornerShape(6.dp)
+                            )
+                            .border(
+                                1.dp,
+                                if (messages.any { it.level == ConsoleMessage.MessageLevel.ERROR.ordinal }) 
+                                    ErrorRed.copy(0.4f) 
+                                else CyanPrimary.copy(0.3f),
+                                RoundedCornerShape(6.dp)
+                            )
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
                     ) {
-                        Text("${messages.size}", color = CyanPrimary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            val errorCount = messages.count { it.level == ConsoleMessage.MessageLevel.ERROR.ordinal }
+                            val warnCount = messages.count { it.level == ConsoleMessage.MessageLevel.WARNING.ordinal }
+                            if (errorCount > 0) {
+                                Text("$errorCount error", color = ErrorRed, fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                Spacer(Modifier.width(4.dp))
+                            }
+                            if (warnCount > 0) {
+                                Text("$warnCount warning", color = Color(0xFFFFB800), fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
                     }
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                IconButton(
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                // Copy All Button
+                Button(
                     onClick = {
-                        val allLogs = messages.joinToString("\n") { msg ->
-                            val lvl = when (msg.level) {
-                                ConsoleMessage.MessageLevel.ERROR.ordinal -> "ERR"
-                                ConsoleMessage.MessageLevel.WARNING.ordinal -> "WRN"
-                                else -> "LOG"
+                        if (messages.isNotEmpty()) {
+                            val allLogs = messages.joinToString("\n") { msg ->
+                                val lvl = when (msg.level) {
+                                    ConsoleMessage.MessageLevel.ERROR.ordinal -> "ERROR"
+                                    ConsoleMessage.MessageLevel.WARNING.ordinal -> "WARN"
+                                    else -> "LOG"
+                                }
+                                "[$lvl] ${msg.sourceId}:${msg.lineNumber} - ${msg.message}"
                             }
-                            "[$lvl] ${msg.sourceId}:${msg.lineNumber} ${msg.message}"
+                            val cm = context.getSystemService(android.content.ClipboardManager::class.java)
+                            cm.setPrimaryClip(android.content.ClipData.newPlainText("Console Logs", allLogs))
+                            android.widget.Toast.makeText(context, "All logs copied (${messages.size} messages)", android.widget.Toast.LENGTH_SHORT).show()
                         }
-                        val cm = context.getSystemService(android.content.ClipboardManager::class.java)
-                        cm.setPrimaryClip(android.content.ClipData.newPlainText("Console", allLogs))
-                        android.widget.Toast.makeText(context, "Logs copied", android.widget.Toast.LENGTH_SHORT).show()
                     },
-                    modifier = Modifier.size(28.dp)
+                    enabled = messages.isNotEmpty(),
+                    modifier = Modifier.height(28.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = CyanPrimary.copy(0.2f),
+                        disabledContainerColor = Color.Transparent
+                    ),
+                    shape = RoundedCornerShape(6.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
                 ) {
-                    Icon(Icons.Default.ContentCopy, null, tint = TextMuted, modifier = Modifier.size(14.dp))
+                    Icon(Icons.Default.ContentCopy, null, tint = if (messages.isNotEmpty()) CyanPrimary else TextMuted, modifier = Modifier.size(12.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("Copy All", color = if (messages.isNotEmpty()) CyanPrimary else TextMuted, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                 }
-                IconButton(
-                    onClick = onClearLogs,
-                    modifier = Modifier.size(28.dp)
+                // Clear Button
+                Button(
+                    onClick = {
+                        if (messages.isNotEmpty()) {
+                            android.widget.Toast.makeText(context, "Console cleared", android.widget.Toast.LENGTH_SHORT).show()
+                            onClearLogs()
+                        }
+                    },
+                    enabled = messages.isNotEmpty(),
+                    modifier = Modifier.height(28.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = ErrorRed.copy(0.2f),
+                        disabledContainerColor = Color.Transparent
+                    ),
+                    shape = RoundedCornerShape(6.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
                 ) {
-                    Icon(Icons.Default.Close, null, tint = ErrorRed.copy(0.8f), modifier = Modifier.size(14.dp))
+                    Icon(Icons.Default.Delete, null, tint = if (messages.isNotEmpty()) ErrorRed else TextMuted, modifier = Modifier.size(12.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("Clear", color = if (messages.isNotEmpty()) ErrorRed else TextMuted, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
