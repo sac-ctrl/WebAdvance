@@ -370,9 +370,11 @@ fun WebViewScreen(
         )
 
         Box(modifier = Modifier.weight(1f)) {
+            val webViewRef = remember { mutableStateOf<WebView?>(null) }
             AndroidView(
                 factory = { ctx ->
                     WebView(ctx).apply {
+                        webViewRef.value = this
                         layoutParams = ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT
@@ -400,7 +402,7 @@ fun WebViewScreen(
                                     if (app.isDarkModeEnabled) injectDarkMode(this)
                                 }
                                 // Inject auto scroll functionality
-                                webView.evaluateJavascript("""
+                                webViewRef.value?.evaluateJavascript("""
                                     javascript:(function() {
                                         window.waosAutoScroll = {
                                             interval: null,
