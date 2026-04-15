@@ -54,12 +54,12 @@ fun PermissionsScreen(
                     modifier = Modifier
                         .size(42.dp)
                         .background(
-                            Brush.radialGradient(listOf(GradPurpleStart.copy(0.4f), Color.Transparent)),
+                            Brush.radialGradient(listOf(GradVioletStart.copy(0.4f), Color.Transparent)),
                             RoundedCornerShape(12.dp)
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Security, null, tint = GradPurpleEnd, modifier = Modifier.size(22.dp))
+                    Icon(Icons.Default.Security, null, tint = GradVioletEnd, modifier = Modifier.size(22.dp))
                 }
                 Spacer(Modifier.width(12.dp))
                 Column {
@@ -84,7 +84,7 @@ fun PermissionsScreen(
                 Icon(
                     Icons.Default.Info,
                     contentDescription = null,
-                    tint = GradPurpleEnd,
+                    tint = GradVioletEnd,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(Modifier.width(12.dp))
@@ -160,7 +160,7 @@ fun PermissionsScreen(
                                     }
                                 },
                                 modifier = Modifier.height(36.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = GradPurpleEnd),
+                                colors = ButtonDefaults.buttonColors(containerColor = GradVioletEnd),
                                 shape = RoundedCornerShape(8.dp)
                             ) {
                                 Text("Grant", fontSize = 12.sp, fontWeight = FontWeight.Medium)
@@ -190,7 +190,7 @@ fun PermissionsScreen(
                 .fillMaxWidth()
                 .padding(16.dp)
                 .height(48.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = GradPurpleEnd),
+            colors = ButtonDefaults.buttonColors(containerColor = GradVioletEnd),
             shape = RoundedCornerShape(12.dp)
         ) {
             Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(20.dp))
