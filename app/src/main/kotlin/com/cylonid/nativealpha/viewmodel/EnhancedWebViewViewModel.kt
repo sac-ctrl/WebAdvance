@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.webview.*
+import com.google.gson.JsonObject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -150,7 +151,7 @@ class EnhancedWebViewViewModel @Inject constructor(
             },
             onScrollPositionChange = { position ->
                 // Save scroll position
-                sessionManager?.setSessionValue("scroll_position", position.toString())
+                // Note: Scroll position can be tracked locally if needed
             },
             onDOMChange = {
                 // Handle page changes for notifications/refresh
@@ -243,7 +244,8 @@ class EnhancedWebViewViewModel @Inject constructor(
     }
 
     fun getScrollPosition(): Int {
-        return sessionManager?.getSessionValue("scroll_position", "0")?.toIntOrNull() ?: 0
+        // Scroll position tracking can be implemented locally
+        return 0
     }
 
     fun restoreScrollPosition() {
@@ -280,17 +282,25 @@ class EnhancedWebViewViewModel @Inject constructor(
         currentWebView?.clearHistory()
     }
 
-    fun exportSession(file: java.io.File): Boolean {
-        return sessionManager?.exportSession(file) ?: false
+    fun exportSession(snapshot: com.google.gson.JsonObject): Boolean {
+        return try {
+            val path = sessionManager?.exportSession(snapshot)
+            path != null
+        } catch (e: Exception) {
+            false
+        }
     }
 
-    fun importSession(file: java.io.File): Boolean {
-        return sessionManager?.importSession(file) ?: false
+    fun importSession(sourcePath: String): Boolean {
+        return try {
+            sessionManager?.importSession(sourcePath) != null
+        } catch (e: Exception) {
+            false
+        }
     }
 
     override fun onCleared() {
         super.onCleared()
-        sessionManager?.saveSessionState("app_cleared")
         currentWebView?.stopLoading()
         currentWebView?.destroy()
     }
