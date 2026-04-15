@@ -156,6 +156,13 @@ class FloatingWindowService : Service() {
             }
         }
 
+        view.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                bringWindowToFront(webAppId)
+            }
+            false
+        }
+
         // Configure WebView
         webView.settings.apply {
             javaScriptEnabled = true
@@ -478,8 +485,8 @@ class FloatingWindowService : Service() {
     private fun bringWindowToFront(windowId: Long) {
         floatingWindows[windowId]?.let { windowView ->
             try {
-                windowView.view.bringToFront()
-                windowManager.updateViewLayout(windowView.view, windowView.layoutParams)
+                windowManager.removeView(windowView.view)
+                windowManager.addView(windowView.view, windowView.layoutParams)
             } catch (ignored: Exception) {
             }
         }
