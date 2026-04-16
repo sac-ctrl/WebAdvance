@@ -261,8 +261,9 @@ fun WebViewScreen(
 
     LaunchedEffect(webApp?.url) {
         val url = webApp?.url
-        if (!initialUrlLoaded && !url.isNullOrBlank() && (webApp?.isLocked == false || pinUnlocked)) {
-            webViewRef.value?.loadUrl(url)
+        val urlToLoad = webApp?.lastVisitedUrl?.takeIf { it.isNotBlank() } ?: url
+        if (!initialUrlLoaded && !urlToLoad.isNullOrBlank() && (webApp?.isLocked == false || pinUnlocked)) {
+            webViewRef.value?.loadUrl(urlToLoad)
             initialUrlLoaded = true
         }
     }
@@ -270,8 +271,9 @@ fun WebViewScreen(
     LaunchedEffect(pinUnlocked) {
         if (pinUnlocked) {
             val url = webApp?.url
-            if (!url.isNullOrBlank()) {
-                webViewRef.value?.loadUrl(url)
+            val urlToLoad = webApp?.lastVisitedUrl?.takeIf { it.isNotBlank() } ?: url
+            if (!urlToLoad.isNullOrBlank()) {
+                webViewRef.value?.loadUrl(urlToLoad)
                 initialUrlLoaded = true
             }
         }

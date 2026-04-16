@@ -3,6 +3,8 @@ package com.cylonid.nativealpha.ui.screens
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -33,6 +35,13 @@ fun PermissionsScreen(
     val activity = context as? FragmentActivity
     var permissionsStatus by remember {
         mutableStateOf(PermissionsManager.getAllPermissionsStatus(context))
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        // Refresh permission status after request completes
+        permissionsStatus = PermissionsManager.getAllPermissionsStatus(context)
     }
 
     // Refresh permissions when screen is composed
@@ -200,6 +209,10 @@ fun PermissionsScreen(
                                                         )
                                                         context.startActivity(intent)
                                                         android.widget.Toast.makeText(context, "Enable overlay permission in settings", android.widget.Toast.LENGTH_SHORT).show()
+                                                        // Refresh after short delay
+                                                        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                                            permissionsStatus = PermissionsManager.getAllPermissionsStatus(context)
+                                                        }, 500)
                                                     } catch (e: Exception) {
                                                         android.widget.Toast.makeText(context, "Could not open settings", android.widget.Toast.LENGTH_SHORT).show()
                                                     }
@@ -217,14 +230,18 @@ fun PermissionsScreen(
                                                         }
                                                         context.startActivity(intent)
                                                         android.widget.Toast.makeText(context, "Enable storage permissions in settings", android.widget.Toast.LENGTH_SHORT).show()
+                                                        // Refresh after short delay
+                                                        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                                            permissionsStatus = PermissionsManager.getAllPermissionsStatus(context)
+                                                        }, 500)
                                                     } catch (e: Exception) {
                                                         android.widget.Toast.makeText(context, "Could not open settings", android.widget.Toast.LENGTH_SHORT).show()
                                                     }
                                                 }
                                                 else -> {
                                                     try {
-                                                        PermissionsManager.requestPermission(act, permission, 1001)
-                                                        android.widget.Toast.makeText(context, "Permission request sent", android.widget.Toast.LENGTH_SHORT).show()
+                                                        permissionLauncher.launch(arrayOf(permission.androidPermission))
+                                                        android.widget.Toast.makeText(context, "Requesting ${permission.id}...", android.widget.Toast.LENGTH_SHORT).show()
                                                     } catch (e: Exception) {
                                                         android.widget.Toast.makeText(context, "Could not request permission", android.widget.Toast.LENGTH_SHORT).show()
                                                     }

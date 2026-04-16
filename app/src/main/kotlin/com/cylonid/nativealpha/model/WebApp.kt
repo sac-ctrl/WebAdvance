@@ -67,7 +67,8 @@ data class WebApp(
     var isCameraPermission: Boolean = false,
     var isMicrophonePermission: Boolean = false,
     var isEnableZooming: Boolean = false,
-    val isPinned: Boolean = false
+    val isPinned: Boolean = false,
+    val lastVisitedUrl: String? = null
 ) {
     enum class Status {
         ACTIVE,

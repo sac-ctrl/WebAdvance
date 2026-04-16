@@ -110,6 +110,14 @@ class WebViewViewModel @Inject constructor(
             currentUrl = url,
             progress = 100
         )
+        
+        // Save the last visited URL to the database
+        _webApp.value?.let { app ->
+            val updatedApp = app.copy(lastVisitedUrl = url)
+            viewModelScope.launch {
+                repository.updateWebApp(updatedApp)
+            }
+        }
     }
 
     fun onProgressChanged(progress: Int) {
