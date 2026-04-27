@@ -169,12 +169,28 @@ open class WebViewActivity : ComponentActivity() {
         // per app — no sharing across apps.
         SessionManager.applyIsolation(webAppId)
 
+        // Persistent cookies (incl. third-party, needed for OAuth logins).
+        android.webkit.CookieManager.getInstance().setAcceptCookie(true)
+
         setContent {
             WebViewScreen(
                 webAppId = webAppId,
                 onBackPressed = { finish() }
             )
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Flush WebView cookies to disk so they survive a process kill (e.g.
+        // user removing the app from Recents). Without this, in-memory cookies
+        // are lost and the user appears logged out next time.
+        try { android.webkit.CookieManager.getInstance().flush() } catch (_: Exception) {}
+    }
+
+    override fun onStop() {
+        super.onStop()
+        try { android.webkit.CookieManager.getInstance().flush() } catch (_: Exception) {}
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -191,6 +207,29 @@ open class WebViewActivity : ComponentActivity() {
     companion object {
         const val REQUEST_CODE_CREDENTIALS = 4231
         var pendingAutoFill: Pair<String, String>? = null
+
+        /** SharedPreferences-backed last-visited-URL store (per app, per process). */
+        const val PREF_LAST_URL = "waos_last_url"
+        fun lastUrlKey(appId: Long) = "app_${appId}_last_url"
+
+        @JvmStatic
+        fun saveLastVisitedUrl(context: Context, appId: Long, url: String) {
+            if (appId <= 0L || url.isBlank()) return
+            // Skip about:blank, data: URLs, and the like.
+            if (url.startsWith("about:") || url.startsWith("data:")) return
+            try {
+                context.getSharedPreferences(PREF_LAST_URL, Context.MODE_PRIVATE)
+                    .edit().putString(lastUrlKey(appId), url).apply()
+            } catch (_: Exception) {}
+        }
+
+        @JvmStatic
+        fun readLastVisitedUrl(context: Context, appId: Long): String? {
+            return try {
+                context.getSharedPreferences(PREF_LAST_URL, Context.MODE_PRIVATE)
+                    .getString(lastUrlKey(appId), null)
+            } catch (_: Exception) { null }
+        }
     }
 }
 
@@ -259,23 +298,54 @@ fun WebViewScreen(
         viewModel.loadWebApp(webAppId)
     }
 
-    LaunchedEffect(webApp?.url) {
-        val url = webApp?.url
-        val urlToLoad = webApp?.lastVisitedUrl?.takeIf { it.isNotBlank() } ?: url
-        if (!initialUrlLoaded && !urlToLoad.isNullOrBlank() && (webApp?.isLocked == false || pinUnlocked)) {
-            webViewRef.value?.loadUrl(urlToLoad)
+    // Resolve the URL to load: prefer the per-app last-visited URL stored in
+    // SharedPreferences (process-safe, survives back-press / process kill), then
+    // fall back to the value persisted in the database, then to the home URL.
+    fun resolveLaunchUrl(): String? {
+        val prefsUrl = WebViewActivity.readLastVisitedUrl(context, webAppId)
+        return prefsUrl?.takeIf { it.isNotBlank() }
+            ?: webApp?.lastVisitedUrl?.takeIf { it.isNotBlank() }
+            ?: webApp?.url
+    }
+
+    // Re-trigger when WebApp loads OR when the WebView is finally created so we
+    // never silently drop the very first loadUrl call.
+    LaunchedEffect(webApp?.url, webViewRef.value) {
+        val urlToLoad = resolveLaunchUrl()
+        val wv = webViewRef.value
+        if (!initialUrlLoaded && wv != null && !urlToLoad.isNullOrBlank() &&
+            (webApp?.isLocked == false || pinUnlocked)) {
+            wv.loadUrl(urlToLoad)
             initialUrlLoaded = true
         }
     }
 
     LaunchedEffect(pinUnlocked) {
         if (pinUnlocked) {
-            val url = webApp?.url
-            val urlToLoad = webApp?.lastVisitedUrl?.takeIf { it.isNotBlank() } ?: url
-            if (!urlToLoad.isNullOrBlank()) {
-                webViewRef.value?.loadUrl(urlToLoad)
+            val urlToLoad = resolveLaunchUrl()
+            val wv = webViewRef.value
+            if (wv != null && !urlToLoad.isNullOrBlank()) {
+                wv.loadUrl(urlToLoad)
                 initialUrlLoaded = true
             }
+        }
+    }
+
+    // Pause/resume the WebView with the host activity, and flush cookies +
+    // last-visited URL on dispose so logins and the current page survive a
+    // process kill.
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        onDispose {
+            try {
+                webViewRef.value?.let { wv ->
+                    val current = wv.url
+                    if (!current.isNullOrBlank()) {
+                        WebViewActivity.saveLastVisitedUrl(context, webAppId, current)
+                    }
+                    wv.onPause()
+                }
+                android.webkit.CookieManager.getInstance().flush()
+            } catch (_: Exception) {}
         }
     }
 
@@ -631,12 +701,24 @@ fun WebViewScreen(
                         loadWithOverviewMode = true
                         useWideViewPort = true
                         mediaPlaybackRequiresUserGesture = false
+                        // Enable persistent cache so service workers / asset caches
+                        // are reused after process restart.
+                        cacheMode = WebSettings.LOAD_DEFAULT
                     }
+                    // Cookies (incl. 3rd-party for OAuth flows like Google sign-in).
+                    android.webkit.CookieManager.getInstance().setAcceptCookie(true)
+                    android.webkit.CookieManager.getInstance()
+                        .setAcceptThirdPartyCookies(webView, true)
                     webView.webViewClient = WebViewClientWithDownload(
                         context = ctx,
                         onPageStarted = { url -> viewModel.onPageStarted(url) },
                         onPageFinished = { url ->
                             viewModel.onPageFinished(url)
+                            // Persist the current page in SharedPreferences so it
+                            // survives back-press and process kill, and flush
+                            // cookies right away so logins survive a Recents swipe.
+                            WebViewActivity.saveLastVisitedUrl(ctx, webAppId, url)
+                            try { android.webkit.CookieManager.getInstance().flush() } catch (_: Exception) {}
                             webAppRef.value?.let { app ->
                                 if (app.isDarkModeEnabled) injectDarkMode(webView)
                             }
