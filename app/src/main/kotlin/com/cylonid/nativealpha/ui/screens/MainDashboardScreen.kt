@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.*
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
+import kotlinx.coroutines.launch
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -127,6 +128,7 @@ fun MainDashboardScreen(
     var showSortSheet by remember { mutableStateOf(false) }
     var contextMenuApp by remember { mutableStateOf<WebApp?>(null) }
     var showDeleteDialog by remember { mutableStateOf<WebApp?>(null) }
+    val pinShortcutScope = rememberCoroutineScope()
 
     val categories = listOf("All") + listOf("Social", "Work", "News", "Entertainment", "Tools", "Shopping", "Finance", "General")
 
@@ -504,6 +506,22 @@ fun MainDashboardScreen(
                 onDelete = {
                     contextMenuApp = null
                     showDeleteDialog = app
+                },
+                onAddToHomeScreen = {
+                    contextMenuApp = null
+                    pinShortcutScope.launch {
+                        val ok = try {
+                            com.cylonid.nativealpha.util.HomeShortcutCreator
+                                .pinToHomeScreen(context, app)
+                        } catch (_: Exception) { false }
+                        val msg = if (ok)
+                            "Added '${app.name}' to your Home Screen"
+                        else
+                            "Your launcher does not support adding shortcuts"
+                        android.widget.Toast
+                            .makeText(context, msg, android.widget.Toast.LENGTH_LONG)
+                            .show()
+                    }
                 }
             )
         }
@@ -922,7 +940,8 @@ private fun AppContextMenu(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     isPinned: Boolean = false,
-    onPin: () -> Unit = {}
+    onPin: () -> Unit = {},
+    onAddToHomeScreen: () -> Unit = {}
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Column(
@@ -1075,6 +1094,29 @@ private fun AppContextMenu(
                     ) {
                         Text("Pinned", color = CyanPrimary, fontSize = 9.sp, fontWeight = FontWeight.Bold)
                     }
+                }
+            }
+
+            HorizontalDivider(color = CardBorder)
+            Spacer(Modifier.height(6.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { onAddToHomeScreen() }
+                    .padding(vertical = 12.dp, horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Rounded.AddToHomeScreen, null, tint = CyanPrimary, modifier = Modifier.size(20.dp))
+                Spacer(Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Add to Home Screen", color = TextPrimary, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                    Text(
+                        "Launch directly from your launcher",
+                        color = TextMuted,
+                        fontSize = 11.sp
+                    )
                 }
             }
 
