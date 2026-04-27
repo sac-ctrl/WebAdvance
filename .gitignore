@@ -16,3 +16,7 @@ app/release/**
 app/standard/**
 app/extended/**
 app/extendedGithub/**
+
+# Local-only keystore overrides. The hardcoded values in app/build.gradle are
+# the source of truth; create this file only if you need to override locally.
+/keystore.properties

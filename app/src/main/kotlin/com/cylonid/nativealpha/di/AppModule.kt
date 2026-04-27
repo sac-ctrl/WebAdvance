@@ -32,6 +32,10 @@ object AppModule {
         )
             .addMigrations(com.cylonid.nativealpha.data.MIGRATION_5_6)
             .fallbackToDestructiveMigration()
+            // Each per-app WebView runs in a separate process (`:webapp_N`) and
+            // also opens its own Room connection. This invalidation tracker keeps
+            // the dashboard process and sandbox processes consistent.
+            .enableMultiInstanceInvalidation()
             .build()
     }
 

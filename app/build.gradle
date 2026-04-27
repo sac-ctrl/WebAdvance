@@ -73,10 +73,37 @@ android {
     kotlinOptions {
         jvmTarget = '17'
     }
+    signingConfigs {
+        release {
+            // Hardcoded keystore — committed to repo so CI can build a signed
+            // APK with no extra setup. Source of truth: app/release.jks.
+            // Optional: a `keystore.properties` file at the repo root can
+            // override the password / alias values (used by the GitHub Actions
+            // release workflow).
+            def propsFile = rootProject.file('keystore.properties')
+            def storePass = 'Sh@090609'
+            def keyPass   = 'Sh@090609'
+            def keyAliasN = 'my-key'
+            def storeName = 'release.jks'
+            if (propsFile.exists()) {
+                def props = new Properties()
+                propsFile.withInputStream { props.load(it) }
+                storePass = props.getProperty('storePassword', storePass)
+                keyPass   = props.getProperty('keyPassword',   keyPass)
+                keyAliasN = props.getProperty('keyAlias',      keyAliasN)
+                storeName = props.getProperty('storeFile',     storeName)
+            }
+            storeFile     file(storeName)
+            storePassword storePass
+            keyAlias      keyAliasN
+            keyPassword   keyPass
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
         debug {
           applicationIdSuffix = ".debug"

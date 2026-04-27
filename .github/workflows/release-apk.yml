@@ -1,11 +1,9 @@
-name: Debug APK Build
+name: Release APK Build
 
 on:
   push:
-    branches: [main, master, develop, dev]
+    branches: [main, master, dev, develop]
     tags: ['v*']
-  pull_request:
-    branches: [main, master]
   workflow_dispatch:
 
 permissions:
@@ -13,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    name: Build Debug APK
+    name: Build Signed Release APK
     runs-on: ubuntu-latest
 
     steps:
@@ -45,39 +43,37 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build Debug APK
+      - name: Write keystore.properties (hardcoded — no secrets needed)
+        run: |
+          cat > ./keystore.properties <<'EOF'
+          storePassword=Sh@090609
+          keyPassword=Sh@090609
+          keyAlias=my-key
+          storeFile=release.jks
+          EOF
+
+      - name: Build signed release APK
         id: build
-        run: ./gradlew :app:assembleStandardDebug --no-daemon --stacktrace
+        run: ./gradlew :app:assembleStandardRelease --no-daemon --stacktrace
 
       - name: Locate APK
         id: apk
         run: |
-          APK_PATH=$(find app/build/outputs/apk/standard/debug -name "*.apk" | head -n 1)
+          APK_PATH=$(find app/build/outputs/apk/standard/release -name "*.apk" ! -name "*-unsigned*" | head -n 1)
           echo "Found APK at $APK_PATH"
           echo "path=$APK_PATH" >> "$GITHUB_OUTPUT"
           echo "name=$(basename "$APK_PATH")" >> "$GITHUB_OUTPUT"
 
-      - name: Upload debug APK as workflow artifact
+      - name: Upload release APK as workflow artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: waos-debug-apk-${{ github.run_number }}
+          name: waos-release-apk
           path: ${{ steps.apk.outputs.path }}
           if-no-files-found: error
-          retention-days: 30
-
-      - name: Upload Build Reports on Failure
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: build-reports-${{ github.run_number }}
-          path: |
-            app/build/reports/
-            app/build/outputs/logs/
-          retention-days: 7
+          retention-days: 90
 
       - name: Get APK info
-        if: success() && github.event_name != 'pull_request'
         id: apk-info
         run: |
           APK_PATH="${{ steps.apk.outputs.path }}"
@@ -86,25 +82,24 @@ jobs:
           echo "apk_size=$APK_SIZE_MB MB" >> $GITHUB_OUTPUT
 
       - name: Generate release notes
-        if: success() && github.event_name != 'pull_request'
         id: release-notes
         run: |
           DATE=$(date +'%B %d, %Y')
           VERSION=$(grep -oP 'versionName\s+"\K[^"]+' app/build.gradle)
 
-          RELEASE_BODY="## 🛠️ WAOS v$VERSION (Debug Build)
+          RELEASE_BODY="## 📱 WAOS v$VERSION (Signed Release)
 
           **Release Date:** $DATE
 
           ### 📱 What's New
-          - Latest debug build of the WAOS web-app dashboard
+          - Signed production build of the WAOS web-app dashboard
           - **True per-app session isolation** — each web app runs in its own dedicated process with a private WebView profile (cookies, localStorage, IndexedDB, cache and service workers are NEVER shared between apps)
           - Each app keeps its own persistent login — sign in once per app, no leak across apps
-          - Includes all in-progress features and fixes for testing
+          - All recent UI/feature improvements bundled in
 
           ### 📦 Package Details
-          - **Version:** $VERSION (debug)
-          - **Build Type:** Debug (debuggable, NOT signed for release)
+          - **Version:** $VERSION
+          - **Build Type:** Release (signed with release.jks)
           - **File Size:** ${{ steps.apk-info.outputs.apk_size }}
           - **Platform:** Android 9+ (API 28+)
           - **Commit:** \`${{ github.sha }}\`
@@ -118,7 +113,7 @@ jobs:
           - Universal crash logger with full stack-trace export
 
           ### ⚠️ Important Notes
-          - Debug build for testing — install side-by-side with the release build (different applicationId suffix .debug)
+          - Signed release build — safe to install over previous releases
           - Enable \"Install from Unknown Sources\" on your device
           - Grant storage, notification, camera and microphone permissions when prompted
 
@@ -135,15 +130,15 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create Release
-        if: success() && github.event_name != 'pull_request'
+        if: success()
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.run_number }}-debug
-          name: WAOS Debug Build ${{ github.run_number }}
+          tag_name: v${{ github.run_number }}-release
+          name: WAOS Release Build ${{ github.run_number }}
           body: ${{ steps.release-notes.outputs.body }}
           files: |
             ${{ steps.apk.outputs.path }}
           draft: false
-          prerelease: true
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

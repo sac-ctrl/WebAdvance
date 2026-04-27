@@ -1,11 +1,9 @@
-name: Debug APK Build
+name: Release APK Build
 
 on:
   push:
-    branches: [main, master, develop, dev]
-    tags: ['v*']
-  pull_request:
     branches: [main, master]
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
@@ -13,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    name: Build Debug APK
+    name: Build Signed Release APK
     runs-on: ubuntu-latest
 
     steps:
@@ -45,39 +43,37 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Build Debug APK
+      - name: Write keystore.properties
+        run: |
+          cat > ./keystore.properties <<'EOF'
+          storePassword=Sh@090609
+          keyPassword=Sh@090609
+          keyAlias=my-key
+          storeFile=release.jks
+          EOF
+
+      - name: Build signed release APK
         id: build
-        run: ./gradlew :app:assembleStandardDebug --no-daemon --stacktrace
+        run: ./gradlew :app:assembleGithubRelease --no-daemon --stacktrace
 
       - name: Locate APK
         id: apk
         run: |
-          APK_PATH=$(find app/build/outputs/apk/standard/debug -name "*.apk" | head -n 1)
+          APK_PATH=$(find app/build/outputs/apk/github/release -name "*.apk" ! -name "*-unsigned*" | head -n 1)
           echo "Found APK at $APK_PATH"
           echo "path=$APK_PATH" >> "$GITHUB_OUTPUT"
           echo "name=$(basename "$APK_PATH")" >> "$GITHUB_OUTPUT"
 
-      - name: Upload debug APK as workflow artifact
+      - name: Upload release APK as workflow artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: waos-debug-apk-${{ github.run_number }}
+          name: plainapp-release-apk
           path: ${{ steps.apk.outputs.path }}
           if-no-files-found: error
-          retention-days: 30
-
-      - name: Upload Build Reports on Failure
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: build-reports-${{ github.run_number }}
-          path: |
-            app/build/reports/
-            app/build/outputs/logs/
-          retention-days: 7
+          retention-days: 90
 
       - name: Get APK info
-        if: success() && github.event_name != 'pull_request'
         id: apk-info
         run: |
           APK_PATH="${{ steps.apk.outputs.path }}"
@@ -86,46 +82,44 @@ jobs:
           echo "apk_size=$APK_SIZE_MB MB" >> $GITHUB_OUTPUT
 
       - name: Generate release notes
-        if: success() && github.event_name != 'pull_request'
         id: release-notes
         run: |
           DATE=$(date +'%B %d, %Y')
-          VERSION=$(grep -oP 'versionName\s+"\K[^"]+' app/build.gradle)
+          VERSION=$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle.kts)
 
-          RELEASE_BODY="## 🛠️ WAOS v$VERSION (Debug Build)
+          RELEASE_BODY="## 📱 PlainApp v$VERSION
 
           **Release Date:** $DATE
 
           ### 📱 What's New
-          - Latest debug build of the WAOS web-app dashboard
-          - **True per-app session isolation** — each web app runs in its own dedicated process with a private WebView profile (cookies, localStorage, IndexedDB, cache and service workers are NEVER shared between apps)
-          - Each app keeps its own persistent login — sign in once per app, no leak across apps
-          - Includes all in-progress features and fixes for testing
+          - Latest signed production build
+          - Includes all recent features, fixes and improvements
+          - Optimized and ready for everyday use
 
           ### 📦 Package Details
-          - **Version:** $VERSION (debug)
-          - **Build Type:** Debug (debuggable, NOT signed for release)
+          - **Version:** $VERSION
+          - **Build Type:** Release (signed)
           - **File Size:** ${{ steps.apk-info.outputs.apk_size }}
-          - **Platform:** Android 9+ (API 28+)
+          - **Platform:** Android 8.0+ (API 26+)
           - **Commit:** \`${{ github.sha }}\`
 
           ### 🚀 Features
-          - WAOS Dashboard with glassmorphism UI, sort/group, status indicators
-          - Per-app sandboxed WebView (\`:webapp_0\` … \`:webapp_7\` processes)
-          - Floating chat-head windows for any app
-          - Per-app Download history, Clipboard manager, Credential Vault
-          - In-app PIN / biometric lock per app
-          - Universal crash logger with full stack-trace export
+          - Self-hosted web console served from your phone
+          - Cloudflare Tunnel built in — reach the console from anywhere on your own domain
+          - Live camera, microphone and screen-mirror streaming to the web panel
+          - Files, contacts, SMS, call log, notifications and audio player from the browser
+          - Optional in-app PIN / biometric lock with PIN-protected Device Admin deactivation
+          - Hide launcher icon while keeping every background service running
 
           ### ⚠️ Important Notes
-          - Debug build for testing — install side-by-side with the release build (different applicationId suffix .debug)
+          - Signed release build — safe to install over previous releases
           - Enable \"Install from Unknown Sources\" on your device
           - Grant storage, notification, camera and microphone permissions when prompted
 
           ### 📥 Installation
           1. Download the APK file below
           2. Enable installation from unknown sources for your browser/file manager
-          3. Install and open WAOS; finish the in-app setup
+          3. Install and open PlainApp; finish the in-app setup
 
           ---
           **Repository:** [GitHub](https://github.com/${{ github.repository }})"
@@ -135,15 +129,15 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create Release
-        if: success() && github.event_name != 'pull_request'
+        if: success()
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.run_number }}-debug
-          name: WAOS Debug Build ${{ github.run_number }}
+          tag_name: v${{ github.run_number }}-release
+          name: PlainApp Release Build ${{ github.run_number }}
           body: ${{ steps.release-notes.outputs.body }}
           files: |
             ${{ steps.apk.outputs.path }}
           draft: false
-          prerelease: true
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

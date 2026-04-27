@@ -16,8 +16,10 @@ Android application (Kotlin/Jetpack Compose) that turns websites into native-loo
 
 ### Key Architecture Decisions
 - **Single Activity**: `MainActivity` hosts `NavHost` with Compose navigation
-- **Multi-process WebView**: Build-time code generation creates 8 sandboxed WebView processes (`:web_sandbox_0` to `:web_sandbox_7`)
-- **Session Isolation**: Each web app gets isolated cookies/storage via `SessionManager.kt`
+- **Per-app process isolation**: Every web app launches into a dedicated Android process (`:webapp_0`..`:webapp_7`) via `WebAppRouter.kt`. `App.java` reads the per-slot appId from SharedPreferences and applies a unique `WebView.setDataDirectorySuffix("waos_app_<appId>")` so cookies, localStorage, IndexedDB, cache and service workers are NEVER shared between apps. Each app keeps its own persistent login.
+- **Slot recycling**: When an appId mapped to a slot differs from the slot's current appId, `WebAppRouter` kills the slot's process so the next launch starts fresh with the correct per-app data directory.
+- **Legacy multi-sandbox**: Older `:web_sandbox_0..7` processes are still supported for backward compatibility (per-slot, not per-app).
+- **Session export/import**: `SessionManager.kt` exports/imports AES-256-GCM encrypted session snapshots.
 - **MVVM**: ViewModels + Room Flows + Hilt injection
 
 ## Project Structure
@@ -85,9 +87,15 @@ Dark WAOS theme with:
 - **Context Menu**: Long-press any app card → Quick Actions (Open, Float, Edit) + Features row (Downloads, Clipboard, Credentials) + Delete
 
 ## Build Notes
-- `build.gradle` uses custom Gradle tasks to generate 8 WebView activity copies at build time
+- `build.gradle` uses custom Gradle tasks to generate 8 legacy WebView activity copies at build time (the new per-app isolation uses `WebViewActivity0..7` instead)
 - Database version 5 — any schema changes need a migration
 - Min SDK: 28 (Android 9), Target: 35
+- **Signed release**: hardcoded keystore at `app/release.jks` (alias `my-key`, password `Sh@090609`); `app/build.gradle` references it directly so `./gradlew :app:assembleStandardRelease` produces a signed APK with no extra setup. A `keystore.properties` file at the repo root can override these values locally.
+
+## CI / GitHub Actions
+- `.github/workflows/debug-apk.yml` — builds `assembleStandardDebug` on every push to main/master/dev/develop and on tags; uploads the APK as an artifact AND publishes a GitHub Release tagged `v<run>-debug` (marked as pre-release) with detailed release notes.
+- `.github/workflows/release-apk.yml` — builds signed `assembleStandardRelease` on every push to main/master/dev/develop and on tags; publishes a GitHub Release tagged `v<run>-release` with the signed APK and detailed release notes.
+- `.github/workflows/BuildDebug-Apk.yml` — deprecated, manual-trigger only.
 
 ## Bug Fixes Applied
 1. **FloatingWindowService crash (Android 14+)**: Added `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `POST_NOTIFICATIONS` permissions; set `android:foregroundServiceType="specialUse"` on both FloatingWindowService declarations; updated `startForeground()` to pass `ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE` on API 34+.

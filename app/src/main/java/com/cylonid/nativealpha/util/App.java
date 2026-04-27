@@ -32,21 +32,53 @@ public class App extends Application {
     }
 
     /**
-     * WAOS Session Isolation: If this process is a web_sandbox process (e.g. :web_sandbox_0),
-     * set a unique WebView data directory suffix so cookies, localStorage, IndexedDB, cache,
-     * and service workers are completely separate from every other sandbox.
+     * WAOS Session Isolation.
      *
-     * WebView.setDataDirectorySuffix() MUST be called once per process, before any WebView
-     * is instantiated. Calling it here in Application.onCreate() guarantees that.
+     * Each web app is launched into a dedicated process named ":webapp_N"
+     * (see WebAppRouter and the WebViewActivityN classes). For these processes
+     * we read the per-slot appId from SharedPreferences and apply a unique
+     * data-directory suffix `waos_app_<appId>`, giving every web app a fully
+     * isolated WebView profile (cookies, localStorage, IndexedDB, cache, service
+     * workers). Login data persists per app, but is NEVER shared across apps.
+     *
+     * Legacy ":web_sandbox_N" processes are also still supported for backward
+     * compatibility (they get a per-slot suffix instead of per-app).
+     *
+     * WebView.setDataDirectorySuffix() MUST be called once per process, before any
+     * WebView is instantiated. Calling it here in Application.onCreate() guarantees
+     * that, because Application.onCreate runs in every process the app spawns.
      */
     private void applyWebViewIsolationIfSandboxProcess() {
         try {
             String processName = getCurrentProcessName();
-            if (processName != null) {
-                int sandboxIdx = extractSandboxIndex(processName);
-                if (sandboxIdx >= 0) {
-                    WebView.setDataDirectorySuffix("web_sandbox_" + sandboxIdx);
+            if (processName == null) return;
+
+            int colonIdx = processName.lastIndexOf(':');
+            if (colonIdx < 0) return;
+            String suffix = processName.substring(colonIdx + 1);
+
+            // Per-app isolation: ":webapp_N" processes pick up the appId stored
+            // by WebAppRouter and apply a per-app data directory.
+            if (suffix.startsWith("webapp_")) {
+                try {
+                    int slot = Integer.parseInt(suffix.substring("webapp_".length()));
+                    android.content.SharedPreferences prefs =
+                            getSharedPreferences("waos_app_slots", MODE_PRIVATE);
+                    long appId = prefs.getLong("slot_" + slot + "_app_id", -1L);
+                    if (appId >= 0L) {
+                        WebView.setDataDirectorySuffix("waos_app_" + appId);
+                    } else {
+                        WebView.setDataDirectorySuffix("waos_slot_" + slot);
+                    }
+                } catch (NumberFormatException ignored) {
                 }
+                return;
+            }
+
+            // Legacy per-slot isolation for ":web_sandbox_N" processes.
+            int sandboxIdx = extractSandboxIndex(processName);
+            if (sandboxIdx >= 0) {
+                WebView.setDataDirectorySuffix("web_sandbox_" + sandboxIdx);
             }
         } catch (Exception e) {
             // Never crash on isolation setup

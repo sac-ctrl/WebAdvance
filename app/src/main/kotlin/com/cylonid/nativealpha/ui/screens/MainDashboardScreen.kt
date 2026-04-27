@@ -40,7 +40,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.cylonid.nativealpha.model.WebApp
-import com.cylonid.nativealpha.ui.WebViewActivity
 import com.cylonid.nativealpha.ui.theme.*
 import com.cylonid.nativealpha.viewmodel.MainViewModel
 import com.cylonid.nativealpha.viewmodel.SettingsViewModel
@@ -357,12 +356,7 @@ fun MainDashboardScreen(
                                             webApp = webApp,
                                             showStatusIndicator = showStatusIndicators,
                                             onClick = {
-                                                val intent = Intent(context, WebViewActivity::class.java)
-                                                    .apply {
-                                                        putExtra("webAppId", webApp.id)
-                                                        addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-                                                    }
-                                                context.startActivity(intent)
+                                                com.cylonid.nativealpha.util.WebAppRouter.launch(context, webApp.id)
                                             },
                                             onLongClick = {
                                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -384,12 +378,7 @@ fun MainDashboardScreen(
                                             webApp = webApp,
                                             showStatusIndicator = showStatusIndicators,
                                             onClick = {
-                                                val intent = Intent(context, WebViewActivity::class.java)
-                                                    .apply {
-                                                        putExtra("webAppId", webApp.id)
-                                                        addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-                                                    }
-                                                context.startActivity(intent)
+                                                com.cylonid.nativealpha.util.WebAppRouter.launch(context, webApp.id)
                                             },
                                             onLongClick = {
                                                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -440,12 +429,7 @@ fun MainDashboardScreen(
                                         webApp = webApp,
                                         showStatusIndicator = showStatusIndicators,
                                         onClick = {
-                                            val intent = Intent(context, WebViewActivity::class.java)
-                                                .apply {
-                                                    putExtra("webAppId", webApp.id)
-                                                    addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-                                                }
-                                            context.startActivity(intent)
+                                            com.cylonid.nativealpha.util.WebAppRouter.launch(context, webApp.id)
                                         },
                                         onLongClick = {
                                             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -466,12 +450,7 @@ fun MainDashboardScreen(
                 onDismiss = { contextMenuApp = null },
                 onOpen = {
                     contextMenuApp = null
-                    val intent = Intent(context, WebViewActivity::class.java)
-                        .apply {
-                            putExtra("webAppId", app.id)
-                            addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-                        }
-                    context.startActivity(intent)
+                    com.cylonid.nativealpha.util.WebAppRouter.launch(context, app.id)
                 },
                 isPinned = app.isPinned,
                 onPin = {

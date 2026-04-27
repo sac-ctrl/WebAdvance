@@ -134,6 +134,93 @@
             android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
             android:launchMode="standard" />
 
+        <!--
+            Per-app sandbox WebView activities. Each runs in its own Android process
+            (`:webapp_N`) so it gets a fully isolated WebView profile (cookies,
+            localStorage, IndexedDB, cache, service workers). WebAppRouter routes
+            every web app launch into one of these slots — no two apps share data.
+        -->
+        <activity
+            android:name="com.cylonid.nativealpha.ui.WebViewActivity0"
+            android:parentActivityName="com.cylonid.nativealpha.MainActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/AppTheme.WebView"
+            android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
+            android:launchMode="standard"
+            android:process=":webapp_0"
+            android:exported="false"
+            android:documentLaunchMode="intoExisting" />
+        <activity
+            android:name="com.cylonid.nativealpha.ui.WebViewActivity1"
+            android:parentActivityName="com.cylonid.nativealpha.MainActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/AppTheme.WebView"
+            android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
+            android:launchMode="standard"
+            android:process=":webapp_1"
+            android:exported="false"
+            android:documentLaunchMode="intoExisting" />
+        <activity
+            android:name="com.cylonid.nativealpha.ui.WebViewActivity2"
+            android:parentActivityName="com.cylonid.nativealpha.MainActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/AppTheme.WebView"
+            android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
+            android:launchMode="standard"
+            android:process=":webapp_2"
+            android:exported="false"
+            android:documentLaunchMode="intoExisting" />
+        <activity
+            android:name="com.cylonid.nativealpha.ui.WebViewActivity3"
+            android:parentActivityName="com.cylonid.nativealpha.MainActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/AppTheme.WebView"
+            android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
+            android:launchMode="standard"
+            android:process=":webapp_3"
+            android:exported="false"
+            android:documentLaunchMode="intoExisting" />
+        <activity
+            android:name="com.cylonid.nativealpha.ui.WebViewActivity4"
+            android:parentActivityName="com.cylonid.nativealpha.MainActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/AppTheme.WebView"
+            android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
+            android:launchMode="standard"
+            android:process=":webapp_4"
+            android:exported="false"
+            android:documentLaunchMode="intoExisting" />
+        <activity
+            android:name="com.cylonid.nativealpha.ui.WebViewActivity5"
+            android:parentActivityName="com.cylonid.nativealpha.MainActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/AppTheme.WebView"
+            android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
+            android:launchMode="standard"
+            android:process=":webapp_5"
+            android:exported="false"
+            android:documentLaunchMode="intoExisting" />
+        <activity
+            android:name="com.cylonid.nativealpha.ui.WebViewActivity6"
+            android:parentActivityName="com.cylonid.nativealpha.MainActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/AppTheme.WebView"
+            android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
+            android:launchMode="standard"
+            android:process=":webapp_6"
+            android:exported="false"
+            android:documentLaunchMode="intoExisting" />
+        <activity
+            android:name="com.cylonid.nativealpha.ui.WebViewActivity7"
+            android:parentActivityName="com.cylonid.nativealpha.MainActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/AppTheme.WebView"
+            android:configChanges="orientation|screenSize|smallestScreenSize|density|screenLayout|uiMode|keyboard|keyboardHidden|navigation"
+            android:launchMode="standard"
+            android:process=":webapp_7"
+            android:exported="false"
+            android:documentLaunchMode="intoExisting" />
+
         <!--        Make sure to also copy changes to WebViewActivity in build.gradle-->
         <activity
             android:name=".WebViewActivity"
