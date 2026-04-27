@@ -322,13 +322,34 @@ class WebViewViewModel @Inject constructor(
         return downloadExtensions.any { url.lowercase().endsWith(it) }
     }
 
-    fun handleDownload(url: String, webApp: WebApp? = null) {
-        downloadManager.downloadFile(webApp?.id ?: 0L, url, null, webApp)
+    fun handleDownload(
+        url: String,
+        webApp: WebApp? = null,
+        userAgent: String? = null,
+        contentDisposition: String? = null,
+        mimeType: String? = null,
+        referer: String? = null
+    ) {
+        downloadManager.downloadFile(
+            webAppId = webApp?.id ?: 0L,
+            url = url,
+            fileName = null,
+            webApp = webApp,
+            userAgent = userAgent,
+            contentDisposition = contentDisposition,
+            explicitMimeType = mimeType,
+            referer = referer
+        )
         _webViewState.value = _webViewState.value.copy(shouldDownloadUrl = null)
     }
 
-    fun handleBlobDownload(filename: String, base64Data: String, webApp: WebApp? = null) {
-        downloadManager.saveBlobFile(webApp?.id ?: 0L, filename, base64Data, webApp)
+    fun handleBlobDownload(
+        filename: String,
+        base64Data: String,
+        mimeType: String? = null,
+        webApp: WebApp? = null
+    ) {
+        downloadManager.saveBlobFile(webApp?.id ?: 0L, filename, base64Data, mimeType, webApp)
         _webViewState.value = _webViewState.value.copy(shouldDownloadUrl = null)
     }
 

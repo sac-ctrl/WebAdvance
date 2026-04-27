@@ -612,7 +612,52 @@ fun WebViewScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.handleDownload(imageUrl, webApp)
+                        val wv = webViewRef.value
+                        if (imageUrl.startsWith("data:")) {
+                            // data: URL → decode locally.
+                            viewModel.handleDownload(
+                                url = imageUrl,
+                                webApp = webApp,
+                                userAgent = wv?.settings?.userAgentString,
+                                referer = wv?.url
+                            )
+                        } else {
+                            // Try fetching the image through the WebView first
+                            // (gives us cookies + the exact origin context).
+                            // If XHR fails (e.g. CORS), fall back to the system
+                            // download manager — which also has cookies wired.
+                            wv?.evaluateJavascript("""
+                                (function() {
+                                    function fallback() {
+                                        if (window.waosDownloadBlob && window.waosDownloadBlob.linkLongPress) {
+                                            window.waosDownloadBlob.__waosImageFallback && window.waosDownloadBlob.__waosImageFallback('$imageUrl');
+                                        }
+                                    }
+                                    try {
+                                        var xhr = new XMLHttpRequest();
+                                        xhr.open('GET', '$imageUrl', true);
+                                        xhr.responseType = 'blob';
+                                        xhr.withCredentials = true;
+                                        xhr.onload = function() {
+                                            if ((xhr.status === 200 || xhr.status === 0) && xhr.response) {
+                                                var b = xhr.response;
+                                                var fr = new FileReader();
+                                                fr.onloadend = function() {
+                                                    var b64 = (fr.result || '').toString().split(',')[1] || '';
+                                                    var name = ('$imageUrl'.split('/').pop() || '').split('?')[0];
+                                                    if (window.waosDownloadBlob && window.waosDownloadBlob.downloadBlobWithMime) {
+                                                        window.waosDownloadBlob.downloadBlobWithMime(name, b64, b.type || '');
+                                                    }
+                                                };
+                                                fr.readAsDataURL(b);
+                                            } else { fallback(); }
+                                        };
+                                        xhr.onerror = function() { fallback(); };
+                                        xhr.send();
+                                    } catch(e) { fallback(); }
+                                })();
+                            """.trimIndent(), null)
+                        }
                         viewModel.dismissImageLongPressDialog()
                     },
                     modifier = Modifier.background(
@@ -967,8 +1012,50 @@ fun WebViewScreen(
                                 }
                             }
                         )
-                    webView.setDownloadListener { url, _, _, _, _ ->
-                        viewModel.handleDownload(url, webAppRef.value)
+                    webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
+                        when {
+                            url.startsWith("blob:") -> {
+                                // Pull the blob into JS, base64-encode it, and
+                                // pipe back through the JS bridge.
+                                webViewRef.value?.evaluateJavascript("""
+                                    (function() {
+                                        try {
+                                            var xhr = new XMLHttpRequest();
+                                            xhr.open('GET', '$url', true);
+                                            xhr.responseType = 'blob';
+                                            xhr.onload = function() {
+                                                if (xhr.status === 200 || xhr.status === 0) {
+                                                    var blob = xhr.response;
+                                                    var reader = new FileReader();
+                                                    reader.onloadend = function() {
+                                                        var b64 = (reader.result || '').toString().split(',')[1] || '';
+                                                        var name = (blob && blob.name) ? blob.name : '';
+                                                        var mime = (blob && blob.type) ? blob.type : '${mimeType ?: ""}';
+                                                        if (window.waosDownloadBlob && window.waosDownloadBlob.downloadBlobWithMime) {
+                                                            window.waosDownloadBlob.downloadBlobWithMime(name, b64, mime);
+                                                        } else if (window.waosDownloadBlob && window.waosDownloadBlob.downloadBlob) {
+                                                            window.waosDownloadBlob.downloadBlob(name, b64);
+                                                        }
+                                                    };
+                                                    reader.readAsDataURL(blob);
+                                                }
+                                            };
+                                            xhr.send();
+                                        } catch(e) { console.error('blob fetch failed', e); }
+                                    })();
+                                """.trimIndent(), null)
+                            }
+                            else -> {
+                                viewModel.handleDownload(
+                                    url = url,
+                                    webApp = webAppRef.value,
+                                    userAgent = userAgent,
+                                    contentDisposition = contentDisposition,
+                                    mimeType = mimeType,
+                                    referer = webViewRef.value?.url
+                                )
+                            }
+                        }
                     }
                     webView.webChromeClient = object : WebChromeClient() {
                             override fun onConsoleMessage(msg: ConsoleMessage?): Boolean {
@@ -1031,7 +1118,11 @@ fun WebViewScreen(
                     webView.addJavascriptInterface(object {
                         @JavascriptInterface
                         fun downloadBlob(filename: String, base64Data: String) {
-                            viewModel.handleBlobDownload(filename, base64Data, webAppRef.value)
+                            viewModel.handleBlobDownload(filename, base64Data, null, webAppRef.value)
+                        }
+                        @JavascriptInterface
+                        fun downloadBlobWithMime(filename: String, base64Data: String, mime: String?) {
+                            viewModel.handleBlobDownload(filename, base64Data, mime, webAppRef.value)
                         }
                         @JavascriptInterface
                         fun imageLongPress(imageUrl: String) {
@@ -1047,6 +1138,22 @@ fun WebViewScreen(
                         fun textSelected(text: String) {
                             if (text.isNotBlank()) {
                                 viewModel.handleTextSelected(text)
+                            }
+                        }
+                        @JavascriptInterface
+                        fun __waosImageFallback(url: String) {
+                            // Called from JS when the in-page XHR for an image
+                            // fails (CORS, etc). Drops back to the system
+                            // download path which already forwards cookies/UA.
+                            if (url.isBlank()) return
+                            val wv = webViewRef.value
+                            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                                viewModel.handleDownload(
+                                    url = url,
+                                    webApp = webAppRef.value,
+                                    userAgent = wv?.settings?.userAgentString,
+                                    referer = wv?.url
+                                )
                             }
                         }
                     }, "waosDownloadBlob")

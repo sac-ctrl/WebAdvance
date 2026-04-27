@@ -1,16 +1,10 @@
 package com.cylonid.nativealpha.webview
 
-import android.app.DownloadManager
 import android.content.Context
 import android.graphics.Bitmap
-import android.net.Uri
 import android.webkit.*
 import android.webkit.DownloadListener
 import android.webkit.WebViewClient
-import android.os.Environment
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
 
 class WebViewClientWithDownload(
     private val context: Context,
@@ -20,8 +14,6 @@ class WebViewClientWithDownload(
 ) : WebViewClient(), DownloadListener {
 
     var adblockEnabled: Boolean = false
-
-    private val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
     private val adHosts = setOf(
         "doubleclick.net", "googlesyndication.com", "googleadservices.com",
@@ -51,29 +43,10 @@ class WebViewClientWithDownload(
         mimetype: String,
         contentLength: Long
     ) {
-        try {
-            val filename = parseFilename(contentDisposition, url)
-            val downloadDir = getDownloadDirectory(context)
-            
-            // Create download request
-            val request = DownloadManager.Request(Uri.parse(url)).apply {
-                setMimeType(mimetype)
-                addRequestHeader("User-Agent", userAgent)
-                setTitle(filename)
-                setDescription("Downloading from $url")
-                setDestinationInExternalPublicDir(
-                    Environment.DIRECTORY_DOWNLOADS,
-                    filename
-                )
-                setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            }
-
-            // Start download
-            downloadManager.enqueue(request)
-            onDownloadStart(filename, url)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        // Don't enqueue here — defer to the host (DownloadManager) so we get
+        // unified Chrome-like handling with cookies, referer, per-app folders,
+        // and a single source of truth in the DB.
+        onDownloadStart(url, contentDisposition.ifBlank { mimetype })
     }
 
     override fun shouldInterceptRequest(
@@ -112,28 +85,4 @@ class WebViewClientWithDownload(
         handler?.cancel()
     }
 
-    private fun parseFilename(contentDisposition: String, url: String): String {
-        // Try to extract filename from Content-Disposition header
-        val regex = """filename\*?=['"]?([^'"\n]*?)['"]?(?:;|$)""".toRegex()
-        val match = regex.find(contentDisposition)
-        
-        return if (match != null) {
-            match.groupValues[1].split("/").last()
-        } else {
-            // Fallback to URL filename
-            url.split("/").last().split("?").first().let {
-                if (it.isNotEmpty()) it else {
-                    "download_${System.currentTimeMillis()}"
-                }
-            }
-        }
-    }
-
-    private fun getDownloadDirectory(context: Context): File {
-        val dir = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "WAOS")
-        if (!dir.exists()) {
-            dir.mkdirs()
-        }
-        return dir
-    }
 }
