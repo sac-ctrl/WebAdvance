@@ -31,6 +31,7 @@ import javax.inject.Inject
 class WebViewViewModel @Inject constructor(
     private val repository: WebAppRepository,
     private val downloadManager: DownloadManager,
+    private val clipboardManager: com.cylonid.nativealpha.manager.ClipboardManager,
     private val linkSystem: LinkManagementSystem,
     private val historyTracker: LinkHistoryTracker,
     private val workManager: WorkManager,
@@ -402,6 +403,39 @@ class WebViewViewModel @Inject constructor(
         if (text.isNotBlank()) {
             _webViewState.value = _webViewState.value.copy(selectedText = text)
         }
+    }
+
+    @Volatile private var lastClipCapture: Pair<String, Long>? = null
+
+    /**
+     * Persists a string copied from inside the WebView. Throttles identical
+     * captures within 1.5s (the same copy event often fires twice — once via
+     * the native `copy` listener and once via the patched
+     * `navigator.clipboard.writeText`).
+     */
+    fun captureClipboardItem(text: String, hint: String? = null) {
+        if (text.isBlank()) return
+        val trimmed = text.take(50_000) // hard cap so a giant selection can't OOM us
+        val now = System.currentTimeMillis()
+        val last = lastClipCapture
+        if (last != null && last.first == trimmed && (now - last.second) < 1_500L) return
+        lastClipCapture = trimmed to now
+
+        val type = when {
+            hint == "url" -> com.cylonid.nativealpha.manager.ClipboardItem.Type.URL
+            hint == "image" -> com.cylonid.nativealpha.manager.ClipboardItem.Type.IMAGE
+            isLikelyUrl(trimmed) -> com.cylonid.nativealpha.manager.ClipboardItem.Type.URL
+            else -> com.cylonid.nativealpha.manager.ClipboardItem.Type.TEXT
+        }
+        val app = _webApp.value
+        clipboardManager.copyToAppClipboard(app?.id ?: 0L, trimmed, type)
+    }
+
+    private fun isLikelyUrl(s: String): Boolean {
+        val t = s.trim()
+        if (t.length > 2048 || t.contains('\n')) return false
+        return t.startsWith("http://", true) || t.startsWith("https://", true) ||
+            android.util.Patterns.WEB_URL.matcher(t).matches()
     }
 
     fun clearSelectedText() {

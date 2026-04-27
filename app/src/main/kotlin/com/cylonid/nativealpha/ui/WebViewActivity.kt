@@ -895,6 +895,94 @@ fun WebViewScreen(
                             webAppRef.value?.let { app ->
                                 if (app.isDarkModeEnabled) injectDarkMode(webView)
                             }
+                            // Inject the clipboard capture listener. This
+                            // mirrors Chrome by hooking every copy/cut path:
+                            // the native copy/cut events, the modern
+                            // navigator.clipboard.writeText/.write APIs, and
+                            // the legacy document.execCommand('copy') call.
+                            // Anything copied from inside the page lands in
+                            // the in-app clipboard manager.
+                            webViewRef.value?.evaluateJavascript("""
+                                javascript:(function() {
+                                    if (window.__waosClipInstalled) return;
+                                    window.__waosClipInstalled = true;
+                                    function send(text, hint) {
+                                        try {
+                                            if (!text) return;
+                                            var s = (''+text);
+                                            if (s.length > 50000) s = s.substring(0, 50000);
+                                            if (window.waosClipboard && window.waosClipboard.captured) {
+                                                window.waosClipboard.captured(s, hint || '');
+                                            }
+                                        } catch(e) {}
+                                    }
+                                    document.addEventListener('copy', function(e) {
+                                        try {
+                                            var t = '';
+                                            if (e.clipboardData) t = e.clipboardData.getData('text/plain') || '';
+                                            if (!t && window.getSelection) t = window.getSelection().toString();
+                                            send(t, '');
+                                        } catch(e) {}
+                                    }, true);
+                                    document.addEventListener('cut', function(e) {
+                                        try {
+                                            var t = '';
+                                            if (e.clipboardData) t = e.clipboardData.getData('text/plain') || '';
+                                            if (!t && window.getSelection) t = window.getSelection().toString();
+                                            send(t, '');
+                                        } catch(e) {}
+                                    }, true);
+                                    try {
+                                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                                            var origWriteText = navigator.clipboard.writeText.bind(navigator.clipboard);
+                                            navigator.clipboard.writeText = function(text) {
+                                                send(text, '');
+                                                return origWriteText(text);
+                                            };
+                                        }
+                                        if (navigator.clipboard && navigator.clipboard.write) {
+                                            var origWrite = navigator.clipboard.write.bind(navigator.clipboard);
+                                            navigator.clipboard.write = function(items) {
+                                                try {
+                                                    if (items && items.length) {
+                                                        items.forEach(function(it) {
+                                                            if (it && it.types) {
+                                                                if (it.types.indexOf('text/plain') >= 0 && it.getType) {
+                                                                    it.getType('text/plain').then(function(b) {
+                                                                        b.text().then(function(t) { send(t, ''); });
+                                                                    });
+                                                                } else if (it.types.indexOf('image/png') >= 0 || it.types.indexOf('image/jpeg') >= 0) {
+                                                                    send('Image copied', 'image');
+                                                                }
+                                                            }
+                                                        });
+                                                    }
+                                                } catch(e) {}
+                                                return origWrite(items);
+                                            };
+                                        }
+                                    } catch(e) {}
+                                    try {
+                                        var origExec = document.execCommand;
+                                        document.execCommand = function(cmd) {
+                                            var r = origExec.apply(document, arguments);
+                                            try {
+                                                if (cmd && (cmd.toLowerCase() === 'copy' || cmd.toLowerCase() === 'cut')) {
+                                                    var t = window.getSelection ? window.getSelection().toString() : '';
+                                                    if (!t) {
+                                                        var el = document.activeElement;
+                                                        if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && el.value) {
+                                                            t = el.value.substring(el.selectionStart || 0, el.selectionEnd || el.value.length);
+                                                        }
+                                                    }
+                                                    send(t, '');
+                                                }
+                                            } catch(e) {}
+                                            return r;
+                                        };
+                                    } catch(e) {}
+                                })()
+                            """.trimIndent(), null)
                             // Inject auto scroll functionality
                             webViewRef.value?.evaluateJavascript("""
                                 javascript:(function() {
@@ -1157,6 +1245,18 @@ fun WebViewScreen(
                             }
                         }
                     }, "waosDownloadBlob")
+
+                    // Dedicated bridge for the page-side clipboard listener.
+                    // Receives every copy/cut intercepted by the injected JS
+                    // (native events + navigator.clipboard + execCommand) and
+                    // hands it to the viewmodel for de-dup + persistence.
+                    webView.addJavascriptInterface(object {
+                        @JavascriptInterface
+                        fun captured(text: String, hint: String?) {
+                            if (text.isBlank()) return
+                            viewModel.captureClipboardItem(text, hint)
+                        }
+                    }, "waosClipboard")
                     webView
                 },
                 update = { webView ->
