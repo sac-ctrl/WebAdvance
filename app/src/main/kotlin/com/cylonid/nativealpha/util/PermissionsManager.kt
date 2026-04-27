@@ -8,177 +8,264 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 
 /**
- * Manages all app permissions and permission requests
+ * Single source of truth for every permission the app surfaces in the
+ * Permissions screen. Each enum entry carries:
+ *
+ *  - [androidPermission]  the underlying Manifest constant (or "" when the
+ *                         permission doesn't exist on this Android version,
+ *                         in which case [hasPermission] returns true).
+ *  - [displayName]        a human label shown in the UI (e.g. "Camera").
+ *  - [description]        one-line summary shown under the title.
+ *  - [explanation]        longer "what this enables" text shown in the card.
+ *  - [category]           grouping bucket on the screen.
+ *  - [iconKey]            string key picked up by the screen to choose the
+ *                         right Material icon (we keep enum free of Compose
+ *                         deps so it stays usable from non-UI code).
+ *  - [runtimeRequest]     true if [requestPermissions] should ask via the
+ *                         standard runtime dialog. False for install-time
+ *                         normal perms (INTERNET, MODIFY_AUDIO_SETTINGS) and
+ *                         for special-access ones that go through Settings.
+ *  - [specialAccess]      true for permissions that must be granted via a
+ *                         Settings screen, not the runtime dialog (overlay,
+ *                         all-files access, etc).
  */
 object PermissionsManager {
 
-    enum class Permission(val id: String, val androidPermission: String, val description: String) {
+    enum class Category(val displayName: String) {
+        FILES("Files & Storage"),
+        MEDIA("Camera, Mic & Audio"),
+        LOCATION("Location"),
+        NOTIFICATIONS("Notifications"),
+        DISPLAY("Display Over Apps"),
+        NETWORK("Network"),
+    }
+
+    enum class Permission(
+        val id: String,
+        val androidPermission: String,
+        val displayName: String,
+        val description: String,
+        val explanation: String,
+        val category: Category,
+        val iconKey: String,
+        val runtimeRequest: Boolean = true,
+        val specialAccess: Boolean = false,
+    ) {
         READ_STORAGE(
-            "READ_STORAGE",
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            id = "READ_STORAGE",
+            androidPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
                 Manifest.permission.READ_MEDIA_IMAGES
             else
                 Manifest.permission.READ_EXTERNAL_STORAGE,
-            "Access to read files from storage"
-        ),
-        WRITE_STORAGE(
-            "WRITE_STORAGE",
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            "Access to write files to storage"
-        ),
-        MANAGE_STORAGE(
-            "MANAGE_STORAGE",
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-                Manifest.permission.MANAGE_EXTERNAL_STORAGE
-            else
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            "Full access to all files on device"
-        ),
-        CAMERA(
-            "CAMERA",
-            Manifest.permission.CAMERA,
-            "Access to device camera for screenshots and video"
-        ),
-        INTERNET(
-            "INTERNET",
-            Manifest.permission.INTERNET,
-            "Access to internet for web browsing"
-        ),
-        RECORD_AUDIO(
-            "RECORD_AUDIO",
-            Manifest.permission.RECORD_AUDIO,
-            "Access to microphone for audio recording"
-        ),
-        ACCESS_FINE_LOCATION(
-            "ACCESS_FINE_LOCATION",
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            "Access to GPS location"
-        ),
-        ACCESS_COARSE_LOCATION(
-            "ACCESS_COARSE_LOCATION",
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            "Access to network-based location"
+            displayName = "Read Photos",
+            description = "Read images from your gallery",
+            explanation = "Lets web apps pick photos for uploads, and lets the in-app downloader save into shared media folders.",
+            category = Category.FILES,
+            iconKey = "image",
         ),
         READ_MEDIA_VIDEO(
-            "READ_MEDIA_VIDEO",
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            id = "READ_MEDIA_VIDEO",
+            androidPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
                 Manifest.permission.READ_MEDIA_VIDEO
             else
                 Manifest.permission.READ_EXTERNAL_STORAGE,
-            "Access to read video files"
+            displayName = "Read Videos",
+            description = "Read videos from your gallery",
+            explanation = "Required when a web app asks you to upload a video clip from the device.",
+            category = Category.FILES,
+            iconKey = "video",
         ),
         READ_MEDIA_AUDIO(
-            "READ_MEDIA_AUDIO",
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            id = "READ_MEDIA_AUDIO",
+            androidPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
                 Manifest.permission.READ_MEDIA_AUDIO
             else
                 Manifest.permission.READ_EXTERNAL_STORAGE,
-            "Access to read audio files"
+            displayName = "Read Music & Audio",
+            description = "Read audio files from your device",
+            explanation = "Used when a web app needs to attach a song or voice memo from device storage.",
+            category = Category.FILES,
+            iconKey = "audiofile",
         ),
-        SYSTEM_ALERT_WINDOW(
-            "SYSTEM_ALERT_WINDOW",
-            Manifest.permission.SYSTEM_ALERT_WINDOW,
-            "Display over other apps"
+        WRITE_STORAGE(
+            id = "WRITE_STORAGE",
+            androidPermission = Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            displayName = "Save to Storage",
+            description = "Save downloads to public folders",
+            explanation = "On Android 9 and below this is required for the in-app downloader to write to the public Downloads folder. Auto-granted on Android 10+.",
+            category = Category.FILES,
+            iconKey = "download",
+        ),
+        MANAGE_STORAGE(
+            id = "MANAGE_STORAGE",
+            androidPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+                Manifest.permission.MANAGE_EXTERNAL_STORAGE
+            else
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            displayName = "All Files Access",
+            description = "Manage every file on the device",
+            explanation = "Optional. Only needed for the universal file viewer to open files outside the standard media folders. Granted via a system Settings page.",
+            category = Category.FILES,
+            iconKey = "folder",
+            specialAccess = true,
+            runtimeRequest = false,
+        ),
+        CAMERA(
+            id = "CAMERA",
+            androidPermission = Manifest.permission.CAMERA,
+            displayName = "Camera",
+            description = "Capture photos and video inside web apps",
+            explanation = "Required for sites that take photos (Snapchat, Discord, video calls, QR scanners, etc.).",
+            category = Category.MEDIA,
+            iconKey = "camera",
+        ),
+        RECORD_AUDIO(
+            id = "RECORD_AUDIO",
+            androidPermission = Manifest.permission.RECORD_AUDIO,
+            displayName = "Microphone",
+            description = "Record audio inside web apps",
+            explanation = "Required for voice messages, video calls, voice search and dictation in WebView pages.",
+            category = Category.MEDIA,
+            iconKey = "mic",
+        ),
+        MODIFY_AUDIO_SETTINGS(
+            id = "MODIFY_AUDIO_SETTINGS",
+            androidPermission = Manifest.permission.MODIFY_AUDIO_SETTINGS,
+            displayName = "Audio Routing",
+            description = "Switch between speaker, earpiece and headset",
+            explanation = "Auto-granted on install. Lets WebRTC calls move audio between earpiece, speaker and Bluetooth headset.",
+            category = Category.MEDIA,
+            iconKey = "volume",
+            runtimeRequest = false,
+        ),
+        ACCESS_FINE_LOCATION(
+            id = "ACCESS_FINE_LOCATION",
+            androidPermission = Manifest.permission.ACCESS_FINE_LOCATION,
+            displayName = "Precise Location",
+            description = "GPS-accurate location",
+            explanation = "Lets sites like Maps, Uber and food delivery apps see your exact position.",
+            category = Category.LOCATION,
+            iconKey = "location",
+        ),
+        ACCESS_COARSE_LOCATION(
+            id = "ACCESS_COARSE_LOCATION",
+            androidPermission = Manifest.permission.ACCESS_COARSE_LOCATION,
+            displayName = "Approximate Location",
+            description = "Network-based, city-level location",
+            explanation = "Lower-accuracy fallback when a site only needs to know your general area (weather, news, search).",
+            category = Category.LOCATION,
+            iconKey = "place",
         ),
         POST_NOTIFICATIONS(
-            "POST_NOTIFICATIONS",
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            id = "POST_NOTIFICATIONS",
+            androidPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
                 Manifest.permission.POST_NOTIFICATIONS
             else
                 "",
-            "Send notifications"
-        )
+            displayName = "Notifications",
+            description = "Show notifications from web apps",
+            explanation = "Required on Android 13+ for download status, web push notifications and foreground service alerts.",
+            category = Category.NOTIFICATIONS,
+            iconKey = "notifications",
+        ),
+        SYSTEM_ALERT_WINDOW(
+            id = "SYSTEM_ALERT_WINDOW",
+            androidPermission = Manifest.permission.SYSTEM_ALERT_WINDOW,
+            displayName = "Display Over Other Apps",
+            description = "Show floating WebView windows",
+            explanation = "Required for the floating-window feature so a web app can stay on top while you use other apps. Granted via a system Settings page.",
+            category = Category.DISPLAY,
+            iconKey = "overlay",
+            specialAccess = true,
+            runtimeRequest = false,
+        ),
+        INTERNET(
+            id = "INTERNET",
+            androidPermission = Manifest.permission.INTERNET,
+            displayName = "Internet",
+            description = "Connect to the network",
+            explanation = "Auto-granted on install. Required for everything the app does.",
+            category = Category.NETWORK,
+            iconKey = "wifi",
+            runtimeRequest = false,
+        ),
     }
 
-    // Check if permission is granted
+    /** Permission state. Granted, denied (still askable), or permanently
+     *  denied / blocked (must go through Settings). */
+    enum class Status { GRANTED, DENIED, BLOCKED }
+
     fun hasPermission(context: Context, permission: Permission): Boolean {
-        // Skip permissions that don't exist on this Android version
         if (permission.androidPermission.isEmpty()) return true
-        
         return when (permission) {
             Permission.SYSTEM_ALERT_WINDOW -> {
-                // Special check for SYSTEM_ALERT_WINDOW
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                     android.provider.Settings.canDrawOverlays(context)
-                } else {
-                    true // Granted by default on older versions
-                }
+                else true
             }
             Permission.MANAGE_STORAGE -> {
-                // Special check for MANAGE_EXTERNAL_STORAGE
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
                     android.os.Environment.isExternalStorageManager()
-                } else {
-                    // On older versions, check WRITE_EXTERNAL_STORAGE
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                    ) == PackageManager.PERMISSION_GRANTED
-                }
-            }
-            else -> {
-                ContextCompat.checkSelfPermission(
+                else ContextCompat.checkSelfPermission(
                     context,
-                    permission.androidPermission
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
                 ) == PackageManager.PERMISSION_GRANTED
             }
+            Permission.WRITE_STORAGE -> {
+                // Auto-granted on Android 10+ (scoped storage handles it).
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) true
+                else ContextCompat.checkSelfPermission(
+                    context, permission.androidPermission
+                ) == PackageManager.PERMISSION_GRANTED
+            }
+            else -> ContextCompat.checkSelfPermission(
+                context, permission.androidPermission
+            ) == PackageManager.PERMISSION_GRANTED
         }
     }
 
-    // Check multiple permissions
-    fun hasPermissions(context: Context, permissions: List<Permission>): Boolean {
-        return permissions.all { hasPermission(context, it) }
-    }
+    fun hasPermissions(context: Context, permissions: List<Permission>): Boolean =
+        permissions.all { hasPermission(context, it) }
 
-    // Get all required permissions with their status
-    fun getAllPermissionsStatus(context: Context): Map<Permission, Boolean> {
-        return Permission.values().associateWith { hasPermission(context, it) }
-    }
+    fun getAllPermissionsStatus(context: Context): Map<Permission, Boolean> =
+        Permission.values().associateWith { hasPermission(context, it) }
 
-    // Get granted permissions
-    fun getGrantedPermissions(context: Context): List<Permission> {
-        return Permission.values().filter { hasPermission(context, it) }
-    }
+    fun getGrantedPermissions(context: Context): List<Permission> =
+        Permission.values().filter { hasPermission(context, it) }
 
-    // Get denied permissions
-    fun getDeniedPermissions(context: Context): List<Permission> {
-        return Permission.values().filter { !hasPermission(context, it) && it.androidPermission.isNotEmpty() }
-    }
+    fun getDeniedPermissions(context: Context): List<Permission> =
+        Permission.values().filter { !hasPermission(context, it) && it.androidPermission.isNotEmpty() }
 
-    // Request permissions
+    /** All runtime-grantable permissions that aren't yet granted. Used by the
+     *  "Grant all missing" button on the Permissions screen. */
+    fun getMissingRuntimePermissions(context: Context): List<Permission> =
+        Permission.values().filter {
+            it.runtimeRequest && !it.specialAccess &&
+                it.androidPermission.isNotEmpty() && !hasPermission(context, it)
+        }
+
     fun requestPermissions(
         activity: FragmentActivity,
         permissions: List<Permission>,
         requestCode: Int
     ) {
-        val permissionsToRequest = permissions
-            .filter { !hasPermission(activity, it) && it.androidPermission.isNotEmpty() }
+        val toRequest = permissions
+            .filter { it.runtimeRequest && !it.specialAccess && !hasPermission(activity, it) && it.androidPermission.isNotEmpty() }
             .map { it.androidPermission }
             .toTypedArray()
-
-        if (permissionsToRequest.isNotEmpty()) {
-            androidx.core.app.ActivityCompat.requestPermissions(activity, permissionsToRequest, requestCode)
+        if (toRequest.isNotEmpty()) {
+            androidx.core.app.ActivityCompat.requestPermissions(activity, toRequest, requestCode)
         }
     }
 
-    // Request single permission
-    fun requestPermission(
-        activity: FragmentActivity,
-        permission: Permission,
-        requestCode: Int
-    ) {
+    fun requestPermission(activity: FragmentActivity, permission: Permission, requestCode: Int) =
         requestPermissions(activity, listOf(permission), requestCode)
-    }
 
-    // Check if app needs to show rationale for permission
-    fun shouldShowRationale(activity: FragmentActivity, permission: Permission): Boolean {
-        return androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale(
-            activity,
-            permission.androidPermission
+    fun shouldShowRationale(activity: FragmentActivity, permission: Permission): Boolean =
+        androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale(
+            activity, permission.androidPermission
         )
-    }
 
-    fun formatPermissionDescription(permission: Permission): String {
-        return "${permission.id}: ${permission.description}"
-    }
+    fun formatPermissionDescription(permission: Permission): String =
+        "${permission.displayName}: ${permission.description}"
 }
