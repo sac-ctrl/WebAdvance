@@ -24,4 +24,10 @@ interface WindowPresetDao {
 
     @Query("DELETE FROM window_presets WHERE id = :id")
     suspend fun deletePreset(id: Long)
+
+    @Query("SELECT * FROM window_presets")
+    suspend fun getAllPresetsList(): List<WindowPresetEntity>
+
+    @Query("DELETE FROM window_presets")
+    suspend fun clearAll()
 }

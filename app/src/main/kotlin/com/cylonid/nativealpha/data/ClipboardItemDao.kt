@@ -23,4 +23,10 @@ interface ClipboardItemDao {
 
     @Query("DELETE FROM clipboard_items WHERE webAppId = :webAppId")
     suspend fun clearAppItems(webAppId: Long)
+
+    @Query("SELECT * FROM clipboard_items ORDER BY timestamp DESC")
+    suspend fun getAllItems(): List<ClipboardItem>
+
+    @Query("DELETE FROM clipboard_items")
+    suspend fun clearAll()
 }

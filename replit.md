@@ -121,7 +121,10 @@ Dark WAOS theme with:
 6. **Missing service declaration**: Added `com.cylonid.nativealpha.service.FloatingWindowService` to AndroidManifest (used by WebViewActivity but was undeclared).
 7. **Desktop user agent**: `AddWebAppViewModel.saveWebApp()` now correctly saves desktop UA string when `useDesktopUserAgent` is true; `loadForEdit()` detects and restores it.
 8. **shouldRefresh loop**: Added `clearRefreshFlag()` to `WebViewViewModel`; update block now calls it after `reload()` to prevent infinite refresh loop.
+9. **Backup & Restore not working**: Rebuilt `BackupService` (v3) to bundle EVERYTHING — every Room table (web apps, clipboard, credentials/vault, downloads, window presets, notifications, notification settings, security settings) plus every SharedPreferences XML the app owns (typed via `SerializedPref`). New SAF flow: tapping Backup opens a folder picker and writes `WAOS_Backup_<timestamp>.waos` (JSON) to the chosen folder; tapping Restore opens a file picker, parses the `.waos` file, clears each table and rewrites all rows + prefs. Wired through `BackupViewModel.exportToFolder(Uri)` / `importFromFile(Uri)` and `SettingsViewModel` via `OpenDocumentTree` / `OpenDocument` Activity Result contracts; takes persistable URI permission. Legacy v1/v2 backups (data at root) still restore.
 
 ## Dependencies Added
 - `androidx.navigation:navigation-compose:2.8.9` — Compose navigation
 - `io.coil-kt:coil-compose:2.7.0` — Image loading (for future favicon support)
+- `androidx.activity:activity-compose:1.10.1` — `rememberLauncherForActivityResult` for SAF pickers
+- `androidx.documentfile:documentfile:1.0.1` — `DocumentFile` tree URI access for backup folder writes

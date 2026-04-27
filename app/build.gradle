@@ -193,6 +193,10 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.3'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.3'
     implementation 'androidx.activity:activity-ktx:1.10.1'
+    // Activity Compose for ActivityResultContracts (SAF folder/file pickers)
+    implementation 'androidx.activity:activity-compose:1.10.1'
+    // DocumentFile for SAF tree-uri folder writes
+    implementation 'androidx.documentfile:documentfile:1.0.1'
 
     // Jetpack Compose (BOM ensures all versions are consistent)
     def composeBom = platform('androidx.compose:compose-bom:2025.03.00')

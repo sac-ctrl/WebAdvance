@@ -2,6 +2,7 @@ package com.cylonid.nativealpha.viewmodel
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -123,17 +124,24 @@ class SettingsViewModel @Inject constructor(
         prefs.edit().putInt("auto_scroll_speed", value).apply()
     }
 
-    fun exportData() {
+    /**
+     * User picked a destination folder via SAF — write the comprehensive
+     * .waos backup into it.
+     */
+    fun exportToFolder(treeUri: Uri) {
         isExporting = true
         lastExportMessage = ""
         viewModelScope.launch {
             try {
-                val path = backupService.createBackup()
-                lastExportMessage = if (path != null) {
-                    "Backup saved to: $path"
-                } else {
-                    "Export failed. Please try again."
-                }
+                // Persist read/write permission on the picked folder.
+                try {
+                    val flags = android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                        android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    context.contentResolver.takePersistableUriPermission(treeUri, flags)
+                } catch (_: Exception) { /* not all providers support this */ }
+
+                val result = backupService.writeBackupToFolder(treeUri)
+                lastExportMessage = result.message
             } catch (e: Exception) {
                 lastExportMessage = "Export error: ${e.message}"
             } finally {
@@ -142,8 +150,22 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun importData() {
-        lastExportMessage = "To import, place your backup file in the app's backup folder and select it."
+    /**
+     * User picked a .waos file via SAF — restore everything from it.
+     */
+    fun importFromFile(fileUri: Uri) {
+        isImporting = true
+        lastExportMessage = ""
+        viewModelScope.launch {
+            try {
+                val result = backupService.restoreFromUri(fileUri)
+                lastExportMessage = result.message
+            } catch (e: Exception) {
+                lastExportMessage = "Restore error: ${e.message}"
+            } finally {
+                isImporting = false
+            }
+        }
     }
 
     fun clearExportMessage() {

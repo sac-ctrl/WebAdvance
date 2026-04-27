@@ -1,0 +1,38 @@
+=== WAOS Crash Report ===
+Time: 2026-04-28 03:44:45
+Version: 1.5.2 (1520)
+Thread: main
+Error: com.google.gson.stream.MalformedJsonException: Unterminated object at line 1 column 32 path $.marketing_attribution
+See https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json
+
+Stack Trace:
+com.google.gson.JsonSyntaxException: com.google.gson.stream.MalformedJsonException: Unterminated object at line 1 column 32 path $.marketing_attribution
+See https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json
+	at com.google.gson.internal.Streams.parse(Streams.java:58)
+	at com.google.gson.JsonParser.parseReader(JsonParser.java:146)
+	at com.google.gson.JsonParser.parseReader(JsonParser.java:110)
+	at com.google.gson.JsonParser.parseString(JsonParser.java:92)
+	at com.cylonid.nativealpha.webview.SessionManager.buildSessionSnapshot(SessionManager.kt:203)
+	at com.cylonid.nativealpha.ui.WebViewActivityKt.WebViewScreen$lambda$183$lambda$113$lambda$102$lambda$101$lambda$99$lambda$98(WebViewActivity.kt:1273)
+	at com.cylonid.nativealpha.ui.WebViewActivityKt.$r8$lambda$ZP2NTQK1un_InFlH7_oMu3HtFms(Unknown Source:0)
+	at com.cylonid.nativealpha.ui.WebViewActivityKt$$ExternalSyntheticLambda0.onReceiveValue(D8$$SyntheticClass:0)
+	at WV.kt.onResult(chromium-SystemWebViewGoogle6432.aab-stable-772705503:3)
+	at org.chromium.base.Callback.b(chromium-SystemWebViewGoogle6432.aab-stable-772705503:1)
+	at WV.jt.run(chromium-SystemWebViewGoogle6432.aab-stable-772705503:5)
+	at android.os.Handler.handleCallback(Handler.java:959)
+	at android.os.Handler.dispatchMessage(Handler.java:100)
+	at android.os.Looper.loopOnce(Looper.java:311)
+	at android.os.Looper.loop(Looper.java:408)
+	at android.app.ActivityThread.main(ActivityThread.java:9119)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:627)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:970)
+Caused by: com.google.gson.stream.MalformedJsonException: Unterminated object at line 1 column 32 path $.marketing_attribution
+See https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json
+	at com.google.gson.stream.JsonReader.syntaxError(JsonReader.java:1754)
+	at com.google.gson.stream.JsonReader.doPeek(JsonReader.java:574)
+	at com.google.gson.stream.JsonReader.hasNext(JsonReader.java:498)
+	at com.google.gson.internal.bind.TypeAdapters$28.read(TypeAdapters.java:875)
+	at com.google.gson.internal.bind.TypeAdapters$28.read(TypeAdapters.java:820)
+	at com.google.gson.internal.Streams.parse(Streams.java:46)
+	... 18 more

@@ -22,6 +22,9 @@ interface NotificationDao {
 
     @Query("DELETE FROM notifications")
     suspend fun clearAllNotifications()
+
+    @Query("SELECT * FROM notifications ORDER BY timestamp DESC")
+    suspend fun getAllNotificationsList(): List<NotificationEntity>
 }
 
 @Dao

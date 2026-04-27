@@ -26,4 +26,10 @@ interface DownloadItemDao {
 
     @Query("DELETE FROM downloads WHERE webAppId = :webAppId")
     suspend fun deleteDownloadsForApp(webAppId: Long)
+
+    @Query("SELECT * FROM downloads ORDER BY timestamp DESC")
+    suspend fun getAllDownloadsList(): List<DownloadItem>
+
+    @Query("DELETE FROM downloads")
+    suspend fun clearAll()
 }

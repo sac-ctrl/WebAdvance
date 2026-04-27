@@ -1,5 +1,8 @@
 package com.cylonid.nativealpha.viewmodel
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cylonid.nativealpha.data.BackupRepository
@@ -7,6 +10,7 @@ import com.cylonid.nativealpha.model.BackupEntity
 import com.cylonid.nativealpha.service.BackupService
 import com.cylonid.nativealpha.ui.screens.BackupInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class BackupViewModel @Inject constructor(
     private val backupRepository: BackupRepository,
-    private val backupService: BackupService
+    private val backupService: BackupService,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _backupHistory = MutableStateFlow<List<BackupInfo>>(emptyList())
@@ -32,6 +37,9 @@ class BackupViewModel @Inject constructor(
 
     private val _lastBackupTime = MutableStateFlow("")
     val lastBackupTime: StateFlow<String> = _lastBackupTime.asStateFlow()
+
+    private val _statusMessage = MutableStateFlow("")
+    val statusMessage: StateFlow<String> = _statusMessage.asStateFlow()
 
     private val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
 
@@ -82,6 +90,9 @@ class BackupViewModel @Inject constructor(
                     backupRepository.saveBackup(backupEntity)
                     loadBackupHistory()
                     loadLastBackupTime()
+                    _statusMessage.value = "Internal backup created."
+                } else {
+                    _statusMessage.value = "Backup failed."
                 }
             } finally {
                 _isBackingUp.value = false
@@ -95,9 +106,11 @@ class BackupViewModel @Inject constructor(
             try {
                 val success = backupService.restoreBackup(backup.path)
                 if (success) {
-                    // Refresh data after restore
                     loadBackupHistory()
                     loadLastBackupTime()
+                    _statusMessage.value = "Restore complete."
+                } else {
+                    _statusMessage.value = "Restore failed."
                 }
             } finally {
                 _isRestoring.value = false
@@ -113,16 +126,52 @@ class BackupViewModel @Inject constructor(
         }
     }
 
-    fun exportData() {
+    /**
+     * SAF-driven backup: user picked a destination folder.
+     */
+    fun exportToFolder(treeUri: Uri) {
+        _isBackingUp.value = true
         viewModelScope.launch {
-            backupService.exportData()
+            try {
+                try {
+                    val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                    context.contentResolver.takePersistableUriPermission(treeUri, flags)
+                } catch (_: Exception) {}
+
+                val result = backupService.writeBackupToFolder(treeUri)
+                _statusMessage.value = result.message
+                if (result.success) {
+                    loadLastBackupTime()
+                    loadBackupHistory()
+                }
+            } finally {
+                _isBackingUp.value = false
+            }
         }
     }
 
-    fun importData() {
+    /**
+     * SAF-driven restore: user picked a .waos file.
+     */
+    fun importFromFile(fileUri: Uri) {
+        _isRestoring.value = true
         viewModelScope.launch {
-            backupService.importData()
+            try {
+                val result = backupService.restoreFromUri(fileUri)
+                _statusMessage.value = result.message
+                if (result.success) {
+                    loadLastBackupTime()
+                    loadBackupHistory()
+                }
+            } finally {
+                _isRestoring.value = false
+            }
         }
+    }
+
+    fun clearStatusMessage() {
+        _statusMessage.value = ""
     }
 
     private fun formatFileSize(bytes: Long): String {

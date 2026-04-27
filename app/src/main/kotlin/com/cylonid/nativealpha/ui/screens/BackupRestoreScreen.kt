@@ -1,5 +1,8 @@
 package com.cylonid.nativealpha.ui.screens
 
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -8,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.cylonid.nativealpha.viewmodel.BackupViewModel
@@ -21,6 +25,26 @@ fun BackupRestoreScreen(
     val isBackingUp by viewModel.isBackingUp.collectAsState()
     val isRestoring by viewModel.isRestoring.collectAsState()
     val lastBackupTime by viewModel.lastBackupTime.collectAsState()
+    val statusMessage by viewModel.statusMessage.collectAsState()
+    val context = LocalContext.current
+
+    val folderPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri != null) viewModel.exportToFolder(uri)
+    }
+    val filePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) viewModel.importFromFile(uri)
+    }
+
+    LaunchedEffect(statusMessage) {
+        if (statusMessage.isNotEmpty()) {
+            Toast.makeText(context, statusMessage, Toast.LENGTH_LONG).show()
+            viewModel.clearStatusMessage()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -35,7 +59,19 @@ fun BackupRestoreScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { if (!isBackingUp) viewModel.createBackup() }
+                onClick = {
+                    if (!isBackingUp) {
+                        try {
+                            folderPickerLauncher.launch(null)
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                context,
+                                "No file manager available to pick a folder.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                }
             ) {
                 if (isBackingUp) {
                     CircularProgressIndicator(
@@ -81,7 +117,17 @@ fun BackupRestoreScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Button(
-                            onClick = { viewModel.createBackup() },
+                            onClick = {
+                                try {
+                                    folderPickerLauncher.launch(null)
+                                } catch (e: Exception) {
+                                    Toast.makeText(
+                                        context,
+                                        "No file manager available to pick a folder.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            },
                             enabled = !isBackingUp,
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -95,7 +141,7 @@ fun BackupRestoreScreen(
                             } else {
                                 Icon(Icons.Default.Backup, contentDescription = null)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Create Backup")
+                                Text("Backup (choose folder)")
                             }
                         }
                     }
@@ -217,23 +263,45 @@ fun BackupRestoreScreen(
                         )
 
                         OutlinedButton(
-                            onClick = { viewModel.exportData() },
+                            onClick = {
+                                try {
+                                    folderPickerLauncher.launch(null)
+                                } catch (e: Exception) {
+                                    Toast.makeText(
+                                        context,
+                                        "No file manager available to pick a folder.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            },
+                            enabled = !isBackingUp,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(Icons.Default.FileDownload, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Export Data")
+                            Text("Export to .waos")
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
 
                         OutlinedButton(
-                            onClick = { viewModel.importData() },
+                            onClick = {
+                                try {
+                                    filePickerLauncher.launch(arrayOf("*/*"))
+                                } catch (e: Exception) {
+                                    Toast.makeText(
+                                        context,
+                                        "No file manager available to pick a file.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            },
+                            enabled = !isRestoring,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(Icons.Default.FileUpload, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Import Data")
+                            Text("Import .waos file")
                         }
                     }
                 }

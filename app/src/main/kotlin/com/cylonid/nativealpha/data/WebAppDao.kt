@@ -20,4 +20,10 @@ interface WebAppDao {
 
     @Delete
     suspend fun deleteWebApp(webApp: WebApp)
+
+    @Query("SELECT * FROM webapps")
+    suspend fun getAllWebAppsList(): List<WebApp>
+
+    @Query("DELETE FROM webapps")
+    suspend fun clearAll()
 }

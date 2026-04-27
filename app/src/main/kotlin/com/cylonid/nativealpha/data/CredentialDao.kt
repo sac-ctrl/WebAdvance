@@ -17,4 +17,10 @@ interface CredentialDao {
 
     @Delete
     suspend fun deleteCredential(credential: Credential)
+
+    @Query("SELECT * FROM credentials")
+    suspend fun getAllCredentials(): List<Credential>
+
+    @Query("DELETE FROM credentials")
+    suspend fun clearAll()
 }

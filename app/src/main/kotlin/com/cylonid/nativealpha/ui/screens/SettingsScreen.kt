@@ -4,6 +4,8 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -271,9 +273,41 @@ fun SettingsScreen(
                     )
                 }
 
+                val folderPickerLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.OpenDocumentTree()
+                ) { uri ->
+                    if (uri != null) {
+                        viewModel.exportToFolder(uri)
+                    }
+                }
+                val filePickerLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.OpenDocument()
+                ) { uri ->
+                    if (uri != null) {
+                        viewModel.importFromFile(uri)
+                    }
+                }
+
                 SettingsSectionCard(title = "Backup & Restore", icon = Icons.Rounded.Backup) {
+                    Text(
+                        "Backup bundles every web app, clipboard entry, vault credential, " +
+                            "download, history record and setting into a single .waos file.",
+                        color = TextSecondary,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(bottom = 10.dp)
+                    )
                     Button(
-                        onClick = { viewModel.exportData() },
+                        onClick = {
+                            try {
+                                folderPickerLauncher.launch(null)
+                            } catch (e: Exception) {
+                                Toast.makeText(
+                                    context,
+                                    "No file manager found to pick a folder.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        },
                         enabled = !viewModel.isExporting,
                         modifier = Modifier.fillMaxWidth().height(44.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -289,24 +323,48 @@ fun SettingsScreen(
                                 color = CyanPrimary
                             )
                             Spacer(Modifier.width(8.dp))
-                            Text("Exporting...", fontWeight = FontWeight.SemiBold)
+                            Text("Backing up...", fontWeight = FontWeight.SemiBold)
                         } else {
                             Icon(Icons.Rounded.CloudUpload, null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Export All Data", fontWeight = FontWeight.SemiBold)
+                            Text("Backup (choose folder)", fontWeight = FontWeight.SemiBold)
                         }
                     }
                     Spacer(Modifier.height(8.dp))
                     OutlinedButton(
-                        onClick = { viewModel.importData() },
+                        onClick = {
+                            try {
+                                // Many file managers do not register the custom .waos
+                                // mime type, so accept everything and we'll validate
+                                // the file contents on read.
+                                filePickerLauncher.launch(arrayOf("*/*"))
+                            } catch (e: Exception) {
+                                Toast.makeText(
+                                    context,
+                                    "No file manager found to pick a file.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        },
+                        enabled = !viewModel.isImporting,
                         modifier = Modifier.fillMaxWidth().height(44.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = TextSecondary),
                         border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Icon(Icons.Rounded.Download, null, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text("Import Data", fontWeight = FontWeight.SemiBold)
+                        if (viewModel.isImporting) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = TextSecondary
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text("Restoring...", fontWeight = FontWeight.SemiBold)
+                        } else {
+                            Icon(Icons.Rounded.Download, null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Restore (pick .waos file)", fontWeight = FontWeight.SemiBold)
+                        }
                     }
                 }
 

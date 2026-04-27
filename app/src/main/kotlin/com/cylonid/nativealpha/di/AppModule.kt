@@ -136,11 +136,9 @@ object AppModule {
     @Singleton
     fun provideBackupService(
         @ApplicationContext context: Context,
-        database: AppDatabase,
-        webAppRepository: WebAppRepository,
-        credentialManager: CredentialManager
+        database: AppDatabase
     ): BackupService {
-        return BackupService(context, database, webAppRepository, credentialManager)
+        return BackupService(context, database)
     }
 
     @Provides
