@@ -17,10 +17,14 @@ class UniversalFileViewerActivity : ComponentActivity() {
         val filePath = intent.getStringExtra("FILE_PATH") ?: ""
 
         setContent {
-            UniversalFileViewerScreen(
-                filePath = filePath,
-                onBackPressed = { finish() }
-            )
+            com.cylonid.nativealpha.ui.theme.WAOSTheme(
+                themeMode = com.cylonid.nativealpha.ui.theme.ThemeState.mode
+            ) {
+                UniversalFileViewerScreen(
+                    filePath = filePath,
+                    onBackPressed = { finish() }
+                )
+            }
         }
     }
 }

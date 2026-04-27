@@ -43,7 +43,7 @@ class CrashActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            WAOSTheme {
+            WAOSTheme(themeMode = com.cylonid.nativealpha.ui.theme.ThemeState.mode) {
                 CrashScreen(
                     onRestart = {
                         val intent = packageManager.getLaunchIntentForPackage(packageName)

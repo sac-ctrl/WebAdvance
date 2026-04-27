@@ -24,6 +24,17 @@ public class App extends Application {
 
         GlobalCrashHandler.Companion.install(this);
 
+        // Seed the global theme switch from prefs in every process so the very
+        // first frame of any activity (main UI process AND :webapp_N sandbox
+        // processes) renders with the user's selected theme rather than the
+        // hardcoded default.
+        try {
+            String mode = getSharedPreferences("waos_settings", MODE_PRIVATE)
+                    .getString("app_theme", "Dark");
+            if (mode == null) mode = "Dark";
+            com.cylonid.nativealpha.ui.theme.ThemeState.INSTANCE.applyMode(mode);
+        } catch (Exception ignored) {}
+
         applyWebViewIsolationIfSandboxProcess();
 
         if (!WorkManager.isInitialized()) {

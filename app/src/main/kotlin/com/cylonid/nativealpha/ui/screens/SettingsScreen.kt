@@ -109,7 +109,7 @@ fun SettingsScreen(
                             onDismissRequest = { themeExpanded = false },
                             modifier = Modifier.background(CardSurface)
                         ) {
-                            listOf("System", "Dark", "Light").forEach { theme ->
+                            listOf("System", "Dark", "Light", "Matrix").forEach { theme ->
                                 DropdownMenuItem(
                                     text = { Text(theme, color = TextPrimary) },
                                     onClick = {

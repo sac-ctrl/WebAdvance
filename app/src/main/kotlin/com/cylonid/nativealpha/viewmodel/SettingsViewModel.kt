@@ -63,6 +63,9 @@ class SettingsViewModel @Inject constructor(
     fun updateAppTheme(value: String) {
         appTheme = value
         prefs.edit().putString("app_theme", value).apply()
+        // Push to the global theme switch so every currently-visible activity
+        // re-themes immediately (no restart needed).
+        com.cylonid.nativealpha.ui.theme.ThemeState.applyMode(value)
     }
 
     fun updateShowCategoryChips(value: Boolean) {
@@ -152,7 +155,12 @@ class SettingsViewModel @Inject constructor(
             val prefs = context.getSharedPreferences("waos_settings", Context.MODE_PRIVATE)
             return when (prefs.getString("app_theme", "Dark")) {
                 "Light" -> false
-                else -> true
+                "System" -> {
+                    val cfg = context.resources.configuration.uiMode and
+                        android.content.res.Configuration.UI_MODE_NIGHT_MASK
+                    cfg == android.content.res.Configuration.UI_MODE_NIGHT_YES
+                }
+                else -> true // Dark, Matrix
             }
         }
     }

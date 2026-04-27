@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.cylonid.nativealpha.ui.theme.ThemeState
 import com.cylonid.nativealpha.ui.theme.WAOSTheme
 import com.cylonid.nativealpha.ui.screens.MainDashboardScreen
 import com.cylonid.nativealpha.ui.screens.AddWebAppScreen
@@ -27,7 +28,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            WAOSTheme {
+            WAOSTheme(themeMode = ThemeState.mode) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

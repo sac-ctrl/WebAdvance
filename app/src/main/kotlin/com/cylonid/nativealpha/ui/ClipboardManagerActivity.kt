@@ -18,10 +18,14 @@ class ClipboardManagerActivity : ComponentActivity() {
         val webAppId = intent.getLongExtra(WaosConstants.EXTRA_CLIPBOARD_APP_ID, 0L)
 
         setContent {
-            ClipboardManagerScreen(
-                webAppId = webAppId,
-                onBackPressed = { finish() }
-            )
+            com.cylonid.nativealpha.ui.theme.WAOSTheme(
+                themeMode = com.cylonid.nativealpha.ui.theme.ThemeState.mode
+            ) {
+                ClipboardManagerScreen(
+                    webAppId = webAppId,
+                    onBackPressed = { finish() }
+                )
+            }
         }
     }
 }

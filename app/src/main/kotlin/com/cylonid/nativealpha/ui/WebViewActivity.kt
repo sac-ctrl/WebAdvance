@@ -174,10 +174,14 @@ open class WebViewActivity : ComponentActivity() {
         android.webkit.CookieManager.getInstance().setAcceptCookie(true)
 
         setContent {
-            WebViewScreen(
-                webAppId = webAppId,
-                onBackPressed = { finish() }
-            )
+            com.cylonid.nativealpha.ui.theme.WAOSTheme(
+                themeMode = com.cylonid.nativealpha.ui.theme.ThemeState.mode
+            ) {
+                WebViewScreen(
+                    webAppId = webAppId,
+                    onBackPressed = { finish() }
+                )
+            }
         }
     }
 

@@ -18,18 +18,22 @@ class CredentialVaultActivity : ComponentActivity() {
         val webAppId = intent.getLongExtra(WaosConstants.EXTRA_WAOS_APP_ID, 0L)
 
         setContent {
-            CredentialVaultScreen(
-                webAppId = webAppId,
-                onBackPressed = { finish() },
-                onAutoFill = { username, password ->
-                    val resultIntent = android.content.Intent().apply {
-                        putExtra("CREDENTIAL_USERNAME", username)
-                        putExtra("CREDENTIAL_PASSWORD", password)
+            com.cylonid.nativealpha.ui.theme.WAOSTheme(
+                themeMode = com.cylonid.nativealpha.ui.theme.ThemeState.mode
+            ) {
+                CredentialVaultScreen(
+                    webAppId = webAppId,
+                    onBackPressed = { finish() },
+                    onAutoFill = { username, password ->
+                        val resultIntent = android.content.Intent().apply {
+                            putExtra("CREDENTIAL_USERNAME", username)
+                            putExtra("CREDENTIAL_PASSWORD", password)
+                        }
+                        setResult(RESULT_OK, resultIntent)
+                        finish()
                     }
-                    setResult(RESULT_OK, resultIntent)
-                    finish()
-                }
-            )
+                )
+            }
         }
     }
 

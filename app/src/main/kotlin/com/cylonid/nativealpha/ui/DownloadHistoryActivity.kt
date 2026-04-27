@@ -19,7 +19,11 @@ class DownloadHistoryActivity : ComponentActivity() {
         val webAppDisplayName = intent.getStringExtra("APP_DISPLAY_NAME") ?: "App"
 
         setContent {
-            DownloadHistoryScreen(webAppId = webAppId, webAppDisplayName = webAppDisplayName)
+            com.cylonid.nativealpha.ui.theme.WAOSTheme(
+                themeMode = com.cylonid.nativealpha.ui.theme.ThemeState.mode
+            ) {
+                DownloadHistoryScreen(webAppId = webAppId, webAppDisplayName = webAppDisplayName)
+            }
         }
     }
 }
