@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Native Alpha</string>
+    <string name="app_name" translatable="false">NexWeb OS</string>
     <string name="action_settings">Settings</string>
     <string name="action_waos_dashboard">WAOS Dashboard</string>
     <!-- Strings used for fragments for navigation -->
@@ -151,7 +151,7 @@
     <string name="allow_microphone_access">Allow microphone access</string>
     <string name="dialog_permission_microphone_title">Microphone Access</string>
     <string name="dialog_permission_microphone_txt">Do you want to grant this Web App access to your microphone? You can revoke this decision any time in the Web App Settings menu.</string>
-    <string name="app_name_plus" translatable="false">Native Alpha +</string>
+    <string name="app_name_plus" translatable="false">NexWeb OS +</string>
     <string name="shortcut_already_exists">A shortcut with this name already exists. Please choose another name or delete the existing shortcut.</string>
     <string name="back">Back</string>
     <string name="forward">Forward</string>

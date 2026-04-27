@@ -97,6 +97,16 @@ Dark WAOS theme with:
 - `.github/workflows/release-apk.yml` — builds signed `assembleStandardRelease` on every push to main/master/dev/develop and on tags; publishes a GitHub Release tagged `v<run>-release` with the signed APK and detailed release notes.
 - `.github/workflows/BuildDebug-Apk.yml` — deprecated, manual-trigger only.
 
+## Recent Changes (NexWeb OS rename + WebView upgrades)
+- **Rename**: App is now "NexWeb OS" (`strings.xml: app_name`, `app_name_plus`).
+- **Launcher icon**: New PNG generated for all `mipmap-*hdpi/native_alpha.png` densities + `drawable-nodpi/nexweb_logo.png`. Adaptive icon (`mipmap-anydpi-v26/native_alpha.xml`) wraps `drawable/nexweb_logo_foreground.xml` with a 22% inset bitmap so the launcher mask never crops the artwork.
+- **Persistent WebView history**: Entire back/forward stack is Parcel-marshalled to `filesDir/waos_history/app_<id>.bundle` (helpers in `WebViewActivity` companion: `saveWebViewHistory` / `restoreWebViewHistory` / `clearWebViewHistory`). Restored before first `loadUrl` (so Back works after process kill) and persisted on every `onPageFinished` and `DisposableEffect.onDispose`.
+- **Page History UI**: 3-dot → "Page History" opens `WaosPageHistoryDialog` listing the WebView's `copyBackForwardList` entries with Back/Forward jump buttons and Clear History.
+- **Export Session**: After encryption to `filesDir/waos_sessions/<id>/...`, the `.waos` file is also copied to `Downloads/WAOS/<AppName>/Sessions/` and registered in the in-app downloader (`DownloadManager.registerLocalFile`) so it appears like a Chrome download.
+- **Import Session**: Replaced the "import latest" hack with a proper SAF `OpenDocument` picker; the chosen file is copied to cache then handed to `viewModel.requestSessionImport`.
+- **WhatsApp blob downloads**: Fixed JS interface call from `window.waosDownloadBlob('$filename', base64)` to `window.waosDownloadBlob.downloadBlob('$filename', base64)` so blob:// downloads no longer buffer indefinitely.
+- **Favicon on dashboard cards**: `MainDashboardScreen.WebAppIcon` renders the website favicon via Coil `SubcomposeAsyncImage`. Falls back to Google's s2 favicon service (`https://www.google.com/s2/favicons?sz=128&domain=<host>`) and to the gradient/emoji on error. The first successful page load auto-saves the favicon URL to `WebApp.iconUrl` via `viewModel.updateFaviconIfNeeded()`.
+
 ## Bug Fixes Applied
 1. **FloatingWindowService crash (Android 14+)**: Added `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `POST_NOTIFICATIONS` permissions; set `android:foregroundServiceType="specialUse"` on both FloatingWindowService declarations; updated `startForeground()` to pass `ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE` on API 34+.
 2. **White screen**: WebView `factory` now stores ref via `webViewRef`; `LaunchedEffect(webApp?.url)` loads URL only when non-null to fix blank-URL race condition.

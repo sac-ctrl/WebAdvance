@@ -10,6 +10,7 @@ import android.graphics.Canvas
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Parcel
 import android.util.Log
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -230,6 +231,67 @@ open class WebViewActivity : ComponentActivity() {
                     .getString(lastUrlKey(appId), null)
             } catch (_: Exception) { null }
         }
+
+        // ---------------------------------------------------------------
+        // PERSISTENT WEBVIEW BACK/FORWARD HISTORY (per app, survives kill)
+        // ---------------------------------------------------------------
+        // Serialize the entire WebView back-forward stack (and form data, scroll
+        // position, etc) to a per-app file via Parcel marshalling of the Bundle
+        // returned by WebView.saveState. Restored before the first loadUrl so
+        // pressing Back continues to work across process restarts.
+
+        private fun historyFile(context: Context, appId: Long): java.io.File {
+            val dir = java.io.File(context.filesDir, "waos_history")
+            if (!dir.exists()) dir.mkdirs()
+            return java.io.File(dir, "app_${appId}.bundle")
+        }
+
+        @JvmStatic
+        fun saveWebViewHistory(context: Context, appId: Long, webView: WebView) {
+            if (appId <= 0L) return
+            val parcel = Parcel.obtain()
+            try {
+                val bundle = Bundle()
+                webView.saveState(bundle)
+                if (bundle.isEmpty) return
+                bundle.writeToParcel(parcel, 0)
+                val bytes = parcel.marshall()
+                historyFile(context, appId).writeBytes(bytes)
+            } catch (e: Exception) {
+                Log.w("WebViewActivity", "saveWebViewHistory failed: ${e.message}")
+            } finally {
+                parcel.recycle()
+            }
+        }
+
+        /** @return true if the WebView's back-forward list was restored. */
+        @JvmStatic
+        fun restoreWebViewHistory(context: Context, appId: Long, webView: WebView): Boolean {
+            if (appId <= 0L) return false
+            val file = historyFile(context, appId)
+            if (!file.exists() || file.length() == 0L) return false
+            val parcel = Parcel.obtain()
+            return try {
+                val bytes = file.readBytes()
+                parcel.unmarshall(bytes, 0, bytes.size)
+                parcel.setDataPosition(0)
+                val bundle = Bundle.CREATOR.createFromParcel(parcel)
+                bundle.classLoader = WebView::class.java.classLoader
+                val restored = webView.restoreState(bundle)
+                restored != null && restored.size > 0
+            } catch (e: Exception) {
+                Log.w("WebViewActivity", "restoreWebViewHistory failed: ${e.message}")
+                try { file.delete() } catch (_: Exception) {}
+                false
+            } finally {
+                parcel.recycle()
+            }
+        }
+
+        @JvmStatic
+        fun clearWebViewHistory(context: Context, appId: Long) {
+            try { historyFile(context, appId).delete() } catch (_: Exception) {}
+        }
     }
 }
 
@@ -258,7 +320,32 @@ fun WebViewScreen(
     val webAppRef = remember { mutableStateOf<WebApp?>(null) }
     var initialUrlLoaded by remember { mutableStateOf(false) }
     var showMoreMenu by remember { mutableStateOf(false) }
+    var showPageHistory by remember { mutableStateOf(false) }
     var pendingPermissionRequest by remember { mutableStateOf<PermissionRequest?>(null) }
+
+    // SAF picker for Import Session (.waos files)
+    val importSessionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        val app = webApp
+        if (app == null) {
+            android.widget.Toast.makeText(context, "App not loaded yet", android.widget.Toast.LENGTH_SHORT).show()
+            return@rememberLauncherForActivityResult
+        }
+        try {
+            // Copy the picked file to a temp file so SessionManager can read by path.
+            val cacheDir = java.io.File(context.cacheDir, "session_imports").apply { mkdirs() }
+            val tempFile = java.io.File(cacheDir, "import_${System.currentTimeMillis()}.waos")
+            context.contentResolver.openInputStream(uri)?.use { input ->
+                tempFile.outputStream().use { input.copyTo(it) }
+            }
+            viewModel.requestSessionImport(tempFile.absolutePath, context)
+            android.widget.Toast.makeText(context, "Importing session…", android.widget.Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            android.widget.Toast.makeText(context, "Import failed: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+        }
+    }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -309,23 +396,35 @@ fun WebViewScreen(
     }
 
     // Re-trigger when WebApp loads OR when the WebView is finally created so we
-    // never silently drop the very first loadUrl call.
+    // never silently drop the very first loadUrl call. Attempts to restore the
+    // entire back/forward stack from disk first; only loads the URL if no
+    // history was restored.
     LaunchedEffect(webApp?.url, webViewRef.value) {
-        val urlToLoad = resolveLaunchUrl()
         val wv = webViewRef.value
-        if (!initialUrlLoaded && wv != null && !urlToLoad.isNullOrBlank() &&
+        if (!initialUrlLoaded && wv != null &&
             (webApp?.isLocked == false || pinUnlocked)) {
-            wv.loadUrl(urlToLoad)
+            val restored = WebViewActivity.restoreWebViewHistory(context, webAppId, wv)
+            if (!restored) {
+                val urlToLoad = resolveLaunchUrl()
+                if (!urlToLoad.isNullOrBlank()) {
+                    wv.loadUrl(urlToLoad)
+                }
+            }
             initialUrlLoaded = true
         }
     }
 
     LaunchedEffect(pinUnlocked) {
         if (pinUnlocked) {
-            val urlToLoad = resolveLaunchUrl()
             val wv = webViewRef.value
-            if (wv != null && !urlToLoad.isNullOrBlank()) {
-                wv.loadUrl(urlToLoad)
+            if (wv != null && !initialUrlLoaded) {
+                val restored = WebViewActivity.restoreWebViewHistory(context, webAppId, wv)
+                if (!restored) {
+                    val urlToLoad = resolveLaunchUrl()
+                    if (!urlToLoad.isNullOrBlank()) {
+                        wv.loadUrl(urlToLoad)
+                    }
+                }
                 initialUrlLoaded = true
             }
         }
@@ -342,6 +441,9 @@ fun WebViewScreen(
                     if (!current.isNullOrBlank()) {
                         WebViewActivity.saveLastVisitedUrl(context, webAppId, current)
                     }
+                    // Persist the FULL back/forward stack so Back works after
+                    // process kill / Recents swipe.
+                    WebViewActivity.saveWebViewHistory(context, webAppId, wv)
                     wv.onPause()
                 }
                 android.webkit.CookieManager.getInstance().flush()
@@ -371,21 +473,39 @@ fun WebViewScreen(
         }
     }
 
-    // Show toast when session export finishes
+    // Show toast when session export finishes; also copy the encrypted backup
+    // into the in-app downloader so the user can find it under Downloads.
     LaunchedEffect(webViewState.lastSessionExportPath) {
         val path = webViewState.lastSessionExportPath
         if (path != null) {
             val filename = path.substringAfterLast('/')
             val appName = webApp?.name ?: "App"
-            // Show detailed export message
+            // Copy export to public Downloads/WAOS/<App>/Sessions and register in
+            // the in-app download history so it shows like a Chrome download.
+            val publicPath = try {
+                val safeApp = appName.replace(Regex("[^a-zA-Z0-9]"), "_")
+                val baseDir = java.io.File(
+                    android.os.Environment.getExternalStoragePublicDirectory(
+                        android.os.Environment.DIRECTORY_DOWNLOADS
+                    ),
+                    "WAOS"
+                )
+                val sessionsDir = java.io.File(java.io.File(baseDir, safeApp), "Sessions").apply { mkdirs() }
+                val dest = java.io.File(sessionsDir, filename)
+                java.io.File(path).copyTo(dest, overwrite = true)
+                viewModel.registerSessionExportDownload(dest.absolutePath, filename)
+                dest.absolutePath
+            } catch (e: Exception) {
+                Log.w("SessionExport", "Failed to copy to Downloads: ${e.message}")
+                null
+            }
             android.widget.Toast.makeText(
                 context,
-                "✓ Session backup created\n$appName session saved as: $filename",
+                if (publicPath != null) "✓ Session saved to Downloads → $filename"
+                else "✓ Session backup created: $filename",
                 android.widget.Toast.LENGTH_LONG
             ).show()
-            
-            // Also show a snackbar-like notification (via logcat for reference)
-            Log.i("SessionExport", "Session exported for $appName to $path")
+            Log.i("SessionExport", "Session exported for $appName to $path (public=$publicPath)")
             viewModel.clearSessionExportPath()
         }
     }
@@ -718,6 +838,14 @@ fun WebViewScreen(
                             // survives back-press and process kill, and flush
                             // cookies right away so logins survive a Recents swipe.
                             WebViewActivity.saveLastVisitedUrl(ctx, webAppId, url)
+                            // Save back/forward stack on every page load so we
+                            // never lose history if the process is killed.
+                            try {
+                                WebViewActivity.saveWebViewHistory(ctx, webAppId, webView)
+                            } catch (_: Exception) {}
+                            // Persist a website favicon on first successful load
+                            // so the dashboard card shows the site icon.
+                            viewModel.updateFaviconIfNeeded()
                             try { android.webkit.CookieManager.getInstance().flush() } catch (_: Exception) {}
                             webAppRef.value?.let { app ->
                                 if (app.isDarkModeEnabled) injectDarkMode(webView)
@@ -825,7 +953,9 @@ fun WebViewScreen(
                                                     const reader = new FileReader();
                                                     reader.onload = function() {
                                                         const base64 = reader.result.split(',')[1];
-                                                        window.waosDownloadBlob && window.waosDownloadBlob('$filename', base64);
+                                                        if (window.waosDownloadBlob && window.waosDownloadBlob.downloadBlob) {
+                                                            window.waosDownloadBlob.downloadBlob('$filename', base64);
+                                                        }
                                                     };
                                                     reader.readAsDataURL(blob);
                                                 })
@@ -1154,7 +1284,7 @@ fun WebViewScreen(
             onZoomIn = { viewModel.zoomIn() },
             onZoomOut = { viewModel.zoomOut() },
             onPrint = { viewModel.printPage() },
-            onHistory = { /* TODO: Implement history */ },
+            onHistory = { showPageHistory = true },
             onPageSource = { viewModel.showPageSource() },
             onSavePage = { viewModel.savePage() },
             onReaderMode = { viewModel.toggleReaderMode() },
@@ -1162,22 +1292,169 @@ fun WebViewScreen(
             onAdBlockSettings = { viewModel.toggleAdblockSettings() },
             onExportSession = { viewModel.requestSessionExport() },
             onImportSession = {
-                // Import the most recently exported session for this app (self-import / transfer)
-                val app = webApp
-                if (app != null) {
-                    val sessionDir = java.io.File(context.filesDir, "waos_sessions/${app.id}")
-                    val latestExport = sessionDir.listFiles()
-                        ?.filter { it.name.endsWith(".waos") && it.name != "last_session.waos" }
-                        ?.maxByOrNull { it.lastModified() }
-                    if (latestExport != null) {
-                        viewModel.requestSessionImport(latestExport.absolutePath, context)
-                    } else {
-                        android.widget.Toast.makeText(context, "No exported session found. Export first.", android.widget.Toast.LENGTH_LONG).show()
-                    }
+                // Open the system file picker so the user can choose any
+                // exported session backup. We accept any MIME type because
+                // .waos isn't registered system-wide.
+                try {
+                    importSessionLauncher.launch(arrayOf("*/*"))
+                } catch (e: Exception) {
+                    android.widget.Toast.makeText(
+                        context,
+                        "Could not open file picker: ${e.message}",
+                        android.widget.Toast.LENGTH_LONG
+                    ).show()
                 }
             }
         )
     }
+
+    if (showPageHistory) {
+        WaosPageHistoryDialog(
+            webView = webViewRef.value,
+            onDismiss = { showPageHistory = false },
+            onNavigate = { steps ->
+                webViewRef.value?.let { wv ->
+                    if (steps != 0 && wv.canGoBackOrForward(steps)) {
+                        wv.goBackOrForward(steps)
+                    }
+                }
+                showPageHistory = false
+            },
+            onClearHistory = {
+                webViewRef.value?.clearHistory()
+                WebViewActivity.clearWebViewHistory(context, webAppId)
+                showPageHistory = false
+                android.widget.Toast.makeText(context, "History cleared", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun WaosPageHistoryDialog(
+    webView: android.webkit.WebView?,
+    onDismiss: () -> Unit,
+    onNavigate: (Int) -> Unit,
+    onClearHistory: () -> Unit
+) {
+    val list = remember(webView) { webView?.copyBackForwardList() }
+    val current = list?.currentIndex ?: -1
+    val total = list?.size ?: 0
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = CardSurface,
+        titleContentColor = TextPrimary,
+        textContentColor = TextSecondary,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.History, null, tint = CyanPrimary, modifier = Modifier.size(22.dp))
+                Spacer(Modifier.width(10.dp))
+                Text("Page History", color = TextPrimary, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
+        },
+        text = {
+            if (total == 0) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(20.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No browsing history yet", color = TextMuted, fontSize = 13.sp)
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth().height(360.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    items(total) { idx ->
+                        // Show newest entries first.
+                        val realIdx = total - 1 - idx
+                        val item = list!!.getItemAtIndex(realIdx)
+                        val isCurrent = realIdx == current
+                        val steps = realIdx - current
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(if (isCurrent) CyanPrimary.copy(0.12f) else CardSurface)
+                                .border(
+                                    1.dp,
+                                    if (isCurrent) CyanPrimary.copy(0.5f) else CardBorder,
+                                    RoundedCornerShape(10.dp)
+                                )
+                                .padding(horizontal = 10.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(28.dp)
+                                    .background(
+                                        if (isCurrent) CyanPrimary.copy(0.25f) else CardBorder.copy(0.3f),
+                                        RoundedCornerShape(8.dp)
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    "${realIdx + 1}",
+                                    color = if (isCurrent) CyanPrimary else TextMuted,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(Modifier.width(10.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    item.title?.takeIf { it.isNotBlank() } ?: "(untitled page)",
+                                    color = if (isCurrent) CyanPrimary else TextPrimary,
+                                    fontSize = 13.sp,
+                                    fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.SemiBold,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    item.url ?: "",
+                                    color = TextMuted,
+                                    fontSize = 11.sp,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                            if (!isCurrent) {
+                                TextButton(onClick = { onNavigate(steps) }) {
+                                    Text(
+                                        if (steps < 0) "← Back" else "Forward →",
+                                        color = CyanPrimary,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            } else {
+                                Text(
+                                    "current",
+                                    color = StatusActive,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close", color = TextSecondary)
+            }
+        },
+        dismissButton = {
+            if (total > 0) {
+                TextButton(onClick = onClearHistory) {
+                    Text("Clear History", color = ErrorRed)
+                }
+            }
+        }
+    )
 }
 
 @Composable

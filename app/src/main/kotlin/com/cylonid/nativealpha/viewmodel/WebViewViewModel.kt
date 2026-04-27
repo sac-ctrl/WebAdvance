@@ -332,6 +332,35 @@ class WebViewViewModel @Inject constructor(
         _webViewState.value = _webViewState.value.copy(shouldDownloadUrl = null)
     }
 
+    /** Register an already-saved file (session export) in the in-app downloader. */
+    fun registerSessionExportDownload(filePath: String, fileName: String) {
+        val app = _webApp.value
+        downloadManager.registerLocalFile(
+            webAppId = app?.id ?: 0L,
+            filePath = filePath,
+            fileName = fileName,
+            mimeType = "application/octet-stream"
+        )
+    }
+
+    /**
+     * Persist a high-quality favicon URL for this web app on first page load so
+     * the dashboard card can show the website icon. We use Google's s2 favicon
+     * service for a reliable square 128px image.
+     */
+    fun updateFaviconIfNeeded() {
+        val app = _webApp.value ?: return
+        if (!app.iconUrl.isNullOrBlank()) return
+        val host = try {
+            android.net.Uri.parse(app.url).host
+        } catch (_: Exception) { null }
+        if (host.isNullOrBlank()) return
+        val faviconUrl = "https://www.google.com/s2/favicons?sz=128&domain=$host"
+        viewModelScope.launch {
+            try { repository.updateWebApp(app.copy(iconUrl = faviconUrl)) } catch (_: Exception) {}
+        }
+    }
+
     fun handleImageLongPress(imageUrl: String, webApp: WebApp? = null) {
         _webViewState.value = _webViewState.value.copy(shouldShowImageLongPressDialog = imageUrl)
     }

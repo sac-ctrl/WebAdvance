@@ -26,6 +26,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.*
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -683,23 +686,15 @@ fun AppGridCard(
         ) {
             Spacer(Modifier.height(8.dp))
 
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .shadow(12.dp, CircleShape, spotColor = gradEnd.copy(0.4f))
-                    .background(
-                        Brush.linearGradient(listOf(gradStart, gradEnd)),
-                        CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    emoji,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
+            WebAppIcon(
+                webApp = webApp,
+                emoji = emoji,
+                gradStart = gradStart,
+                gradEnd = gradEnd,
+                size = 56.dp,
+                shape = CircleShape,
+                emojiFontSize = 22.sp
+            )
 
             Spacer(Modifier.height(12.dp))
 
@@ -824,18 +819,15 @@ fun AppListCard(
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(50.dp)
-                .shadow(8.dp, RoundedCornerShape(14.dp), spotColor = gradEnd.copy(0.5f))
-                .background(
-                    Brush.linearGradient(listOf(gradStart, gradEnd)),
-                    RoundedCornerShape(14.dp)
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(emoji, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
-        }
+        WebAppIcon(
+            webApp = webApp,
+            emoji = emoji,
+            gradStart = gradStart,
+            gradEnd = gradEnd,
+            size = 50.dp,
+            shape = RoundedCornerShape(14.dp),
+            emojiFontSize = 20.sp
+        )
 
         Spacer(Modifier.width(14.dp))
 
@@ -1202,6 +1194,58 @@ private fun SortGroupSheet(
             ) {
                 Text("Done", fontWeight = FontWeight.Bold)
             }
+        }
+    }
+}
+
+@Composable
+private fun WebAppIcon(
+    webApp: WebApp,
+    emoji: String,
+    gradStart: Color,
+    gradEnd: Color,
+    size: androidx.compose.ui.unit.Dp,
+    shape: androidx.compose.ui.graphics.Shape,
+    emojiFontSize: androidx.compose.ui.unit.TextUnit
+) {
+    val context = LocalContext.current
+    val host = remember(webApp.url) {
+        try { Uri.parse(webApp.url).host } catch (_: Exception) { null }
+    }
+    val iconUrl = remember(webApp.iconUrl, host) {
+        webApp.iconUrl?.takeIf { it.isNotBlank() }
+            ?: host?.let { "https://www.google.com/s2/favicons?sz=128&domain=$it" }
+    }
+
+    val shadowSpot = gradEnd.copy(0.45f)
+    Box(
+        modifier = Modifier
+            .size(size)
+            .shadow(10.dp, shape, spotColor = shadowSpot)
+            .background(Brush.linearGradient(listOf(gradStart, gradEnd)), shape)
+            .clip(shape),
+        contentAlignment = Alignment.Center
+    ) {
+        if (iconUrl != null) {
+            SubcomposeAsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(iconUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = webApp.name,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .size(size * 0.62f)
+                    .clip(RoundedCornerShape(percent = 22)),
+                loading = {
+                    Text(emoji, fontSize = emojiFontSize, fontWeight = FontWeight.Bold, color = Color.White)
+                },
+                error = {
+                    Text(emoji, fontSize = emojiFontSize, fontWeight = FontWeight.Bold, color = Color.White)
+                }
+            )
+        } else {
+            Text(emoji, fontSize = emojiFontSize, fontWeight = FontWeight.Bold, color = Color.White)
         }
     }
 }

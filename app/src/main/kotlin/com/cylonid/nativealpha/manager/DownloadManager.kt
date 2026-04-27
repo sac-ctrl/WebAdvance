@@ -290,6 +290,45 @@ class DownloadManager @Inject constructor(
         }
     }
 
+    /**
+     * Register an already-saved local file (e.g. session export, screenshot) in
+     * the in-app download history so it appears like a normal download.
+     */
+    fun registerLocalFile(
+        webAppId: Long,
+        filePath: String,
+        fileName: String,
+        mimeType: String? = null
+    ) {
+        scope.launch {
+            try {
+                val file = File(filePath)
+                val item = DownloadItem(
+                    webAppId = webAppId,
+                    url = "local:${file.name}",
+                    fileName = fileName,
+                    fileSize = file.length(),
+                    downloadedBytes = file.length(),
+                    status = DownloadItem.Status.COMPLETED,
+                    filePath = file.absolutePath,
+                    mimeType = mimeType,
+                    timestamp = System.currentTimeMillis(),
+                    id = System.currentTimeMillis()
+                )
+                dao.insertDownload(item)
+                // Make it visible in the gallery / file manager.
+                MediaScannerConnection.scanFile(
+                    context,
+                    arrayOf(file.absolutePath),
+                    arrayOf(mimeType ?: "application/octet-stream"),
+                    null
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     fun saveScreenshot(fileName: String, bitmap: android.graphics.Bitmap) {
         scope.launch {
             try {
