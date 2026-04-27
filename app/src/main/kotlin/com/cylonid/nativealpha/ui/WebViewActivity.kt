@@ -764,7 +764,8 @@ fun WebViewScreen(
                     onClick = {
                         val clipboard = context.getSystemService(android.content.ClipboardManager::class.java)
                         clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Link", linkUrl))
-                        android.widget.Toast.makeText(context, "Link copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
+                        viewModel.captureClipboardItem(linkUrl, "link-longpress")
+                        android.widget.Toast.makeText(context, "Link copied — saved to Clipboard Manager", android.widget.Toast.LENGTH_SHORT).show()
                         viewModel.dismissLinkLongPressDialog()
                     },
                     modifier = Modifier.background(
@@ -824,7 +825,8 @@ fun WebViewScreen(
                         onClick = {
                             val clipboard = context.getSystemService(android.content.ClipboardManager::class.java)
                             clipboard.setPrimaryClip(android.content.ClipData.newPlainText("Text", selectedText))
-                            android.widget.Toast.makeText(context, "Copied to clipboard", android.widget.Toast.LENGTH_SHORT).show()
+                            viewModel.captureClipboardItem(selectedText, "selection")
+                            android.widget.Toast.makeText(context, "Copied — saved to Clipboard Manager", android.widget.Toast.LENGTH_SHORT).show()
                             viewModel.clearSelectedText()
                         },
                         colors = androidx.compose.material3.ButtonDefaults.textButtonColors(contentColor = CyanPrimary)
@@ -1357,6 +1359,8 @@ fun WebViewScreen(
                     webViewState.shouldCopyUrl?.let { urlToCopy ->
                         val clipboard = context.getSystemService(android.content.ClipboardManager::class.java)
                         clipboard.setPrimaryClip(android.content.ClipData.newPlainText("URL", urlToCopy))
+                        viewModel.captureClipboardItem(urlToCopy, "address-bar")
+                        android.widget.Toast.makeText(context, "URL copied — saved to Clipboard Manager", android.widget.Toast.LENGTH_SHORT).show()
                         viewModel.clearActionFlags()
                     }
                     if (webViewState.shouldPrint) {

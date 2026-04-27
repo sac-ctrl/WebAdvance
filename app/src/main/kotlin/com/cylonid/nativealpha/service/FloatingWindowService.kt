@@ -48,6 +48,9 @@ class FloatingWindowService : Service() {
     @Inject
     lateinit var webAppRepository: WebAppRepository
 
+    @Inject
+    lateinit var waosClipboard: com.cylonid.nativealpha.manager.ClipboardManager
+
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val floatingWindows = mutableMapOf<Long, FloatingWindowView>()
     private var currentFrontWindow: Long? = null
@@ -326,6 +329,18 @@ class FloatingWindowService : Service() {
                 val currentUrl = webView.url ?: webAppUrl
                 val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
                 clipboard?.setPrimaryClip(ClipData.newPlainText("URL", currentUrl))
+                if (currentUrl.isNotBlank()) {
+                    waosClipboard.copyToAppClipboard(
+                        windowView.appId,
+                        currentUrl,
+                        com.cylonid.nativealpha.manager.ClipboardItem.Type.URL
+                    )
+                    android.widget.Toast.makeText(
+                        this,
+                        "URL copied — saved to Clipboard Manager",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
             ACTION_TOOLBAR_CREDENTIALS -> {
                 startActivity(
