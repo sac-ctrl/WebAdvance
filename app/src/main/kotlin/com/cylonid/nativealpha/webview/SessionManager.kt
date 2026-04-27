@@ -8,6 +8,7 @@ import android.webkit.CookieManager
 import android.webkit.WebView
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import java.io.File
@@ -200,14 +201,57 @@ class SessionManager(
             addProperty("userAgent", userAgent)
             addProperty("timestamp", System.currentTimeMillis())
             add("cookies", gson.toJsonTree(cookies))
-            add("localStorage", JsonParser.parseString(
-                if (localStorageJson.isBlank()) "{}" else localStorageJson
-            ))
-            add("sessionStorage", JsonParser.parseString(
-                if (sessionStorageJson.isBlank()) "{}" else sessionStorageJson
-            ))
+            add("localStorage", parseWebViewJsonResult(localStorageJson))
+            add("sessionStorage", parseWebViewJsonResult(sessionStorageJson))
         }
         return snapshot
+    }
+
+    /**
+     * Decode a value returned by `WebView.evaluateJavascript`. The WebView
+     * JSON-encodes whatever the JS expression returned, so a JS string of
+     * `{"k":"v"}` arrives here as the literal text `"{\"k\":\"v\"}"`.
+     * Naive unescaping breaks when values themselves contain quoted JSON
+     * (e.g. `marketing_attribution`), so we let Gson do the decoding twice:
+     * once to strip the WebView wrapper, then once on the inner JSON.
+     */
+    private fun parseWebViewJsonResult(raw: String?): JsonElement {
+        val empty = JsonObject()
+        if (raw.isNullOrBlank() || raw == "null" || raw == "undefined") return empty
+        return try {
+            val element = JsonParser.parseString(raw)
+            when {
+                element.isJsonPrimitive && element.asJsonPrimitive.isString -> {
+                    val inner = element.asString
+                    if (inner.isBlank()) empty
+                    else try {
+                        JsonParser.parseString(inner)
+                    } catch (_: Exception) { empty }
+                }
+                element.isJsonObject || element.isJsonArray -> element
+                else -> empty
+            }
+        } catch (_: Exception) { empty }
+    }
+
+    /**
+     * Export the snapshot as a plain JSON string suitable for clipboard
+     * transport between apps. No encryption — by design, so the user can
+     * inspect / paste it anywhere.
+     */
+    fun exportSessionAsJsonString(snapshot: JsonObject): String = gson.toJson(snapshot)
+
+    /**
+     * Parse a pasted session JSON string into a snapshot. Returns null if
+     * the input is not valid JSON or not a JSON object.
+     */
+    fun importSessionFromJsonString(text: String): JsonObject? {
+        return try {
+            val trimmed = text.trim()
+            if (trimmed.isEmpty()) return null
+            val el = JsonParser.parseString(trimmed)
+            if (el.isJsonObject) el.asJsonObject else null
+        } catch (_: Exception) { null }
     }
 
     /**

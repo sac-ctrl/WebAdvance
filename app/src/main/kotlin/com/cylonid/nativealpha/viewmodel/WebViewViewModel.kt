@@ -492,19 +492,56 @@ class WebViewViewModel @Inject constructor(
                 shouldImportSession = restoreData,
                 shouldReload = true
             )
+        } else {
+            _webViewState.value = _webViewState.value.copy(
+                sessionImportError = "Could not read or decrypt the selected session file."
+            )
+        }
+    }
+
+    /** Trigger session import from pasted JSON text. */
+    fun requestSessionImportFromText(jsonText: String, context: Context) {
+        val app = _webApp.value
+        if (app == null) {
+            _webViewState.value = _webViewState.value.copy(
+                sessionImportError = "App not loaded yet."
+            )
+            return
+        }
+        val sessionManager = SessionManager(context, app.id, app.name)
+        val snapshot = sessionManager.importSessionFromJsonString(jsonText)
+        if (snapshot != null) {
+            val restoreData = sessionManager.applySessionSnapshot(snapshot)
+            _webViewState.value = _webViewState.value.copy(
+                shouldImportSession = restoreData,
+                shouldReload = true
+            )
+        } else {
+            _webViewState.value = _webViewState.value.copy(
+                sessionImportError = "That doesn't look like a valid session JSON."
+            )
         }
     }
 
     /** Called by WebViewScreen once JS storage values have been collected and snapshot saved */
-    fun onSessionExportComplete(exportedPath: String?) {
+    fun onSessionExportComplete(exportedPath: String?, exportedJson: String? = null) {
         _webViewState.value = _webViewState.value.copy(
             shouldExportSession = false,
-            lastSessionExportPath = exportedPath
+            lastSessionExportPath = exportedPath,
+            lastSessionExportJson = exportedJson
         )
     }
 
     fun clearSessionExportPath() {
         _webViewState.value = _webViewState.value.copy(lastSessionExportPath = null)
+    }
+
+    fun clearSessionExportJson() {
+        _webViewState.value = _webViewState.value.copy(lastSessionExportJson = null)
+    }
+
+    fun clearSessionImportError() {
+        _webViewState.value = _webViewState.value.copy(sessionImportError = null)
     }
 
     fun onSessionImportApplied() {
@@ -650,7 +687,9 @@ data class WebViewState(
     // WAOS Session isolation: export / import
     val shouldExportSession: Boolean = false,
     val shouldImportSession: SessionRestoreData? = null,
-    val lastSessionExportPath: String? = null
+    val lastSessionExportPath: String? = null,
+    val lastSessionExportJson: String? = null,
+    val sessionImportError: String? = null
 )
 
 data class ConsoleMessageData(

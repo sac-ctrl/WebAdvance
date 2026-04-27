@@ -326,6 +326,8 @@ fun WebViewScreen(
     var showMoreMenu by remember { mutableStateOf(false) }
     var showPageHistory by remember { mutableStateOf(false) }
     var pendingPermissionRequest by remember { mutableStateOf<PermissionRequest?>(null) }
+    var showSessionPasteDialog by remember { mutableStateOf(false) }
+    var sessionPasteText by remember { mutableStateOf("") }
 
     // SAF picker for Import Session (.waos files)
     val importSessionLauncher = rememberLauncherForActivityResult(
@@ -474,6 +476,40 @@ fun WebViewScreen(
         if (autoFill != null) {
             viewModel.autoFillCredentials(autoFill.first, autoFill.second)
             WebViewActivity.pendingAutoFill = null
+        }
+    }
+
+    // Auto-copy the plain-JSON session payload to the system clipboard the
+    // moment an export finishes. This is the primary transport — the user
+    // can paste it into another WAOS app's Import Session dialog to clone
+    // a logged-in session across apps without writing a file.
+    LaunchedEffect(webViewState.lastSessionExportJson) {
+        val json = webViewState.lastSessionExportJson
+        if (!json.isNullOrBlank()) {
+            try {
+                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE)
+                    as android.content.ClipboardManager
+                val label = "WAOS Session - ${webApp?.name ?: "App"}"
+                cm.setPrimaryClip(android.content.ClipData.newPlainText(label, json))
+                android.widget.Toast.makeText(
+                    context,
+                    "Session JSON copied to clipboard. Paste it in another app's Import Session.",
+                    android.widget.Toast.LENGTH_LONG
+                ).show()
+            } catch (e: Exception) {
+                Log.w("SessionExport", "Clipboard copy failed: ${e.message}")
+            }
+            viewModel.clearSessionExportJson()
+        }
+    }
+
+    // Surface a one-shot error toast when an import attempt fails (bad JSON,
+    // unreadable file, etc.) so the user gets immediate feedback.
+    LaunchedEffect(webViewState.sessionImportError) {
+        val err = webViewState.sessionImportError
+        if (!err.isNullOrBlank()) {
+            android.widget.Toast.makeText(context, err, android.widget.Toast.LENGTH_LONG).show()
+            viewModel.clearSessionImportError()
         }
     }
 
@@ -1372,16 +1408,24 @@ fun WebViewScreen(
                             webView.evaluateJavascript(SessionManager.buildLocalStorageExtractJs()) { lsJson ->
                                 webView.evaluateJavascript(SessionManager.buildSessionStorageExtractJs()) { ssJson ->
                                     val sessionMgr = SessionManager(context, app.id, app.name)
-                                    val lsClean = lsJson?.trim('"')?.replace("\\\"", "\"") ?: "{}"
-                                    val ssClean = ssJson?.trim('"')?.replace("\\\"", "\"") ?: "{}"
-                                    val snapshot = sessionMgr.buildSessionSnapshot(currentUrl, ua, lsClean, ssClean)
+                                    // Pass the raw evaluateJavascript results — the SessionManager
+                                    // safely unwraps WebView's JSON-encoded string layer (the old
+                                    // manual trim+replace mangled values that contained their own
+                                    // quoted JSON, e.g. marketing_attribution).
+                                    val snapshot = sessionMgr.buildSessionSnapshot(
+                                        currentUrl,
+                                        ua,
+                                        lsJson ?: "{}",
+                                        ssJson ?: "{}"
+                                    )
                                     sessionMgr.saveLastSessionSnapshot(snapshot)
                                     val path = sessionMgr.exportSession(snapshot)
-                                    viewModel.onSessionExportComplete(path)
+                                    val jsonString = sessionMgr.exportSessionAsJsonString(snapshot)
+                                    viewModel.onSessionExportComplete(path, jsonString)
                                 }
                             }
                         } else {
-                            viewModel.onSessionExportComplete(null)
+                            viewModel.onSessionExportComplete(null, null)
                         }
                     }
                     // WAOS Session Import: inject localStorage + sessionStorage restore JS after page load
@@ -1503,17 +1547,98 @@ fun WebViewScreen(
             onAdBlockSettings = { viewModel.toggleAdblockSettings() },
             onExportSession = { viewModel.requestSessionExport() },
             onImportSession = {
-                // Open the system file picker so the user can choose any
-                // exported session backup. We accept any MIME type because
-                // .waos isn't registered system-wide.
-                try {
-                    importSessionLauncher.launch(arrayOf("*/*"))
-                } catch (e: Exception) {
-                    android.widget.Toast.makeText(
-                        context,
-                        "Could not open file picker: ${e.message}",
-                        android.widget.Toast.LENGTH_LONG
-                    ).show()
+                // Pre-fill the paste dialog with whatever is on the clipboard
+                // so a typical "copy from app A → import in app B" flow is
+                // a single tap.
+                sessionPasteText = try {
+                    val cm = context.getSystemService(Context.CLIPBOARD_SERVICE)
+                        as android.content.ClipboardManager
+                    cm.primaryClip?.takeIf { it.itemCount > 0 }
+                        ?.getItemAt(0)?.coerceToText(context)?.toString().orEmpty()
+                } catch (_: Exception) { "" }
+                showSessionPasteDialog = true
+            }
+        )
+    }
+
+    if (showSessionPasteDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showSessionPasteDialog = false
+                sessionPasteText = ""
+            },
+            containerColor = CardSurface,
+            titleContentColor = TextPrimary,
+            textContentColor = TextSecondary,
+            title = { Text("Import Session") },
+            text = {
+                Column {
+                    Text(
+                        "Paste the session JSON copied from another WAOS app, " +
+                                "or pick a saved .waos file.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = sessionPasteText,
+                        onValueChange = { sessionPasteText = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 140.dp, max = 280.dp),
+                        placeholder = { Text("{\"appId\":..., \"cookies\":[...], ...}") },
+                        singleLine = false,
+                        maxLines = 12
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    TextButton(onClick = {
+                        try {
+                            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE)
+                                as android.content.ClipboardManager
+                            sessionPasteText = cm.primaryClip
+                                ?.takeIf { it.itemCount > 0 }
+                                ?.getItemAt(0)?.coerceToText(context)?.toString().orEmpty()
+                        } catch (_: Exception) {}
+                    }) { Text("Paste from clipboard") }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val text = sessionPasteText
+                        showSessionPasteDialog = false
+                        sessionPasteText = ""
+                        if (text.isBlank()) {
+                            android.widget.Toast.makeText(
+                                context,
+                                "Nothing to import — paste the session JSON first.",
+                                android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            viewModel.requestSessionImportFromText(text, context)
+                        }
+                    }
+                ) { Text("Import") }
+            },
+            dismissButton = {
+                Row {
+                    TextButton(onClick = {
+                        showSessionPasteDialog = false
+                        sessionPasteText = ""
+                        try {
+                            importSessionLauncher.launch(arrayOf("*/*"))
+                        } catch (e: Exception) {
+                            android.widget.Toast.makeText(
+                                context,
+                                "Could not open file picker: ${e.message}",
+                                android.widget.Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }) { Text("Pick file…") }
+                    TextButton(onClick = {
+                        showSessionPasteDialog = false
+                        sessionPasteText = ""
+                    }) { Text("Cancel") }
                 }
             }
         )
