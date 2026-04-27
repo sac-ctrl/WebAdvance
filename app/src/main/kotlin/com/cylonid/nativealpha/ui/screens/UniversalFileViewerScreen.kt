@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
@@ -60,24 +62,51 @@ import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 
+// ============================================================
+// Viewer "theater mode" palette — locked to dark regardless of
+// the app theme, mirroring how Photos / VLC / PDF readers behave.
+// This guarantees readable controls and fixes the previous
+// "white toolbar in PDF viewer" bug that occurred whenever the
+// app theme was Light (theme-driven surface tints went white,
+// blending into white PDF pages).
+// ============================================================
+private val VBg          = Color(0xFF0A0E17)
+private val VBgGradient  = Color(0xFF101727)
+private val VSurface     = Color(0xFF161F33)
+private val VSurfaceHi   = Color(0xFF1F2A44)
+private val VSurfaceGlow = Color(0xFF263354)
+private val VBorder      = Color(0xFF2A3756)
+private val VBorderHi    = Color(0xFF3B4B72)
+private val VAccent      = Color(0xFF22D3EE)
+private val VAccent2     = Color(0xFFA78BFA)
+private val VAccent3     = Color(0xFFF472B6)
+private val VOk          = Color(0xFF34D399)
+private val VWarn        = Color(0xFFFBBF24)
+private val VTextHi      = Color(0xFFF1F5F9)
+private val VTextMd      = Color(0xFFCBD5E1)
+private val VTextLo      = Color(0xFF8B97B5)
+
+private val ViewerBgBrush: Brush
+    get() = Brush.verticalGradient(listOf(VBg, VBgGradient, VBg))
+
 @Composable
 private fun Modifier.viewerIconButtonStyle(enabled: Boolean = true, selected: Boolean = false): Modifier =
     this
         .size(36.dp)
         .background(
             when {
-                selected -> CyanPrimary.copy(alpha = 0.18f)
-                enabled -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.92f)
-                else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                selected -> VAccent.copy(alpha = 0.18f)
+                enabled  -> VSurfaceHi
+                else     -> VSurface.copy(alpha = 0.6f)
             },
             RoundedCornerShape(10.dp)
         )
         .border(
             1.dp,
             when {
-                selected -> CyanPrimary.copy(alpha = 0.35f)
-                enabled -> CardBorder.copy(alpha = 0.55f)
-                else -> CardBorder.copy(alpha = 0.3f)
+                selected -> VAccent.copy(alpha = 0.55f)
+                enabled  -> VBorder
+                else     -> VBorder.copy(alpha = 0.4f)
             },
             RoundedCornerShape(10.dp)
         )
@@ -85,16 +114,37 @@ private fun Modifier.viewerIconButtonStyle(enabled: Boolean = true, selected: Bo
 @Composable
 private fun Modifier.audioControlButtonStyle(selected: Boolean = false): Modifier =
     this
-        .size(44.dp)
+        .size(48.dp)
         .background(
-            if (selected) CyanPrimary.copy(alpha = 0.14f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.96f),
-            RoundedCornerShape(14.dp)
+            if (selected) VAccent.copy(alpha = 0.18f) else VSurfaceHi,
+            RoundedCornerShape(16.dp)
         )
         .border(
             1.dp,
-            if (selected) CyanPrimary.copy(alpha = 0.35f) else CardBorder.copy(alpha = 0.55f),
-            RoundedCornerShape(14.dp)
+            if (selected) VAccent.copy(alpha = 0.55f) else VBorder,
+            RoundedCornerShape(16.dp)
         )
+
+@Composable
+private fun ChipPill(label: String, value: String, accent: Color = VAccent) {
+    Row(
+        modifier = Modifier
+            .background(VSurface, RoundedCornerShape(999.dp))
+            .border(1.dp, VBorder, RoundedCornerShape(999.dp))
+            .padding(horizontal = 10.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            Modifier
+                .size(6.dp)
+                .background(accent, CircleShape)
+        )
+        Spacer(Modifier.width(6.dp))
+        Text(label, fontSize = 10.sp, color = VTextLo, fontWeight = FontWeight.Medium)
+        Spacer(Modifier.width(6.dp))
+        Text(value, fontSize = 11.sp, color = VTextHi, fontWeight = FontWeight.SemiBold)
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -123,50 +173,109 @@ fun UniversalFileViewerScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BgDeep)
+            .background(ViewerBgBrush)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
+
+            // ---------- Modern top app bar (two rows) ----------
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .statusBarsPadding()
-                    .background(BgDeep)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(VBg, VBg.copy(alpha = 0.96f), VBg.copy(alpha = 0.88f))
+                        )
+                    )
             ) {
                 Column {
+                    // Row 1: Back · File title + meta · Info toggle
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                            .padding(horizontal = 10.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(
                             onClick = onBackPressed,
                             modifier = Modifier
                                 .size(40.dp)
-                                .background(CardSurface, RoundedCornerShape(12.dp))
-                                .border(1.dp, CardBorder, RoundedCornerShape(12.dp))
+                                .background(VSurfaceHi, RoundedCornerShape(12.dp))
+                                .border(1.dp, VBorder, RoundedCornerShape(12.dp))
                         ) {
-                            Icon(Icons.Rounded.ArrowBack, null, tint = TextPrimary, modifier = Modifier.size(18.dp))
+                            Icon(
+                                Icons.Rounded.ArrowBack,
+                                null,
+                                tint = VTextHi,
+                                modifier = Modifier.size(18.dp)
+                            )
                         }
+                        Spacer(Modifier.width(10.dp))
+
+                        // File-type indicator dot — color-coded per kind
+                        val typeColor = when {
+                            mimeType?.startsWith("image/") == true -> VAccent
+                            mimeType?.startsWith("video/") == true -> VAccent3
+                            mimeType?.startsWith("audio/") == true -> VAccent2
+                            mimeType == "application/pdf"          -> VWarn
+                            mimeType?.startsWith("text/") == true  -> VOk
+                            else                                   -> VTextLo
+                        }
+                        Box(
+                            Modifier
+                                .size(8.dp)
+                                .background(typeColor, CircleShape)
+                        )
                         Spacer(Modifier.width(8.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
                                 activeFile.name,
-                                color = TextPrimary,
+                                color = VTextHi,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
-                            Text(
-                                "${activeFileIndex + 1} of ${folderFiles.size}  •  ${
-                                    getMimeType(activeFile.extension)?.substringAfter("/")?.uppercase() ?: activeFile.extension.uppercase()
-                                }",
-                                color = TextMuted,
-                                fontSize = 10.sp
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    "${activeFileIndex + 1}/${folderFiles.size}",
+                                    color = typeColor,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    "  •  ${
+                                        getMimeType(activeFile.extension)?.substringAfter("/")?.uppercase()
+                                            ?: activeFile.extension.uppercase().ifBlank { "FILE" }
+                                    }  •  ${formatFileSize(activeFile.length())}",
+                                    color = VTextLo,
+                                    fontSize = 10.sp
+                                )
+                            }
+                        }
+                        Spacer(Modifier.width(6.dp))
+                        IconButton(
+                            onClick = { showInfoPanel = !showInfoPanel },
+                            modifier = Modifier.viewerIconButtonStyle(selected = showInfoPanel)
+                        ) {
+                            Icon(
+                                Icons.Rounded.Info,
+                                null,
+                                tint = if (showInfoPanel) VAccent else VTextMd,
+                                modifier = Modifier.size(16.dp)
                             )
                         }
-                        Spacer(Modifier.width(4.dp))
+                    }
+
+                    // Row 2: horizontally scrollable action pill bar
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
                         IconButton(
                             onClick = {
                                 if (activeFileIndex > 0) {
@@ -178,13 +287,11 @@ fun UniversalFileViewerScreen(
                             modifier = Modifier.viewerIconButtonStyle(activeFileIndex > 0)
                         ) {
                             Icon(
-                                Icons.Rounded.SkipPrevious,
-                                null,
-                                tint = if (activeFileIndex > 0) CyanPrimary else TextMuted,
-                                modifier = Modifier.size(16.dp)
+                                Icons.Rounded.SkipPrevious, null,
+                                tint = if (activeFileIndex > 0) VAccent else VTextLo,
+                                modifier = Modifier.size(18.dp)
                             )
                         }
-                        Spacer(Modifier.width(4.dp))
                         IconButton(
                             onClick = {
                                 if (activeFileIndex < folderFiles.lastIndex) {
@@ -196,13 +303,18 @@ fun UniversalFileViewerScreen(
                             modifier = Modifier.viewerIconButtonStyle(activeFileIndex < folderFiles.lastIndex)
                         ) {
                             Icon(
-                                Icons.Rounded.SkipNext,
-                                null,
-                                tint = if (activeFileIndex < folderFiles.lastIndex) CyanPrimary else TextMuted,
-                                modifier = Modifier.size(16.dp)
+                                Icons.Rounded.SkipNext, null,
+                                tint = if (activeFileIndex < folderFiles.lastIndex) VAccent else VTextLo,
+                                modifier = Modifier.size(18.dp)
                             )
                         }
-                        Spacer(Modifier.width(4.dp))
+                        // subtle vertical divider
+                        Box(
+                            Modifier
+                                .height(22.dp)
+                                .width(1.dp)
+                                .background(VBorder)
+                        )
                         IconButton(
                             onClick = {
                                 val uri = FileProvider.getUriForFile(
@@ -217,16 +329,14 @@ fun UniversalFileViewerScreen(
                             },
                             modifier = Modifier.viewerIconButtonStyle()
                         ) {
-                            Icon(Icons.Rounded.Share, null, tint = VioletSecondary, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Rounded.Share, null, tint = VAccent2, modifier = Modifier.size(16.dp))
                         }
-                        Spacer(Modifier.width(4.dp))
                         IconButton(
                             onClick = { FileViewerManager(context).openWithExternalApp(activeFile, mimeType) },
                             modifier = Modifier.viewerIconButtonStyle()
                         ) {
-                            Icon(Icons.Rounded.OpenInNew, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Rounded.OpenInNew, null, tint = VTextMd, modifier = Modifier.size(16.dp))
                         }
-                        Spacer(Modifier.width(4.dp))
                         IconButton(
                             onClick = {
                                 val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
@@ -236,9 +346,8 @@ fun UniversalFileViewerScreen(
                             },
                             modifier = Modifier.viewerIconButtonStyle()
                         ) {
-                            Icon(Icons.Rounded.ContentCopy, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Rounded.ContentCopy, null, tint = VTextMd, modifier = Modifier.size(16.dp))
                         }
-                        Spacer(Modifier.width(4.dp))
                         IconButton(
                             onClick = {
                                 viewModel.duplicateFile(activeFile)?.let {
@@ -247,9 +356,14 @@ fun UniversalFileViewerScreen(
                             },
                             modifier = Modifier.viewerIconButtonStyle()
                         ) {
-                            Icon(Icons.Rounded.FileCopy, null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Rounded.FileCopy, null, tint = VTextMd, modifier = Modifier.size(16.dp))
                         }
-                        Spacer(Modifier.width(4.dp))
+                        Box(
+                            Modifier
+                                .height(22.dp)
+                                .width(1.dp)
+                                .background(VBorder)
+                        )
                         IconButton(
                             onClick = { darkMode = !darkMode },
                             modifier = Modifier.viewerIconButtonStyle(selected = darkMode)
@@ -257,31 +371,35 @@ fun UniversalFileViewerScreen(
                             Icon(
                                 if (darkMode) Icons.Rounded.DarkMode else Icons.Rounded.LightMode,
                                 null,
-                                tint = if (darkMode) CyanPrimary else TextSecondary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                        Spacer(Modifier.width(4.dp))
-                        IconButton(
-                            onClick = { showInfoPanel = !showInfoPanel },
-                            modifier = Modifier.viewerIconButtonStyle(selected = showInfoPanel)
-                        ) {
-                            Icon(
-                                Icons.Rounded.Info,
-                                null,
-                                tint = if (showInfoPanel) VioletSecondary else TextSecondary,
+                                tint = if (darkMode) VAccent else VTextMd,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
                     }
-                    HorizontalDivider(color = CardBorder)
+
+                    // Hairline accent divider
+                    Box(
+                        Modifier
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(
+                                Brush.horizontalGradient(
+                                    listOf(
+                                        VBorder.copy(alpha = 0.0f),
+                                        VAccent.copy(alpha = 0.45f),
+                                        VAccent2.copy(alpha = 0.45f),
+                                        VBorder.copy(alpha = 0.0f)
+                                    )
+                                )
+                            )
+                    )
                 }
             }
 
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(if (darkMode) Color.Black else BgDeep)
+                    .background(if (darkMode) Color.Black else VBg)
             ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 when {
@@ -387,40 +505,99 @@ fun UnsupportedFileViewer(file: File, mimeType: String?) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .background(ViewerBgBrush)
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            Icons.Default.InsertDriveFile,
-            contentDescription = "File",
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Cannot preview this file type internally",
-            style = MaterialTheme.typography.titleMedium
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "File: ${file.name}\nType: ${mimeType ?: "Unknown"}\nSize: ${formatFileSize(file.length())}",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = {
-            try {
-                val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-                val openIntent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
-                    setDataAndType(uri, mimeType ?: "*/*")
-                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                context.startActivity(openIntent)
-            } catch (e: Exception) { e.printStackTrace() }
-        }) {
-            Text("Open with External App")
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .background(
+                    Brush.radialGradient(listOf(VAccent.copy(alpha = 0.18f), Color.Transparent)),
+                    CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                Icons.Rounded.InsertDriveFile,
+                contentDescription = "File",
+                modifier = Modifier.size(72.dp),
+                tint = VAccent
+            )
         }
+        Spacer(Modifier.height(20.dp))
+        Text(
+            text = "No internal preview available",
+            color = VTextHi,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text = "This file type doesn't have a built-in viewer yet. Open it with an external app instead.",
+            color = VTextLo,
+            fontSize = 13.sp,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(20.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(VSurface, RoundedCornerShape(16.dp))
+                .border(1.dp, VBorder, RoundedCornerShape(16.dp))
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            InfoRow("Name", file.name)
+            InfoRow("Type", mimeType ?: "Unknown")
+            InfoRow("Size", formatFileSize(file.length()))
+        }
+        Spacer(Modifier.height(20.dp))
+        Button(
+            onClick = {
+                try {
+                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+                    val openIntent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                        setDataAndType(uri, mimeType ?: "*/*")
+                        addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    context.startActivity(openIntent)
+                } catch (e: Exception) { e.printStackTrace() }
+            },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = VAccent,
+                contentColor = Color.Black
+            ),
+            shape = RoundedCornerShape(14.dp)
+        ) {
+            Icon(Icons.Rounded.OpenInNew, null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("Open with External App", fontWeight = FontWeight.SemiBold)
+        }
+    }
+}
+
+@Composable
+private fun InfoRow(label: String, value: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top
+    ) {
+        Text(
+            label.uppercase(),
+            color = VTextLo,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.width(96.dp)
+        )
+        Text(
+            value,
+            color = VTextHi,
+            fontSize = 12.sp,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
@@ -429,30 +606,70 @@ fun FileInfoPanel(file: File, mimeType: String?, modifier: Modifier = Modifier) 
     val permissions = remember(file) { getFilePermissions(file) }
     val exifData = remember(file) { if (mimeType?.startsWith("image/") == true) getImageExifData(file) else emptyMap() }
 
-    Card(
-        modifier = modifier,
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    Column(
+        modifier = modifier
+            .background(
+                Brush.verticalGradient(
+                    listOf(VSurface.copy(alpha = 0.98f), VSurfaceHi.copy(alpha = 0.99f))
+                ),
+                RoundedCornerShape(18.dp)
+            )
+            .border(1.dp, VBorder, RoundedCornerShape(18.dp))
+            .padding(14.dp)
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Info, contentDescription = "Info")
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("File Info", style = MaterialTheme.typography.titleMedium)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .background(VAccent.copy(alpha = 0.18f), RoundedCornerShape(8.dp))
+                    .border(1.dp, VAccent.copy(alpha = 0.45f), RoundedCornerShape(8.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Rounded.Info, null, tint = VAccent, modifier = Modifier.size(15.dp))
             }
+            Spacer(Modifier.width(10.dp))
+            Text("File Information", color = VTextHi, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+        }
 
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("Name: ${file.name}", style = MaterialTheme.typography.bodyMedium)
-            Text("Type: ${mimeType ?: "Unknown"}", style = MaterialTheme.typography.bodySmall)
-            Text("Size: ${formatFileSize(file.length())}", style = MaterialTheme.typography.bodySmall)
-            Text("Modified: ${formatModifiedDate(file.lastModified())}", style = MaterialTheme.typography.bodySmall)
-            Text("Path: ${file.absolutePath}", style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text("Permissions: $permissions", style = MaterialTheme.typography.bodySmall)
+        Spacer(Modifier.height(10.dp))
 
-            if (exifData.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("EXIF metadata", style = MaterialTheme.typography.titleSmall)
+        // Quick chip strip
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            ChipPill("SIZE", formatFileSize(file.length()), VAccent)
+            ChipPill("TYPE", mimeType?.substringAfter("/")?.uppercase() ?: file.extension.uppercase().ifBlank { "—" }, VAccent2)
+            ChipPill("PERM", permissions, VOk)
+        }
+
+        Spacer(Modifier.height(10.dp))
+
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            InfoRow("Name", file.name)
+            InfoRow("Mime", mimeType ?: "Unknown")
+            InfoRow("Modified", formatModifiedDate(file.lastModified()))
+            InfoRow("Path", file.absolutePath)
+        }
+
+        if (exifData.isNotEmpty()) {
+            Spacer(Modifier.height(10.dp))
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(1.dp)
+                    .background(VBorder)
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Rounded.CameraAlt, null, tint = VAccent3, modifier = Modifier.size(13.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("EXIF Metadata", color = VTextHi, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+            }
+            Spacer(Modifier.height(6.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 exifData.forEach { (key, value) ->
-                    Text("$key: $value", style = MaterialTheme.typography.bodySmall)
+                    InfoRow(key, value)
                 }
             }
         }
@@ -577,40 +794,33 @@ fun ImageViewer(
             colorFilter = ColorFilter.colorMatrix(createColorMatrix(filterMode, brightness, contrast))
         )
 
+        // Side action rail (prev / next / slideshow) — glass pills
         Column(
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            FloatingActionButton(
-                onClick = onOpenPrevious,
-                modifier = Modifier.size(44.dp),
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f)
-            ) {
-                Icon(Icons.Default.SkipPrevious, contentDescription = "Previous")
+            IconButton(onClick = onOpenPrevious, modifier = Modifier.audioControlButtonStyle()) {
+                Icon(Icons.Rounded.SkipPrevious, null, tint = VTextHi, modifier = Modifier.size(22.dp))
             }
-
-            FloatingActionButton(
-                onClick = onOpenNext,
-                modifier = Modifier.size(44.dp),
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f)
-            ) {
-                Icon(Icons.Default.SkipNext, contentDescription = "Next")
+            IconButton(onClick = onOpenNext, modifier = Modifier.audioControlButtonStyle()) {
+                Icon(Icons.Rounded.SkipNext, null, tint = VTextHi, modifier = Modifier.size(22.dp))
             }
-
-            FloatingActionButton(
+            IconButton(
                 onClick = { slideshowActive = !slideshowActive },
-                modifier = Modifier.size(44.dp),
-                containerColor = if (slideshowActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f)
+                modifier = Modifier.audioControlButtonStyle(selected = slideshowActive)
             ) {
-                Icon(Icons.Default.Slideshow, contentDescription = "Slideshow")
+                Icon(
+                    Icons.Rounded.Slideshow, null,
+                    tint = if (slideshowActive) VAccent else VTextHi,
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
 
         var controlsExpanded by remember { mutableStateOf(false) }
-        val controlPanelBackground = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.92f)
-        val controlPanelShape = RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp)
+        val controlPanelShape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
 
         Column(
             modifier = Modifier
@@ -620,7 +830,8 @@ fun ImageViewer(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(controlPanelBackground, controlPanelShape)
+                    .background(VSurface.copy(alpha = 0.96f), controlPanelShape)
+                    .border(1.dp, VBorder, controlPanelShape)
                     .clickable { controlsExpanded = !controlsExpanded }
                     .padding(14.dp)
             ) {
@@ -629,15 +840,20 @@ fun ImageViewer(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = if (controlsExpanded) "Hide image controls" else "Show image controls",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextPrimary
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Rounded.Tune, null, tint = VAccent, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = if (controlsExpanded) "Hide image controls" else "Image controls",
+                            color = VTextHi,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                     Icon(
-                        if (controlsExpanded) Icons.Default.ExpandMore else Icons.Default.ExpandLess,
+                        if (controlsExpanded) Icons.Rounded.ExpandMore else Icons.Rounded.ExpandLess,
                         contentDescription = null,
-                        tint = TextSecondary,
+                        tint = VTextMd,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -647,65 +863,99 @@ fun ImageViewer(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(controlPanelBackground, controlPanelShape)
+                        .background(VSurfaceHi.copy(alpha = 0.98f))
+                        .border(1.dp, VBorder)
                         .padding(14.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        ExtendedFloatingActionButton(
-                            onClick = { rotation = (rotation + 90f) % 360f },
-                            icon = { Icon(Icons.Default.ScreenRotation, contentDescription = "Rotate") },
-                            text = { Text("Rotate") }
-                        )
-                        ExtendedFloatingActionButton(
-                            onClick = {
-                                filterMode = when (filterMode) {
-                                    "Normal" -> "Grayscale"
-                                    "Grayscale" -> "Sepia"
-                                    else -> "Normal"
+                        Row(
+                            modifier = Modifier
+                                .weight(1f)
+                                .background(VSurfaceGlow, RoundedCornerShape(12.dp))
+                                .border(1.dp, VBorder, RoundedCornerShape(12.dp))
+                                .clickable { rotation = (rotation + 90f) % 360f }
+                                .padding(vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(Icons.Rounded.ScreenRotation, null, tint = VAccent, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text("Rotate", color = VTextHi, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        }
+                        Row(
+                            modifier = Modifier
+                                .weight(1f)
+                                .background(VSurfaceGlow, RoundedCornerShape(12.dp))
+                                .border(1.dp, VBorder, RoundedCornerShape(12.dp))
+                                .clickable {
+                                    filterMode = when (filterMode) {
+                                        "Normal" -> "Grayscale"
+                                        "Grayscale" -> "Sepia"
+                                        else -> "Normal"
+                                    }
                                 }
-                            },
-                            icon = { Icon(Icons.Default.Tune, contentDescription = "Filter") },
-                            text = { Text(filterMode) }
-                        )
+                                .padding(vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(Icons.Rounded.Tune, null, tint = VAccent2, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text(filterMode, color = VTextHi, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                        }
                     }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Brightness", style = MaterialTheme.typography.bodySmall)
+                        Icon(Icons.Rounded.Brightness6, null, tint = VWarn, modifier = Modifier.size(16.dp))
+                        Text("Brightness", color = VTextMd, fontSize = 11.sp, modifier = Modifier.width(80.dp))
                         Slider(
                             value = brightness,
                             onValueChange = { brightness = it },
                             valueRange = -0.5f..0.5f,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            colors = SliderDefaults.colors(
+                                thumbColor = VWarn,
+                                activeTrackColor = VWarn,
+                                inactiveTrackColor = VSurfaceGlow
+                            )
                         )
                     }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("Contrast", style = MaterialTheme.typography.bodySmall)
+                        Icon(Icons.Rounded.Contrast, null, tint = VAccent3, modifier = Modifier.size(16.dp))
+                        Text("Contrast", color = VTextMd, fontSize = 11.sp, modifier = Modifier.width(80.dp))
                         Slider(
                             value = contrast,
                             onValueChange = { contrast = it },
                             valueRange = 0.5f..2f,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            colors = SliderDefaults.colors(
+                                thumbColor = VAccent3,
+                                activeTrackColor = VAccent3,
+                                inactiveTrackColor = VSurfaceGlow
+                            )
                         )
                     }
 
                     if (exifData.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            "EXIF: ${exifData.entries.joinToString { "${it.key}=${it.value}" }}",
-                            style = MaterialTheme.typography.bodySmall
+                            "EXIF • ${exifData.entries.joinToString { "${it.key}=${it.value}" }}",
+                            color = VTextLo,
+                            fontSize = 10.sp,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -719,21 +969,40 @@ fun BrokenImageViewer() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .background(ViewerBgBrush)
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            Icons.Default.BrokenImage,
-            contentDescription = "Broken image",
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.error
-        )
-        Spacer(modifier = Modifier.height(16.dp))
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .background(
+                    Brush.radialGradient(listOf(VAccent3.copy(alpha = 0.2f), Color.Transparent)),
+                    CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                Icons.Rounded.BrokenImage,
+                contentDescription = "Broken image",
+                modifier = Modifier.size(72.dp),
+                tint = VAccent3
+            )
+        }
+        Spacer(Modifier.height(20.dp))
         Text(
             text = "Failed to load image",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.error
+            color = VTextHi,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text = "The file may be corrupted, in an unsupported format, or unreadable.",
+            color = VTextLo,
+            fontSize = 13.sp,
+            textAlign = TextAlign.Center
         )
     }
 }
@@ -833,77 +1102,179 @@ fun VideoViewer(
             modifier = Modifier.fillMaxSize()
         )
 
+        // Top scrim for visual depth above the video
+        Box(
+            Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .height(60.dp)
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color.Black.copy(alpha = 0.55f), Color.Transparent)
+                    )
+                )
+        )
+
+        // ---------- Modern bottom control overlay ----------
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f))
-                .padding(12.dp)
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color.Transparent, Color.Black.copy(alpha = 0.85f), VBg.copy(alpha = 0.96f))
+                    )
+                )
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { if (folderFiles.isNotEmpty()) onOpenPrevious() }) {
-                        Icon(Icons.Default.SkipPrevious, contentDescription = "Previous file")
-                    }
-                    IconButton(onClick = { isPlaying = !isPlaying }) {
-                        Icon(
-                            if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                            contentDescription = "Play/Pause"
-                        )
-                    }
-                    IconButton(onClick = { if (folderFiles.isNotEmpty()) onOpenNext() }) {
-                        Icon(Icons.Default.SkipNext, contentDescription = "Next file")
-                    }
-                }
-                Text(formatDuration(currentPosition), style = MaterialTheme.typography.bodySmall)
-            }
-
-            Slider(
-                value = currentPosition.toFloat().coerceIn(0f, duration.toFloat()),
-                onValueChange = {
-                    currentPosition = it.toInt()
-                    videoView?.seekTo(currentPosition)
-                },
-                valueRange = 0f..duration.toFloat(),
-                modifier = Modifier.fillMaxWidth()
-            )
+            // Time + scrub row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text("Speed", style = MaterialTheme.typography.bodySmall)
+                Text(
+                    formatDuration(currentPosition),
+                    color = VTextHi,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Slider(
+                    value = currentPosition.toFloat().coerceIn(0f, duration.toFloat()),
+                    onValueChange = {
+                        currentPosition = it.toInt()
+                        videoView?.seekTo(currentPosition)
+                    },
+                    valueRange = 0f..duration.toFloat().coerceAtLeast(1f),
+                    modifier = Modifier.weight(1f),
+                    colors = SliderDefaults.colors(
+                        thumbColor = VAccent,
+                        activeTrackColor = VAccent,
+                        inactiveTrackColor = VSurfaceGlow
+                    )
+                )
+                Text(
+                    formatDuration(duration),
+                    color = VTextLo,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            // Main playback row: prev / -10 / play-pause / +10 / next
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = { if (folderFiles.isNotEmpty()) onOpenPrevious() },
+                    modifier = Modifier.audioControlButtonStyle()
+                ) {
+                    Icon(Icons.Rounded.SkipPrevious, null, tint = VTextHi, modifier = Modifier.size(22.dp))
+                }
+                IconButton(
+                    onClick = { videoView?.seekTo((currentPosition - 10000).coerceAtLeast(0)) },
+                    modifier = Modifier.audioControlButtonStyle()
+                ) {
+                    Icon(Icons.Rounded.Replay10, null, tint = VTextMd, modifier = Modifier.size(22.dp))
+                }
+                // Big play/pause
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .background(
+                            Brush.radialGradient(listOf(VAccent, VAccent2)),
+                            CircleShape
+                        )
+                        .border(2.dp, VAccent.copy(alpha = 0.6f), CircleShape)
+                        .clickable { isPlaying = !isPlaying },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                        null,
+                        tint = Color.White,
+                        modifier = Modifier.size(34.dp)
+                    )
+                }
+                IconButton(
+                    onClick = { videoView?.seekTo((currentPosition + 10000).coerceAtMost(duration)) },
+                    modifier = Modifier.audioControlButtonStyle()
+                ) {
+                    Icon(Icons.Rounded.Forward10, null, tint = VTextMd, modifier = Modifier.size(22.dp))
+                }
+                IconButton(
+                    onClick = { if (folderFiles.isNotEmpty()) onOpenNext() },
+                    modifier = Modifier.audioControlButtonStyle()
+                ) {
+                    Icon(Icons.Rounded.SkipNext, null, tint = VTextHi, modifier = Modifier.size(22.dp))
+                }
+            }
+
+            // Speed + capture row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Icon(Icons.Rounded.Speed, null, tint = VAccent2, modifier = Modifier.size(16.dp))
                 Slider(
                     value = playbackSpeed,
-                    onValueChange = { playbackSpeed = it },
+                    onValueChange = {
+                        playbackSpeed = it
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            try {
+                                val params = PlaybackParams().setSpeed(it)
+                                // VideoView doesn't expose its MediaPlayer; speed mostly applies on prepare
+                            } catch (_: Exception) { }
+                        }
+                    },
                     valueRange = 0.5f..2f,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    colors = SliderDefaults.colors(
+                        thumbColor = VAccent2,
+                        activeTrackColor = VAccent2,
+                        inactiveTrackColor = VSurfaceGlow
+                    )
                 )
-                Text(String.format("%.1fx", playbackSpeed), style = MaterialTheme.typography.bodySmall)
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Button(onClick = {
-                    captureVideoFrame(context, file, currentPosition)?.let {
-                        screenshotMessage = "Saved screenshot to ${it.absolutePath}"
-                    }
-                }) {
-                    Icon(Icons.Default.PhotoCamera, contentDescription = "Screenshot")
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Capture")
+                Box(
+                    modifier = Modifier
+                        .background(VAccent2.copy(alpha = 0.18f), RoundedCornerShape(8.dp))
+                        .border(1.dp, VAccent2.copy(alpha = 0.45f), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        String.format("%.1fx", playbackSpeed),
+                        color = VAccent2, fontSize = 11.sp, fontWeight = FontWeight.SemiBold
+                    )
+                }
+                IconButton(
+                    onClick = {
+                        captureVideoFrame(context, file, currentPosition)?.let {
+                            screenshotMessage = "Frame saved: ${it.name}"
+                        } ?: run { screenshotMessage = "Capture failed" }
+                    },
+                    modifier = Modifier.viewerIconButtonStyle()
+                ) {
+                    Icon(Icons.Rounded.PhotoCamera, null, tint = VAccent3, modifier = Modifier.size(16.dp))
                 }
             }
 
             screenshotMessage?.let { message ->
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(message, style = MaterialTheme.typography.bodySmall)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(VOk.copy(alpha = 0.14f), RoundedCornerShape(10.dp))
+                        .border(1.dp, VOk.copy(alpha = 0.4f), RoundedCornerShape(10.dp))
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Rounded.CheckCircle, null, tint = VOk, modifier = Modifier.size(14.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(message, color = VTextHi, fontSize = 11.sp)
+                }
             }
         }
     }
@@ -976,72 +1347,197 @@ fun AudioPlayer(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .background(
+                Brush.verticalGradient(
+                    listOf(VBg, VBgGradient, VBg)
+                )
+            )
+            .padding(20.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Spacer(Modifier.height(8.dp))
+
+        // ---------- Hero album art ----------
+        Box(
+            modifier = Modifier
+                .size(220.dp)
+                .background(
+                    Brush.radialGradient(
+                        listOf(VAccent2.copy(alpha = 0.35f), Color.Transparent)
+                    ),
+                    CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
             if (albumArt != null) {
                 Image(
                     bitmap = albumArt.asImageBitmap(),
                     contentDescription = "Album art",
-                    modifier = Modifier.size(64.dp)
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                    modifier = Modifier
+                        .size(200.dp)
+                        .clip(RoundedCornerShape(28.dp))
+                        .border(2.dp, VBorderHi, RoundedCornerShape(28.dp))
                 )
             } else {
-                Icon(Icons.Default.MusicNote, contentDescription = "Audio", modifier = Modifier.size(52.dp), tint = MaterialTheme.colorScheme.primary)
-            }
-            Column {
-                Text(metadata.title ?: file.nameWithoutExtension, style = MaterialTheme.typography.titleMedium)
-                Text(metadata.album ?: metadata.artist ?: "Audio file", style = MaterialTheme.typography.bodySmall)
-            }
-        }
-
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            IconButton(onClick = onOpenPrevious, modifier = Modifier.audioControlButtonStyle()) {
-                Icon(Icons.Default.SkipPrevious, contentDescription = "Previous track", modifier = Modifier.size(22.dp), tint = TextPrimary)
-            }
-            IconButton(onClick = {
-                if (isPlaying) mediaPlayer?.pause() else mediaPlayer?.start()
-                isPlaying = !isPlaying
-            }, modifier = Modifier.audioControlButtonStyle()) {
-                Icon(if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow, contentDescription = "Play/Pause", modifier = Modifier.size(24.dp), tint = TextPrimary)
-            }
-            IconButton(onClick = onOpenNext, modifier = Modifier.audioControlButtonStyle()) {
-                Icon(Icons.Default.SkipNext, contentDescription = "Next track", modifier = Modifier.size(22.dp), tint = TextPrimary)
-            }
-        }
-
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            IconButton(onClick = { mediaPlayer?.seekTo((currentPosition - 10000).coerceAtLeast(0)) }, modifier = Modifier.audioControlButtonStyle()) {
-                Icon(Icons.Default.Replay10, contentDescription = "Back 10 seconds", modifier = Modifier.size(20.dp), tint = TextSecondary)
-            }
-            IconButton(onClick = { mediaPlayer?.seekTo((currentPosition + 10000).coerceAtMost(duration)) }, modifier = Modifier.audioControlButtonStyle()) {
-                Icon(Icons.Default.Forward10, contentDescription = "Forward 10 seconds", modifier = Modifier.size(20.dp), tint = TextSecondary)
-            }
-            IconButton(onClick = { shuffle = !shuffle }, modifier = Modifier.audioControlButtonStyle(selected = shuffle)) {
-                Icon(Icons.Default.Shuffle, contentDescription = "Shuffle", modifier = Modifier.size(20.dp), tint = if (shuffle) CyanPrimary else TextSecondary)
-            }
-            IconButton(onClick = { repeatOne = !repeatOne }, modifier = Modifier.audioControlButtonStyle(selected = repeatOne)) {
-                Icon(Icons.Default.Repeat, contentDescription = "Repeat", modifier = Modifier.size(20.dp), tint = if (repeatOne) CyanPrimary else TextSecondary)
+                Box(
+                    modifier = Modifier
+                        .size(200.dp)
+                        .background(
+                            Brush.linearGradient(
+                                listOf(VAccent2.copy(alpha = 0.4f), VAccent.copy(alpha = 0.3f))
+                            ),
+                            RoundedCornerShape(28.dp)
+                        )
+                        .border(2.dp, VBorderHi, RoundedCornerShape(28.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Rounded.MusicNote,
+                        contentDescription = "Audio",
+                        modifier = Modifier.size(96.dp),
+                        tint = VTextHi.copy(alpha = 0.9f)
+                    )
+                }
             }
         }
 
-        Slider(
-            value = currentPosition.toFloat().coerceIn(0f, duration.toFloat()),
-            onValueChange = {
-                currentPosition = it.toInt()
-                mediaPlayer?.seekTo(currentPosition)
-            },
-            valueRange = 0f..duration.toFloat(),
-            modifier = Modifier.fillMaxWidth()
-        )
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(formatDuration(currentPosition), style = MaterialTheme.typography.bodySmall)
-            Text(formatDuration(duration), style = MaterialTheme.typography.bodySmall)
+        // ---------- Title / artist ----------
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                metadata.title ?: file.nameWithoutExtension,
+                color = VTextHi,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                metadata.artist ?: metadata.album ?: "Unknown artist",
+                color = VTextMd,
+                fontSize = 13.sp,
+                textAlign = TextAlign.Center
+            )
         }
 
-        if (metadata.genre != null || metadata.year != null) {
-            Text("${metadata.genre.orEmpty()} ${metadata.year.orEmpty()}", style = MaterialTheme.typography.bodySmall)
+        // ---------- Meta chips ----------
+        if (metadata.album != null || metadata.genre != null || metadata.year != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                metadata.album?.let { ChipPill("ALBUM", it, VAccent) }
+                metadata.genre?.let { ChipPill("GENRE", it, VAccent2) }
+                metadata.year?.let { ChipPill("YEAR", it, VAccent3) }
+            }
         }
+
+        // ---------- Progress slider + time labels ----------
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Slider(
+                value = currentPosition.toFloat().coerceIn(0f, duration.toFloat().coerceAtLeast(1f)),
+                onValueChange = {
+                    currentPosition = it.toInt()
+                    mediaPlayer?.seekTo(currentPosition)
+                },
+                valueRange = 0f..duration.toFloat().coerceAtLeast(1f),
+                modifier = Modifier.fillMaxWidth(),
+                colors = SliderDefaults.colors(
+                    thumbColor = VAccent,
+                    activeTrackColor = VAccent,
+                    inactiveTrackColor = VSurfaceGlow
+                )
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(formatDuration(currentPosition), color = VTextHi, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+                Text(formatDuration(duration), color = VTextLo, fontSize = 11.sp, fontWeight = FontWeight.Medium)
+            }
+        }
+
+        // ---------- Main control row ----------
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            IconButton(
+                onClick = { shuffle = !shuffle },
+                modifier = Modifier.audioControlButtonStyle(selected = shuffle)
+            ) {
+                Icon(Icons.Rounded.Shuffle, null,
+                    tint = if (shuffle) VAccent else VTextMd, modifier = Modifier.size(20.dp))
+            }
+            IconButton(
+                onClick = onOpenPrevious,
+                modifier = Modifier.audioControlButtonStyle()
+            ) {
+                Icon(Icons.Rounded.SkipPrevious, null, tint = VTextHi, modifier = Modifier.size(24.dp))
+            }
+            // Big circular play/pause
+            Box(
+                modifier = Modifier
+                    .size(72.dp)
+                    .background(
+                        Brush.radialGradient(listOf(VAccent, VAccent2)),
+                        CircleShape
+                    )
+                    .border(2.dp, VAccent.copy(alpha = 0.6f), CircleShape)
+                    .clickable {
+                        if (isPlaying) mediaPlayer?.pause() else mediaPlayer?.start()
+                        isPlaying = !isPlaying
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                    null,
+                    tint = Color.White,
+                    modifier = Modifier.size(38.dp)
+                )
+            }
+            IconButton(
+                onClick = onOpenNext,
+                modifier = Modifier.audioControlButtonStyle()
+            ) {
+                Icon(Icons.Rounded.SkipNext, null, tint = VTextHi, modifier = Modifier.size(24.dp))
+            }
+            IconButton(
+                onClick = { repeatOne = !repeatOne },
+                modifier = Modifier.audioControlButtonStyle(selected = repeatOne)
+            ) {
+                Icon(Icons.Rounded.Repeat, null,
+                    tint = if (repeatOne) VAccent else VTextMd, modifier = Modifier.size(20.dp))
+            }
+        }
+
+        // ---------- Secondary control row (-10 / +10 / equalizer placeholder) ----------
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            IconButton(
+                onClick = { mediaPlayer?.seekTo((currentPosition - 10000).coerceAtLeast(0)) },
+                modifier = Modifier.audioControlButtonStyle()
+            ) {
+                Icon(Icons.Rounded.Replay10, null, tint = VTextMd, modifier = Modifier.size(22.dp))
+            }
+            IconButton(
+                onClick = { mediaPlayer?.seekTo((currentPosition + 10000).coerceAtMost(duration)) },
+                modifier = Modifier.audioControlButtonStyle()
+            ) {
+                Icon(Icons.Rounded.Forward10, null, tint = VTextMd, modifier = Modifier.size(22.dp))
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
     }
 }
 
@@ -1081,69 +1577,330 @@ private fun loadAudioAlbumArt(file: File): android.graphics.Bitmap? {
 
 @Composable
 fun PdfViewer(file: File) {
-    var currentPage by remember { mutableStateOf(0) }
-    var pageCount by remember { mutableStateOf(0) }
-    var zoomFactor by remember { mutableStateOf(1f) }
-    var pdfView by remember { mutableStateOf<PDFView?>(null) }
+    var currentPage by remember(file) { mutableStateOf(0) }
+    var pageCount by remember(file) { mutableStateOf(0) }
+    var zoomFactor by remember(file) { mutableStateOf(1f) }
+    var pdfView by remember(file) { mutableStateOf<PDFView?>(null) }
+    var showJumpDialog by remember { mutableStateOf(false) }
+    var jumpInput by remember { mutableStateOf("") }
+    var nightMode by remember { mutableStateOf(false) }
+    var controlsVisible by remember { mutableStateOf(true) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFF1A1F2E))) {
         AndroidView(
             factory = { context ->
                 PDFView(context, null).apply {
+                    setBackgroundColor(android.graphics.Color.parseColor("#1A1F2E"))
                     pdfView = this
                     fromFile(file)
                         .defaultPage(currentPage)
                         .enableSwipe(true)
                         .swipeHorizontal(false)
                         .enableDoubletap(true)
+                        .nightMode(nightMode)
+                        .spacing(8)
                         .onLoad { pageCount = it }
+                        .onPageChange { page, _ -> currentPage = page }
                         .load()
                 }
             },
-            update = {
-                pdfView?.let { view ->
-                    if (view.currentPage != currentPage) view.jumpTo(currentPage, true)
-                    view.zoomTo(zoomFactor)
-                }
+            update = { view ->
+                if (view.currentPage != currentPage) view.jumpTo(currentPage, true)
+                if (kotlin.math.abs(view.zoom - zoomFactor) > 0.01f) view.zoomTo(zoomFactor)
             },
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = { controlsVisible = !controlsVisible })
+                }
         )
 
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f))
-                .padding(12.dp)
-        ) {
+        // Top floating "page X / Y" pill — gives the user instant context
+        // even when the bottom controls are hidden via tap-to-toggle.
+        if (controlsVisible) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 12.dp)
+                    .background(VSurface.copy(alpha = 0.92f), RoundedCornerShape(999.dp))
+                    .border(1.dp, VBorder, RoundedCornerShape(999.dp))
+                    .padding(horizontal = 14.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { if (currentPage > 0) currentPage -= 1 }) {
-                    Icon(Icons.Default.ChevronLeft, contentDescription = "Previous page")
-                }
-                Text("Page ${currentPage + 1} of ${pageCount.coerceAtLeast(1)}", style = MaterialTheme.typography.bodySmall)
-                IconButton(onClick = { if (currentPage < pageCount - 1) currentPage += 1 }) {
-                    Icon(Icons.Default.ChevronRight, contentDescription = "Next page")
-                }
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text("Zoom", style = MaterialTheme.typography.bodySmall)
-                Slider(
-                    value = zoomFactor,
-                    onValueChange = { zoomFactor = it.coerceIn(1f, 4f) },
-                    valueRange = 1f..4f,
-                    modifier = Modifier.weight(1f)
+                Icon(
+                    Icons.Rounded.Description,
+                    contentDescription = null,
+                    tint = VWarn,
+                    modifier = Modifier.size(14.dp)
                 )
-                Text(String.format("%.1fx", zoomFactor), style = MaterialTheme.typography.bodySmall)
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "Page ${currentPage + 1} / ${pageCount.coerceAtLeast(1)}",
+                    color = VTextHi,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(Modifier.width(10.dp))
+                Box(Modifier.size(4.dp).background(VBorder, CircleShape))
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    String.format("%.0f%%", zoomFactor * 100),
+                    color = VAccent,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
+
+        // Modern bottom control card (glass surface)
+        if (controlsVisible) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(12.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(VSurface.copy(alpha = 0.95f), VSurfaceHi.copy(alpha = 0.97f))
+                        ),
+                        RoundedCornerShape(20.dp)
+                    )
+                    .border(1.dp, VBorder, RoundedCornerShape(20.dp))
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // Page navigation row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    IconButton(
+                        onClick = { currentPage = 0 },
+                        enabled = currentPage > 0,
+                        modifier = Modifier.viewerIconButtonStyle(currentPage > 0)
+                    ) {
+                        Icon(Icons.Rounded.FirstPage, null,
+                            tint = if (currentPage > 0) VAccent else VTextLo,
+                            modifier = Modifier.size(18.dp))
+                    }
+                    IconButton(
+                        onClick = { if (currentPage > 0) currentPage -= 1 },
+                        enabled = currentPage > 0,
+                        modifier = Modifier.viewerIconButtonStyle(currentPage > 0)
+                    ) {
+                        Icon(Icons.Rounded.ChevronLeft, null,
+                            tint = if (currentPage > 0) VAccent else VTextLo,
+                            modifier = Modifier.size(20.dp))
+                    }
+                    // Tappable page-jump pill (centered, takes remaining width)
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(VSurfaceGlow, RoundedCornerShape(12.dp))
+                            .border(1.dp, VBorderHi, RoundedCornerShape(12.dp))
+                            .clickable {
+                                jumpInput = (currentPage + 1).toString()
+                                showJumpDialog = true
+                            }
+                            .padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "Page ${currentPage + 1} of ${pageCount.coerceAtLeast(1)}",
+                            color = VTextHi,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                    IconButton(
+                        onClick = { if (currentPage < pageCount - 1) currentPage += 1 },
+                        enabled = currentPage < pageCount - 1,
+                        modifier = Modifier.viewerIconButtonStyle(currentPage < pageCount - 1)
+                    ) {
+                        Icon(Icons.Rounded.ChevronRight, null,
+                            tint = if (currentPage < pageCount - 1) VAccent else VTextLo,
+                            modifier = Modifier.size(20.dp))
+                    }
+                    IconButton(
+                        onClick = { currentPage = (pageCount - 1).coerceAtLeast(0) },
+                        enabled = currentPage < pageCount - 1,
+                        modifier = Modifier.viewerIconButtonStyle(currentPage < pageCount - 1)
+                    ) {
+                        Icon(Icons.Rounded.LastPage, null,
+                            tint = if (currentPage < pageCount - 1) VAccent else VTextLo,
+                            modifier = Modifier.size(18.dp))
+                    }
+                }
+
+                // Page progress bar
+                LinearProgressIndicator(
+                    progress = if (pageCount > 0) (currentPage + 1).toFloat() / pageCount else 0f,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(3.dp)
+                        .clip(RoundedCornerShape(999.dp)),
+                    color = VAccent,
+                    trackColor = VSurfaceGlow
+                )
+
+                // Zoom row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    IconButton(
+                        onClick = { zoomFactor = (zoomFactor - 0.25f).coerceIn(1f, 4f) },
+                        modifier = Modifier.viewerIconButtonStyle()
+                    ) {
+                        Icon(Icons.Rounded.ZoomOut, null, tint = VTextMd, modifier = Modifier.size(18.dp))
+                    }
+                    Slider(
+                        value = zoomFactor,
+                        onValueChange = { zoomFactor = it.coerceIn(1f, 4f) },
+                        valueRange = 1f..4f,
+                        modifier = Modifier.weight(1f),
+                        colors = SliderDefaults.colors(
+                            thumbColor = VAccent,
+                            activeTrackColor = VAccent,
+                            inactiveTrackColor = VSurfaceGlow
+                        )
+                    )
+                    IconButton(
+                        onClick = { zoomFactor = (zoomFactor + 0.25f).coerceIn(1f, 4f) },
+                        modifier = Modifier.viewerIconButtonStyle()
+                    ) {
+                        Icon(Icons.Rounded.ZoomIn, null, tint = VTextMd, modifier = Modifier.size(18.dp))
+                    }
+                    Box(
+                        modifier = Modifier
+                            .background(VAccent.copy(alpha = 0.18f), RoundedCornerShape(8.dp))
+                            .border(1.dp, VAccent.copy(alpha = 0.45f), RoundedCornerShape(8.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            String.format("%.1fx", zoomFactor),
+                            color = VAccent,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+
+                // Quick action chips: Fit, Reset, Night mode
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    PdfActionChip(
+                        icon = Icons.Rounded.FitScreen,
+                        label = "Fit",
+                        onClick = { zoomFactor = 1f }
+                    )
+                    PdfActionChip(
+                        icon = Icons.Rounded.Refresh,
+                        label = "Reset",
+                        onClick = {
+                            zoomFactor = 1f
+                            currentPage = 0
+                        }
+                    )
+                    PdfActionChip(
+                        icon = if (nightMode) Icons.Rounded.LightMode else Icons.Rounded.DarkMode,
+                        label = if (nightMode) "Day" else "Night",
+                        accent = if (nightMode) VAccent else VTextMd,
+                        onClick = {
+                            nightMode = !nightMode
+                            pdfView?.let { view ->
+                                view.fromFile(file)
+                                    .defaultPage(currentPage)
+                                    .enableSwipe(true)
+                                    .swipeHorizontal(false)
+                                    .enableDoubletap(true)
+                                    .nightMode(nightMode)
+                                    .spacing(8)
+                                    .onLoad { pageCount = it }
+                                    .onPageChange { page, _ -> currentPage = page }
+                                    .load()
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    // Jump-to-page dialog
+    if (showJumpDialog) {
+        AlertDialog(
+            onDismissRequest = { showJumpDialog = false },
+            containerColor = VSurface,
+            title = {
+                Text("Jump to page", color = VTextHi, fontWeight = FontWeight.SemiBold)
+            },
+            text = {
+                Column {
+                    Text(
+                        "Enter a page number between 1 and ${pageCount.coerceAtLeast(1)}",
+                        color = VTextLo, fontSize = 12.sp
+                    )
+                    Spacer(Modifier.height(10.dp))
+                    OutlinedTextField(
+                        value = jumpInput,
+                        onValueChange = { jumpInput = it.filter { c -> c.isDigit() }.take(6) },
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = VAccent,
+                            unfocusedBorderColor = VBorder,
+                            focusedTextColor = VTextHi,
+                            unfocusedTextColor = VTextHi,
+                            cursorColor = VAccent,
+                            focusedContainerColor = VSurfaceHi,
+                            unfocusedContainerColor = VSurfaceHi
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val target = jumpInput.toIntOrNull()
+                    if (target != null && pageCount > 0) {
+                        currentPage = (target - 1).coerceIn(0, pageCount - 1)
+                    }
+                    showJumpDialog = false
+                }) { Text("Go", color = VAccent, fontWeight = FontWeight.SemiBold) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showJumpDialog = false }) {
+                    Text("Cancel", color = VTextLo)
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun RowScope.PdfActionChip(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    accent: Color = VTextMd,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .weight(1f)
+            .background(VSurfaceHi, RoundedCornerShape(12.dp))
+            .border(1.dp, VBorder, RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Icon(icon, null, tint = accent, modifier = Modifier.size(16.dp))
+        Spacer(Modifier.width(6.dp))
+        Text(label, color = VTextHi, fontSize = 12.sp, fontWeight = FontWeight.Medium)
     }
 }
 
@@ -1151,44 +1908,102 @@ fun PdfViewer(file: File) {
 fun TextViewer(file: File) {
     val text = remember(file) { readTextSafe(file) }
     var searchQuery by remember { mutableStateOf("") }
-    var fontSize by remember { mutableStateOf(16f) }
+    var fontSize by remember { mutableStateOf(15f) }
+    var wrapLines by remember { mutableStateOf(true) }
+    val lineCount = remember(text) { text.count { it == '\n' } + 1 }
+    val charCount = remember(text) { text.length }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(
+    Column(modifier = Modifier.fillMaxSize().background(VBg)) {
+
+        // Search + actions card
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                .background(VSurface)
+                .border(1.dp, VBorder)
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            TextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                placeholder = { Text("Search text") },
-                modifier = Modifier.weight(1f)
-            )
-            IconButton(onClick = { searchQuery = "" }) {
-                Icon(Icons.Default.Close, contentDescription = "Clear search")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Search…", color = VTextLo, fontSize = 13.sp) },
+                    leadingIcon = { Icon(Icons.Rounded.Search, null, tint = VTextMd, modifier = Modifier.size(18.dp)) },
+                    trailingIcon = if (searchQuery.isNotEmpty()) {
+                        {
+                            IconButton(onClick = { searchQuery = "" }) {
+                                Icon(Icons.Rounded.Close, null, tint = VTextLo, modifier = Modifier.size(16.dp))
+                            }
+                        }
+                    } else null,
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = VAccent,
+                        unfocusedBorderColor = VBorder,
+                        focusedTextColor = VTextHi,
+                        unfocusedTextColor = VTextHi,
+                        cursorColor = VAccent,
+                        focusedContainerColor = VSurfaceHi,
+                        unfocusedContainerColor = VSurfaceHi
+                    ),
+                    modifier = Modifier.weight(1f).heightIn(min = 48.dp)
+                )
+                IconButton(
+                    onClick = { wrapLines = !wrapLines },
+                    modifier = Modifier.viewerIconButtonStyle(selected = wrapLines)
+                ) {
+                    Icon(
+                        Icons.Rounded.WrapText, null,
+                        tint = if (wrapLines) VAccent else VTextMd,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(Icons.Rounded.FormatSize, null, tint = VAccent2, modifier = Modifier.size(16.dp))
+                Slider(
+                    value = fontSize,
+                    onValueChange = { fontSize = it },
+                    valueRange = 10f..28f,
+                    modifier = Modifier.weight(1f),
+                    colors = SliderDefaults.colors(
+                        thumbColor = VAccent2,
+                        activeTrackColor = VAccent2,
+                        inactiveTrackColor = VSurfaceGlow
+                    )
+                )
+                Box(
+                    modifier = Modifier
+                        .background(VAccent2.copy(alpha = 0.18f), RoundedCornerShape(8.dp))
+                        .border(1.dp, VAccent2.copy(alpha = 0.45f), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text("${fontSize.toInt()}px", color = VAccent2, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                }
+            }
+
+            // Stats chips
+            Row(
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ChipPill("LINES", lineCount.toString(), VAccent)
+                ChipPill("CHARS", charCount.toString(), VAccent2)
+                ChipPill("SIZE", formatFileSize(file.length()), VAccent3)
             }
         }
 
-        Text(
-            text = "Font size: ${fontSize.toInt()}",
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(horizontal = 12.dp)
-        )
-
-        Slider(
-            value = fontSize,
-            onValueChange = { fontSize = it },
-            valueRange = 12f..28f,
-            modifier = Modifier.padding(horizontal = 12.dp)
-        )
-
-        val primaryColor = MaterialTheme.colorScheme.primary
-        val onSurfaceColor = MaterialTheme.colorScheme.onSurface
-
-        val annotatedText = remember(text, searchQuery, primaryColor, onSurfaceColor) {
+        val annotatedText = remember(text, searchQuery) {
             if (searchQuery.isBlank()) {
                 androidx.compose.ui.text.AnnotatedString(text)
             } else {
@@ -1206,8 +2021,9 @@ fun TextViewer(file: File) {
                     builder.append(source.substring(searchStart, index))
                     builder.pushStyle(
                         androidx.compose.ui.text.SpanStyle(
-                            background = primaryColor.copy(alpha = 0.25f),
-                            color = onSurfaceColor
+                            background = VWarn.copy(alpha = 0.45f),
+                            color = Color.Black,
+                            fontWeight = FontWeight.SemiBold
                         )
                     )
                     builder.append(source.substring(index, index + query.length))
@@ -1219,13 +2035,21 @@ fun TextViewer(file: File) {
         }
 
         SelectionContainer(modifier = Modifier.fillMaxSize()) {
+            val baseModifier = Modifier
+                .fillMaxSize()
+                .background(VBg)
+                .verticalScroll(rememberScrollState())
+            val finalModifier =
+                if (wrapLines) baseModifier.padding(14.dp)
+                else baseModifier.horizontalScroll(rememberScrollState()).padding(14.dp)
+
             Text(
                 text = annotatedText,
-                style = MaterialTheme.typography.bodyLarge.copy(fontSize = fontSize.sp),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(12.dp)
+                color = VTextHi,
+                fontSize = fontSize.sp,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                softWrap = wrapLines,
+                modifier = finalModifier
             )
         }
     }
@@ -1242,17 +2066,22 @@ private fun readTextSafe(file: File): String {
 @Composable
 fun HtmlViewer(file: File) {
     val htmlContent = remember(file) { readTextSafe(file) }
-    Column(modifier = Modifier.fillMaxSize()) {
-        Box(
+    Column(modifier = Modifier.fillMaxSize().background(VBg)) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .padding(12.dp)
+                .background(VSurface)
+                .border(1.dp, VBorder)
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            Icon(Icons.Rounded.Lock, null, tint = VWarn, modifier = Modifier.size(14.dp))
+            Spacer(Modifier.width(8.dp))
             Text(
-                text = "Web Viewer: JavaScript disabled for security.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                text = "Web Viewer • JavaScript disabled for security",
+                color = VTextMd,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium
             )
         }
 
@@ -1281,37 +2110,92 @@ fun ArchiveViewer(file: File) {
         archiveContents.filter { it.contains(searchQuery, ignoreCase = true) }
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Archive Contents: ${file.name}", style = MaterialTheme.typography.titleMedium)
-        Spacer(modifier = Modifier.height(12.dp))
-        TextField(
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(ViewerBgBrush)
+            .padding(16.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(VAccent2.copy(alpha = 0.18f), RoundedCornerShape(10.dp))
+                    .border(1.dp, VAccent2.copy(alpha = 0.45f), RoundedCornerShape(10.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Rounded.FolderZip, null, tint = VAccent2, modifier = Modifier.size(18.dp))
+            }
+            Spacer(Modifier.width(10.dp))
+            Column {
+                Text("Archive Contents", color = VTextHi, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                Text(
+                    "${archiveContents.size} entries • ${formatFileSize(file.length())}",
+                    color = VTextLo, fontSize = 11.sp
+                )
+            }
+        }
+        Spacer(Modifier.height(12.dp))
+        OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            placeholder = { Text("Search archive entries") },
+            placeholder = { Text("Search entries…", color = VTextLo, fontSize = 13.sp) },
+            leadingIcon = { Icon(Icons.Rounded.Search, null, tint = VTextMd, modifier = Modifier.size(18.dp)) },
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = VAccent,
+                unfocusedBorderColor = VBorder,
+                focusedTextColor = VTextHi,
+                unfocusedTextColor = VTextHi,
+                cursorColor = VAccent,
+                focusedContainerColor = VSurfaceHi,
+                unfocusedContainerColor = VSurfaceHi
+            ),
             modifier = Modifier.fillMaxWidth()
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(Modifier.height(12.dp))
 
         if (filtered.isEmpty()) {
-            Text("No matching entries", style = MaterialTheme.typography.bodyMedium)
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("No matching entries", color = VTextLo, fontSize = 12.sp)
+            }
         } else {
             LazyColumn(modifier = Modifier.weight(1f)) {
                 items(filtered) { item ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 6.dp),
+                            .padding(vertical = 4.dp)
+                            .background(VSurface, RoundedCornerShape(10.dp))
+                            .border(1.dp, VBorder, RoundedCornerShape(10.dp))
+                            .padding(horizontal = 10.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.InsertDriveFile, contentDescription = "File", modifier = Modifier.size(24.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(item, style = MaterialTheme.typography.bodyMedium)
+                        Icon(
+                            Icons.Rounded.InsertDriveFile, null,
+                            tint = VAccent, modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            item, color = VTextHi, fontSize = 12.sp,
+                            maxLines = 1, overflow = TextOverflow.Ellipsis
+                        )
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(12.dp))
-            Button(onClick = { extractArchive(file, context) }, modifier = Modifier.fillMaxWidth()) {
-                Text("Extract Archive")
+            Spacer(Modifier.height(12.dp))
+            Button(
+                onClick = { extractArchive(file, context) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = VAccent, contentColor = Color.Black),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Icon(Icons.Rounded.Unarchive, null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Extract Archive", fontWeight = FontWeight.SemiBold)
             }
         }
     }
@@ -1331,33 +2215,107 @@ fun ApkInfoViewer(file: File) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(ViewerBgBrush)
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        Text(text = "APK Information", style = MaterialTheme.typography.titleLarge)
-        Spacer(modifier = Modifier.height(16.dp))
-        Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text("Package Name: ${apkInfo.packageName}", style = MaterialTheme.typography.bodyLarge)
-                Text("Version: ${apkInfo.versionName} (${apkInfo.versionCode})", style = MaterialTheme.typography.bodyMedium)
-                Text("Size: ${formatFileSize(apkInfo.size)}", style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("Permissions:", style = MaterialTheme.typography.titleMedium)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(VOk.copy(alpha = 0.18f), RoundedCornerShape(12.dp))
+                    .border(1.dp, VOk.copy(alpha = 0.45f), RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Rounded.Android, null, tint = VOk, modifier = Modifier.size(22.dp))
+            }
+            Spacer(Modifier.width(12.dp))
+            Column {
+                Text("APK Package", color = VTextHi, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(apkInfo.packageName, color = VTextLo, fontSize = 11.sp,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            ChipPill("VERSION", apkInfo.versionName.ifBlank { "—" }, VAccent)
+            ChipPill("CODE", apkInfo.versionCode.toString(), VAccent2)
+            ChipPill("SIZE", formatFileSize(apkInfo.size), VAccent3)
+            ChipPill("PERMS", apkInfo.permissions.size.toString(), VWarn)
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(VSurface, RoundedCornerShape(16.dp))
+                .border(1.dp, VBorder, RoundedCornerShape(16.dp))
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Rounded.Security, null, tint = VAccent2, modifier = Modifier.size(15.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Permissions", color = VTextHi, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.width(8.dp))
+                Text("(${apkInfo.permissions.size})", color = VTextLo, fontSize = 11.sp)
+            }
+            Spacer(Modifier.height(4.dp))
+            if (apkInfo.permissions.isEmpty()) {
+                Text("No declared permissions", color = VTextLo, fontSize = 12.sp)
+            } else {
                 apkInfo.permissions.forEach { permission ->
-                    Text("• $permission", style = MaterialTheme.typography.bodySmall)
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Box(
+                            Modifier
+                                .padding(top = 6.dp)
+                                .size(4.dp)
+                                .background(VAccent2, CircleShape)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            permission.removePrefix("android.permission."),
+                            color = VTextMd, fontSize = 11.sp
+                        )
+                    }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { installApk(context, file) }, modifier = Modifier.weight(1f)) {
-                Text("Install APK")
+            Button(
+                onClick = { installApk(context, file) },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(containerColor = VOk, contentColor = Color.Black),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Icon(Icons.Rounded.Download, null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Install", fontWeight = FontWeight.SemiBold)
             }
-            Button(onClick = { shareApk(context, file) }, modifier = Modifier.weight(1f)) {
-                Text("Share APK")
+            OutlinedButton(
+                onClick = { shareApk(context, file) },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = VAccent),
+                border = androidx.compose.foundation.BorderStroke(1.dp, VAccent),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Icon(Icons.Rounded.Share, null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Share", fontWeight = FontWeight.SemiBold)
             }
         }
+        Spacer(Modifier.height(8.dp))
     }
 }
 
