@@ -12,8 +12,8 @@ import android.os.IBinder
 import android.view.*
 import android.webkit.WebView
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.cylonid.nativealpha.R
@@ -57,6 +57,8 @@ class FloatingWindowService : Service() {
     private val _openWindows = MutableStateFlow<List<WindowEntity>>(emptyList())
     val openWindows: StateFlow<List<WindowEntity>> = _openWindows.asStateFlow()
 
+    private var actionPanelView: View? = null
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -96,30 +98,37 @@ class FloatingWindowService : Service() {
             gravity = Gravity.TOP or Gravity.START
         }
 
+        val cornerRadiusPx = resources.displayMetrics.density * 22f
         val view = LayoutInflater.from(this).inflate(R.layout.floating_window, null).apply {
-            background = android.graphics.drawable.GradientDrawable().apply {
-                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-                cornerRadius = 24f
-                setColor(ContextCompat.getColor(this@FloatingWindowService, R.color.floating_window_background))
-                setStroke(2, ContextCompat.getColor(this@FloatingWindowService, R.color.floating_window_resize_handle))
-            }
             clipToOutline = true
             outlineProvider = object : android.view.ViewOutlineProvider() {
                 override fun getOutline(view: android.view.View?, outline: android.graphics.Outline?) {
-                    outline?.setRoundRect(0, 0, view?.width ?: 0, view?.height ?: 0, 24f)
+                    outline?.setRoundRect(0, 0, view?.width ?: 0, view?.height ?: 0, cornerRadiusPx)
                 }
             }
         }
 
         val webView = view.findViewById<WebView>(R.id.floatingWebView)
         val titleText = view.findViewById<TextView>(R.id.titleText)
+        val urlChipText = view.findViewById<TextView>(R.id.urlChipText)
+        val appIconText = view.findViewById<TextView>(R.id.appIconText)
         val overflowButton = view.findViewById<ImageButton>(R.id.toolbarOverflowButton)
         titleText.text = webAppName
+        appIconText.text = initialFor(webAppName)
+        urlChipText.text = formatUrlChip(webAppUrl)
 
         val webViewClient = WebViewClientWithDownload(
             context = this,
-            onPageStarted = { /* no-op */ },
-            onPageFinished = { /* no-op */ }
+            onPageStarted = { url ->
+                view.post { urlChipText.text = formatUrlChip(url) }
+            },
+            onPageFinished = { url ->
+                view.post {
+                    urlChipText.text = formatUrlChip(url)
+                    val docTitle = webView.title
+                    if (!docTitle.isNullOrBlank()) titleText.text = docTitle
+                }
+            }
         ).apply {
             adblockEnabled = false
         }
@@ -217,7 +226,7 @@ class FloatingWindowService : Service() {
         }
 
         overflowButton?.setOnClickListener {
-            showToolbarPopup(it, windowView, webAppUrl)
+            showActionPanel(it, windowView, webAppUrl)
         }
 
         val resizeHandle = view.findViewById<View>(R.id.resizeHandle)
@@ -256,32 +265,217 @@ class FloatingWindowService : Service() {
         }
     }
 
-    private fun showToolbarPopup(anchor: View, windowView: FloatingWindowView, webAppUrl: String) {
-        val popupMenu = PopupMenu(this, anchor)
-        val toolbarItems = listOf(
-            ACTION_TOOLBAR_BACK to "Back",
-            ACTION_TOOLBAR_FORWARD to "Forward",
-            ACTION_TOOLBAR_HOME to "Home",
-            ACTION_TOOLBAR_REFRESH to "Refresh",
-            ACTION_TOOLBAR_DESKTOP to if (windowView.desktopModeEnabled) "Desktop mode: On" else "Desktop mode: Off",
-            ACTION_TOOLBAR_ADBLOCK to if (windowView.adblockEnabled) "Adblock: ${if (windowView.adblockEnabled) "On" else "Off"}" else "Adblock: Off",
-            ACTION_TOOLBAR_AUTOSCROLL to if (windowView.autoScrollEnabled) "Auto scroll: On" else "Auto scroll: Off",
-            ACTION_TOOLBAR_AUTOCLICK to if (windowView.autoClickEnabled) "Auto click: On" else "Auto click: Off",
-            ACTION_TOOLBAR_OPEN_BROWSER to "Open in browser",
-            ACTION_TOOLBAR_SHARE to "Share URL",
-            ACTION_TOOLBAR_COPY_URL to "Copy URL",
-            ACTION_TOOLBAR_CREDENTIALS to "Credentials",
-            ACTION_TOOLBAR_CLIPBOARD to "Clipboard",
-            ACTION_TOOLBAR_DOWNLOADS to "Downloads"
-        )
-        toolbarItems.forEach { (id, title) ->
-            popupMenu.menu.add(0, id, 0, title)
+    private fun showActionPanel(anchor: View, windowView: FloatingWindowView, webAppUrl: String) {
+        dismissActionPanel()
+        val panel = LayoutInflater.from(this).inflate(R.layout.floating_action_panel, null, false)
+
+        val currentUrl = windowView.webView.url ?: webAppUrl
+
+        // Panel header: app identity
+        panel.findViewById<TextView>(R.id.panelAppTitle).text = windowView.appName
+        panel.findViewById<TextView>(R.id.panelAppUrl).text = formatUrlChip(currentUrl)
+        panel.findViewById<TextView>(R.id.panelAppIcon).text = initialFor(windowView.appName)
+
+        // Navigation row
+        panel.findViewById<View>(R.id.navBack).setOnClickListener {
+            if (windowView.webView.canGoBack()) windowView.webView.goBack()
+            dismissActionPanel()
         }
-        popupMenu.setOnMenuItemClickListener { item ->
-            handleToolbarAction(item.itemId, windowView, webAppUrl)
-            true
+        panel.findViewById<View>(R.id.navForward).setOnClickListener {
+            if (windowView.webView.canGoForward()) windowView.webView.goForward()
+            dismissActionPanel()
         }
-        popupMenu.show()
+        panel.findViewById<View>(R.id.navHome).setOnClickListener {
+            windowView.webView.loadUrl(webAppUrl)
+            dismissActionPanel()
+        }
+        panel.findViewById<View>(R.id.navRefresh).setOnClickListener {
+            windowView.webView.reload()
+            dismissActionPanel()
+        }
+
+        // Modes (toggle tiles — keep the panel open so users see the new state)
+        bindToggleTile(
+            panel, R.id.tileDesktop, R.drawable.ic_fw_desktop_24,
+            "Desktop site", windowView.desktopModeEnabled
+        ) { pill ->
+            windowView.desktopModeEnabled = !windowView.desktopModeEnabled
+            applyDesktopMode(windowView)
+            applyPillState(pill, windowView.desktopModeEnabled)
+        }
+        bindToggleTile(
+            panel, R.id.tileAdblock, R.drawable.ic_fw_shield_24,
+            "Ad block", windowView.adblockEnabled
+        ) { pill ->
+            windowView.adblockEnabled = !windowView.adblockEnabled
+            applyAdblock(windowView)
+            applyPillState(pill, windowView.adblockEnabled)
+        }
+        bindToggleTile(
+            panel, R.id.tileAutoScroll, R.drawable.ic_fw_autoscroll_24,
+            "Auto scroll", windowView.autoScrollEnabled
+        ) { pill ->
+            windowView.autoScrollEnabled = !windowView.autoScrollEnabled
+            applyAutoScroll(windowView)
+            applyPillState(pill, windowView.autoScrollEnabled)
+        }
+        bindToggleTile(
+            panel, R.id.tileAutoClick, R.drawable.ic_fw_autoclick_24,
+            "Auto click", windowView.autoClickEnabled
+        ) { pill ->
+            windowView.autoClickEnabled = !windowView.autoClickEnabled
+            applyAutoClick(windowView)
+            applyPillState(pill, windowView.autoClickEnabled)
+        }
+
+        // Page actions
+        bindActionTile(panel, R.id.tileOpenBrowser, R.drawable.ic_baseline_open_in_browser_24, "Open in browser") {
+            handleToolbarAction(ACTION_TOOLBAR_OPEN_BROWSER, windowView, webAppUrl)
+            dismissActionPanel()
+        }
+        bindActionTile(panel, R.id.tileShare, R.drawable.ic_baseline_share_24, "Share URL") {
+            handleToolbarAction(ACTION_TOOLBAR_SHARE, windowView, webAppUrl)
+            dismissActionPanel()
+        }
+        bindActionTile(panel, R.id.tileCopyUrl, R.drawable.ic_baseline_content_copy_24, "Copy URL") {
+            handleToolbarAction(ACTION_TOOLBAR_COPY_URL, windowView, webAppUrl)
+            dismissActionPanel()
+        }
+
+        // Tools
+        bindActionTile(panel, R.id.tileCredentials, R.drawable.ic_fw_key_24, "Credentials") {
+            handleToolbarAction(ACTION_TOOLBAR_CREDENTIALS, windowView, webAppUrl)
+            dismissActionPanel()
+        }
+        bindActionTile(panel, R.id.tileClipboard, R.drawable.ic_fw_clipboard_24, "Clipboard manager") {
+            handleToolbarAction(ACTION_TOOLBAR_CLIPBOARD, windowView, webAppUrl)
+            dismissActionPanel()
+        }
+        bindActionTile(panel, R.id.tileDownloads, R.drawable.ic_baseline_cloud_download_24, "Downloads") {
+            handleToolbarAction(ACTION_TOOLBAR_DOWNLOADS, windowView, webAppUrl)
+            dismissActionPanel()
+        }
+
+        // Position the panel just below and aligned to the right edge of the anchor button
+        val location = IntArray(2)
+        anchor.getLocationOnScreen(location)
+        val density = resources.displayMetrics.density
+        val panelWidthPx = (320 * density + 12 * density).toInt()
+        val xOffset = (location[0] + anchor.width - panelWidthPx).coerceAtLeast((8 * density).toInt())
+        val yOffset = location[1] + anchor.height + (4 * density).toInt()
+
+        val params = WindowManager.LayoutParams().apply {
+            width = WindowManager.LayoutParams.WRAP_CONTENT
+            height = WindowManager.LayoutParams.WRAP_CONTENT
+            type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            } else {
+                WindowManager.LayoutParams.TYPE_PHONE
+            }
+            flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+            format = PixelFormat.TRANSLUCENT
+            gravity = Gravity.TOP or Gravity.START
+            x = xOffset
+            y = yOffset
+            windowAnimations = android.R.style.Animation_Dialog
+        }
+
+        panel.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_OUTSIDE) {
+                dismissActionPanel()
+                true
+            } else {
+                false
+            }
+        }
+
+        try {
+            windowManager.addView(panel, params)
+            actionPanelView = panel
+        } catch (_: Exception) {
+            actionPanelView = null
+        }
+    }
+
+    private fun dismissActionPanel() {
+        actionPanelView?.let { panel ->
+            try {
+                windowManager.removeView(panel)
+            } catch (_: Exception) {
+            }
+        }
+        actionPanelView = null
+    }
+
+    private fun bindToggleTile(
+        panel: View,
+        tileId: Int,
+        iconRes: Int,
+        title: String,
+        initialState: Boolean,
+        onToggle: (TextView) -> Unit
+    ) {
+        val tile = panel.findViewById<View>(tileId)
+        val icon = tile.findViewById<ImageView>(R.id.tileIcon)
+        val titleView = tile.findViewById<TextView>(R.id.tileTitle)
+        val pill = tile.findViewById<TextView>(R.id.tileStatePill)
+        icon.setImageResource(iconRes)
+        icon.setColorFilter(ContextCompat.getColor(this, R.color.fw_text_primary))
+        titleView.text = title
+        pill.visibility = View.VISIBLE
+        applyPillState(pill, initialState)
+        tile.setOnClickListener { onToggle(pill) }
+    }
+
+    private fun bindActionTile(
+        panel: View,
+        tileId: Int,
+        iconRes: Int,
+        title: String,
+        onClick: () -> Unit
+    ) {
+        val tile = panel.findViewById<View>(tileId)
+        val icon = tile.findViewById<ImageView>(R.id.tileIcon)
+        val titleView = tile.findViewById<TextView>(R.id.tileTitle)
+        val pill = tile.findViewById<TextView>(R.id.tileStatePill)
+        icon.setImageResource(iconRes)
+        icon.setColorFilter(ContextCompat.getColor(this, R.color.fw_text_primary))
+        titleView.text = title
+        pill.visibility = View.GONE
+        tile.setOnClickListener { onClick() }
+    }
+
+    private fun applyPillState(pill: TextView, on: Boolean) {
+        if (on) {
+            pill.text = "ON"
+            pill.setBackgroundResource(R.drawable.fw_state_pill_on)
+            pill.setTextColor(ContextCompat.getColor(this, R.color.fw_state_on_text))
+        } else {
+            pill.text = "OFF"
+            pill.setBackgroundResource(R.drawable.fw_state_pill_off)
+            pill.setTextColor(ContextCompat.getColor(this, R.color.fw_state_off_text))
+        }
+    }
+
+    private fun initialFor(name: String): String {
+        val ch = name.trim().firstOrNull { it.isLetterOrDigit() } ?: 'W'
+        return ch.uppercaseChar().toString()
+    }
+
+    private fun formatUrlChip(url: String?): String {
+        if (url.isNullOrBlank()) return ""
+        return try {
+            val uri = Uri.parse(url)
+            val host = uri.host ?: return url
+            val cleanHost = host.removePrefix("www.")
+            val path = uri.path?.takeIf { it.isNotBlank() && it != "/" } ?: ""
+            if (path.isNotEmpty()) "$cleanHost$path" else cleanHost
+        } catch (_: Exception) {
+            url
+        }
     }
 
     private fun handleToolbarAction(actionId: Int, windowView: FloatingWindowView, webAppUrl: String) {
@@ -431,6 +625,9 @@ class FloatingWindowService : Service() {
             withContext(Dispatchers.Main) {
                 titleText.text = webApp.name
                 windowView.appName = webApp.name
+                windowView.view.findViewById<TextView>(R.id.appIconText)?.text = initialFor(webApp.name)
+                windowView.view.findViewById<TextView>(R.id.urlChipText)?.text =
+                    formatUrlChip(webView.url ?: webApp.baseUrl)
                 webView.settings.javaScriptEnabled = webApp.isJavaScriptEnabled
                 webView.settings.builtInZoomControls = webApp.isEnableZooming
                 webView.settings.setSupportZoom(true)
@@ -479,6 +676,7 @@ class FloatingWindowService : Service() {
 
     private fun removeFloatingWindow(windowId: Long) {
         floatingWindows[windowId]?.let { windowView ->
+            dismissActionPanel()
             windowManager.removeView(windowView.view)
             floatingWindows.remove(windowId)
             if (currentFrontWindow == windowId) {
@@ -538,6 +736,7 @@ class FloatingWindowService : Service() {
     }
 
     private fun closeAllWindows() {
+        dismissActionPanel()
         floatingWindows.values.forEach { windowView ->
             windowManager.removeView(windowView.view)
         }
@@ -578,6 +777,7 @@ class FloatingWindowService : Service() {
     }
 
     override fun onDestroy() {
+        dismissActionPanel()
         serviceScope.cancel()
         super.onDestroy()
     }

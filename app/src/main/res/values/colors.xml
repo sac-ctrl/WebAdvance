@@ -162,4 +162,42 @@
     <color name="floating_window_icon_tint">#E8F4FF</color>
     <color name="floating_window_resize_handle">#00E5FF</color>
     <color name="floating_window_resize_handle_background">#2000E5FF</color>
+
+    <!-- Modern floating window palette -->
+    <color name="fw_surface">#F00B1220</color>
+    <color name="fw_surface_solid">#0B1220</color>
+    <color name="fw_header_top">#1B2336</color>
+    <color name="fw_header_bottom">#0F172A</color>
+    <color name="fw_border">#22FFFFFF</color>
+    <color name="fw_border_strong">#3322D3EE</color>
+    <color name="fw_text_primary">#F8FAFC</color>
+    <color name="fw_text_secondary">#94A3B8</color>
+    <color name="fw_text_muted">#64748B</color>
+    <color name="fw_accent">#22D3EE</color>
+    <color name="fw_accent_dim">#3322D3EE</color>
+    <color name="fw_btn_idle">#1AFFFFFF</color>
+    <color name="fw_btn_pressed">#33FFFFFF</color>
+    <color name="fw_btn_min_idle">#33FFC107</color>
+    <color name="fw_btn_min_pressed">#55FFC107</color>
+    <color name="fw_btn_min_icon">#FFE082</color>
+    <color name="fw_btn_max_idle">#3334D399</color>
+    <color name="fw_btn_max_pressed">#5534D399</color>
+    <color name="fw_btn_max_icon">#A7F3D0</color>
+    <color name="fw_btn_close_idle">#33FF5252</color>
+    <color name="fw_btn_close_pressed">#66FF5252</color>
+    <color name="fw_btn_close_icon">#FFCDD2</color>
+    <color name="fw_chip_bg">#1AFFFFFF</color>
+    <color name="fw_chip_border">#26FFFFFF</color>
+    <color name="fw_app_icon_bg">#3322D3EE</color>
+    <color name="fw_app_icon_border">#5522D3EE</color>
+    <color name="fw_panel_bg">#F20A1020</color>
+    <color name="fw_panel_border">#3322D3EE</color>
+    <color name="fw_panel_section">#7C8AA3</color>
+    <color name="fw_tile_bg">#14FFFFFF</color>
+    <color name="fw_tile_pressed">#2622D3EE</color>
+    <color name="fw_state_on_bg">#3334D399</color>
+    <color name="fw_state_on_text">#86EFAC</color>
+    <color name="fw_state_off_bg">#1FFFFFFF</color>
+    <color name="fw_state_off_text">#94A3B8</color>
+    <color name="fw_divider">#1AFFFFFF</color>
 </resources>

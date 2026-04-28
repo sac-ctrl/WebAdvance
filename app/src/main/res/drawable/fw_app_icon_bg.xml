@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <gradient
+        android:angle="135"
+        android:startColor="#33A5F3FC"
+        android:endColor="#3322D3EE" />
+    <stroke android:width="1dp" android:color="@color/fw_app_icon_border" />
+</shape>

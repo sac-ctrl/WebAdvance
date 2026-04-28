@@ -79,7 +79,7 @@ Dark WAOS theme with:
 - **Sort & Group**: Modal sort/group sheet with real-time app reordering
 - **Status Indicators**: Pulsing animated status dots (Active=green, Background=yellow, Error=red)
 - **WebView Per-App**: Each app opens in isolated Kotlin WebViewActivity (registered in manifest)
-- **Floating Windows**: Apps can be floated as chat-head overlays (permission check + FloatingWindowService)
+- **Floating Windows**: Apps can be floated as chat-head overlays (permission check + FloatingWindowService). Modern UI: rounded glass window with header (app-icon badge + title + URL chip + traffic-light style minimize/maximize/close + overflow). Overflow opens a custom **glass action panel** (`floating_action_panel.xml` + `floating_action_tile.xml`) added as its own overlay window — sectioned into Navigation / Modes (toggle pills) / Page / Tools. The legacy `PopupMenu` dropdown was replaced by this panel. All styling lives in `fw_*` drawables and `fw_*` colors; tile/section styles in `floating_window_styles.xml`.
 - **Download Manager**: Per-app download history (DownloadHistoryActivity with EXTRA_DOWNLOAD_APP_ID)
 - **Credential Vault**: Encrypted credential storage with biometric unlock (CredentialVaultActivity)
 - **Clipboard Manager**: Per-app clipboard history (ClipboardManagerActivity with EXTRA_CLIPBOARD_APP_ID)

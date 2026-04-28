@@ -2,72 +2,143 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@color/floating_window_background">
+    android:background="@drawable/fw_window_bg">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Title Bar -->
+        <!-- Modern header -->
         <LinearLayout
             android:id="@+id/titleBar"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:background="@color/floating_window_header"
+            android:layout_height="56dp"
+            android:background="@drawable/fw_header_bg"
             android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:paddingStart="12dp"
-            android:paddingEnd="8dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:gravity="center_vertical">
+            android:paddingEnd="8dp">
 
-            <TextView
-                android:id="@+id/titleText"
+            <!-- App icon badge -->
+            <FrameLayout
+                android:id="@+id/appIconContainer"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@drawable/fw_app_icon_bg">
+
+                <TextView
+                    android:id="@+id/appIconText"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="W"
+                    android:textColor="@color/fw_text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium" />
+            </FrameLayout>
+
+            <!-- Title + URL chip -->
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Web App"
-                android:textColor="@color/floating_window_header_text"
-                android:textSize="15sp"
-                android:textStyle="bold" />
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="6dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/titleText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Web App"
+                    android:textColor="@color/fw_text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:letterSpacing="0.01" />
+
+                <LinearLayout
+                    android:id="@+id/urlChipContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:background="@drawable/fw_url_chip_bg"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp">
+
+                    <ImageView
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:src="@drawable/ic_fw_globe_16"
+                        android:tint="@color/fw_accent" />
+
+                    <TextView
+                        android:id="@+id/urlChipText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="example.com"
+                        android:textColor="@color/fw_text_secondary"
+                        android:textSize="11sp"
+                        android:singleLine="true"
+                        android:ellipsize="middle"
+                        android:maxWidth="220dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Window control buttons (rounded pills, traffic-light tinted) -->
+            <ImageButton
+                android:id="@+id/toolbarOverflowButton"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/fw_window_btn_default"
+                android:contentDescription="More actions"
+                android:padding="6dp"
+                android:src="@drawable/ic_fw_more_vert_24"
+                android:tint="@color/fw_text_primary" />
 
             <ImageButton
                 android:id="@+id/minimizeButton"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="2dp"
+                android:background="@drawable/fw_window_btn_minimize"
                 android:contentDescription="Minimize"
-                android:tint="@color/floating_window_icon_tint"
-                android:src="@drawable/ic_baseline_minimize_24" />
+                android:padding="6dp"
+                android:src="@drawable/ic_baseline_minimize_24"
+                android:tint="@color/fw_btn_min_icon" />
 
             <ImageButton
                 android:id="@+id/maximizeButton"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/fw_window_btn_maximize"
                 android:contentDescription="Maximize"
-                android:tint="@color/floating_window_icon_tint"
-                android:src="@drawable/ic_baseline_fullscreen_24" />
+                android:padding="6dp"
+                android:src="@drawable/ic_baseline_fullscreen_24"
+                android:tint="@color/fw_btn_max_icon" />
 
             <ImageButton
                 android:id="@+id/closeButton"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/fw_window_btn_close"
                 android:contentDescription="Close"
-                android:tint="@color/floating_window_icon_tint"
-                android:src="@drawable/ic_baseline_close_24" />
-
-            <ImageButton
-                android:id="@+id/toolbarOverflowButton"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_marginStart="4dp"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Toolbar menu"
-                android:tint="@color/floating_window_icon_tint"
-                android:src="@android:drawable/arrow_down_float" />
+                android:padding="6dp"
+                android:src="@drawable/ic_baseline_close_24"
+                android:tint="@color/fw_btn_close_icon" />
 
         </LinearLayout>
 
@@ -82,15 +153,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
-            <!-- Resize Handle (bottom-right corner) -->
-            <View
+            <!-- Resize handle (modern corner indicator) -->
+            <ImageView
                 android:id="@+id/resizeHandle"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
                 android:layout_gravity="bottom|end"
-                android:layout_margin="8dp"
-                android:background="@color/floating_window_resize_handle"
-                android:rotation="45" />
+                android:layout_margin="6dp"
+                android:contentDescription="Resize"
+                android:padding="4dp"
+                android:src="@drawable/fw_resize_handle" />
 
         </FrameLayout>
 
