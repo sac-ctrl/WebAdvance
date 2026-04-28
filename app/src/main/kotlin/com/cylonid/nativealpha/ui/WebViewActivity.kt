@@ -526,32 +526,29 @@ fun WebViewScreen(
         if (path != null) {
             val filename = path.substringAfterLast('/')
             val appName = webApp?.name ?: "App"
-            // Copy export to public Downloads/WAOS/<App>/Sessions and register in
-            // the in-app download history so it shows like a Chrome download.
-            val publicPath = try {
+            // Copy export to the app-private WAOS/<App>/Sessions folder and
+            // register in the in-app download history. The file lives in
+            // app-private storage (invisible to Gallery / file manager) but
+            // the app has full read/write access without permissions.
+            val privatePath = try {
                 val safeApp = appName.replace(Regex("[^a-zA-Z0-9]"), "_")
-                val baseDir = java.io.File(
-                    android.os.Environment.getExternalStoragePublicDirectory(
-                        android.os.Environment.DIRECTORY_DOWNLOADS
-                    ),
-                    "WAOS"
-                )
+                val baseDir = java.io.File(context.getExternalFilesDir(null), "WAOS")
                 val sessionsDir = java.io.File(java.io.File(baseDir, safeApp), "Sessions").apply { mkdirs() }
                 val dest = java.io.File(sessionsDir, filename)
                 java.io.File(path).copyTo(dest, overwrite = true)
                 viewModel.registerSessionExportDownload(dest.absolutePath, filename)
                 dest.absolutePath
             } catch (e: Exception) {
-                Log.w("SessionExport", "Failed to copy to Downloads: ${e.message}")
+                Log.w("SessionExport", "Failed to copy session export: ${e.message}")
                 null
             }
             android.widget.Toast.makeText(
                 context,
-                if (publicPath != null) "✓ Session saved to Downloads → $filename"
+                if (privatePath != null) "✓ Session saved → $filename"
                 else "✓ Session backup created: $filename",
                 android.widget.Toast.LENGTH_LONG
             ).show()
-            Log.i("SessionExport", "Session exported for $appName to $path (public=$publicPath)")
+            Log.i("SessionExport", "Session exported for $appName to $path (private=$privatePath)")
             viewModel.clearSessionExportPath()
         }
     }

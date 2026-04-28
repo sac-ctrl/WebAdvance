@@ -1,39 +1,38 @@
 package com.cylonid.nativealpha.util
 
 import android.content.Context
-import android.os.Build
-import android.os.Environment
 import java.io.File
 
 /**
- * Utility for managing storage paths across the app
- * Centralizes the WAOS folder structure:
- * /storage/emulated/0/Download/WAOS/{AppDisplayName}/
- *   ├── Screenshots/
- *   ├── Files, videos, images, etc.
+ * Utility for managing storage paths across the app.
+ *
+ * Files are kept in the app-private external folder so they are NOT visible to
+ * the device Gallery / file manager, but the app itself has full access without
+ * needing storage permissions:
+ *   /Android/data/<pkg>/files/WAOS/{AppDisplayName}/
+ *     ├── Screenshots/
+ *     ├── Files, videos, images, etc.
  */
 object StorageUtil {
 
-    // Base WAOS directory
-    fun getWaosBaseDir(): File = File(
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-        "WAOS"
-    )
+    /** Base WAOS directory inside the app's private external storage. */
+    fun getWaosBaseDir(context: Context): File =
+        File(context.getExternalFilesDir(null), "WAOS").apply { mkdirs() }
 
-    // App-specific directory: /storage/emulated/0/Download/WAOS/{AppDisplayName}/
-    fun getAppDownloadsDir(appDisplayName: String): File {
+    /** App-specific directory inside the private WAOS root. */
+    fun getAppDownloadsDir(context: Context, appDisplayName: String): File {
         val sanitizedName = appDisplayName.replace(Regex("[^a-zA-Z0-9._-]"), "_")
-        return File(getWaosBaseDir(), sanitizedName).apply { mkdirs() }
+        return File(getWaosBaseDir(context), sanitizedName).apply { mkdirs() }
     }
 
-    // Screenshots folder: /storage/emulated/0/Download/WAOS/{AppDisplayName}/Screenshots/
-    fun getScreenshotsDir(appDisplayName: String): File {
-        return File(getAppDownloadsDir(appDisplayName), "Screenshots").apply { mkdirs() }
+    /** Screenshots folder for a given app, inside the private WAOS root. */
+    fun getScreenshotsDir(context: Context, appDisplayName: String): File {
+        return File(getAppDownloadsDir(context, appDisplayName), "Screenshots").apply { mkdirs() }
     }
 
     // Get all files and folders from app downloads directory
-    fun getAppFilesAndFolders(appDisplayName: String): List<FileItem> {
-        val dir = getAppDownloadsDir(appDisplayName)
+    fun getAppFilesAndFolders(context: Context, appDisplayName: String): List<FileItem> {
+        val dir = getAppDownloadsDir(context, appDisplayName)
         if (!dir.exists()) return emptyList()
 
         return dir.listFiles()?.map { file ->

@@ -76,14 +76,16 @@ class FileViewerManager @Inject constructor(
     }
 
     fun getRecentFiles(): List<java.io.File> {
-        val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(
-            android.os.Environment.DIRECTORY_DOWNLOADS
-        )
+        // Recent files are read from the app-private WAOS root so the picker
+        // matches what the in-app downloader writes.
+        val waosDir = java.io.File(context.getExternalFilesDir(null), "WAOS")
         val appDir = context.getExternalFilesDir(null)
-        val dirs = listOfNotNull(downloadsDir, appDir)
-        return dirs.flatMap { dir ->
-            dir.listFiles()?.toList() ?: emptyList()
-        }.filter { it.isFile }.sortedByDescending { it.lastModified() }.take(50)
+        val roots = listOfNotNull(waosDir.takeIf { it.exists() }, appDir)
+        return roots.flatMap { root ->
+            root.walkTopDown().filter { it.isFile }.toList()
+        }.distinctBy { it.absolutePath }
+            .sortedByDescending { it.lastModified() }
+            .take(50)
     }
 
     fun shareFile(file: java.io.File) {

@@ -2,24 +2,21 @@ package com.cylonid.nativealpha.util
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.os.Build
-import androidx.compose.ui.graphics.asAndroidBitmap
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * Utility for handling screenshots for web apps
- * Screenshots are saved to: /storage/emulated/0/Download/WAOS/{AppDisplayName}/Screenshots/
+ * Utility for handling screenshots for web apps.
+ * Screenshots live in the app-private folder
+ *   /Android/data/<pkg>/files/WAOS/{AppDisplayName}/Screenshots/
+ * so they are NOT exposed to Gallery or any device file manager.
  */
 object ScreenshotUtil {
 
     /**
-     * Save screenshot for a specific app
-     * @param context Application context
-     * @param appDisplayName App display name (used for folder)
-     * @param bitmap Screenshot bitmap to save
+     * Save screenshot for a specific app.
      * @return File path if successful, null otherwise
      */
     fun saveScreenshot(
@@ -28,7 +25,7 @@ object ScreenshotUtil {
         bitmap: Bitmap
     ): String? {
         return try {
-            val screenshotsDir = StorageUtil.getScreenshotsDir(appDisplayName)
+            val screenshotsDir = StorageUtil.getScreenshotsDir(context, appDisplayName)
             if (!screenshotsDir.exists()) {
                 screenshotsDir.mkdirs()
             }
@@ -48,29 +45,20 @@ object ScreenshotUtil {
         }
     }
 
-    /**
-     * Generate unique screenshot filename with timestamp
-     */
     private fun generateScreenshotFileName(): String {
         val timeFormat = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US)
         val timestamp = timeFormat.format(Date())
         return "screenshot_$timestamp.png"
     }
 
-    /**
-     * Get all screenshots for an app
-     */
-    fun getAppScreenshots(appDisplayName: String): List<File> {
-        val screenshotsDir = StorageUtil.getScreenshotsDir(appDisplayName)
+    fun getAppScreenshots(context: Context, appDisplayName: String): List<File> {
+        val screenshotsDir = StorageUtil.getScreenshotsDir(context, appDisplayName)
         return screenshotsDir.listFiles()
             ?.filter { it.isFile && it.extension == "png" }
             ?.sortedByDescending { it.lastModified() }
             ?: emptyList()
     }
 
-    /**
-     * Delete a screenshot file
-     */
     fun deleteScreenshot(filePath: String): Boolean {
         return try {
             File(filePath).delete()
@@ -80,17 +68,11 @@ object ScreenshotUtil {
         }
     }
 
-    /**
-     * Get total screenshots count for an app
-     */
-    fun getScreenshotCount(appDisplayName: String): Int {
-        return getAppScreenshots(appDisplayName).size
+    fun getScreenshotCount(context: Context, appDisplayName: String): Int {
+        return getAppScreenshots(context, appDisplayName).size
     }
 
-    /**
-     * Get total screenshots size in bytes
-     */
-    fun getScreenshotsTotalSize(appDisplayName: String): Long {
-        return getAppScreenshots(appDisplayName).sumOf { it.length() }
+    fun getScreenshotsTotalSize(context: Context, appDisplayName: String): Long {
+        return getAppScreenshots(context, appDisplayName).sumOf { it.length() }
     }
 }

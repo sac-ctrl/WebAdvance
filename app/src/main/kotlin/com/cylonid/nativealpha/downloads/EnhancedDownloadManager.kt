@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.database.Cursor
 import android.net.Uri
-import android.os.Environment
 import com.cylonid.nativealpha.waos.model.DownloadRecord
 import com.cylonid.nativealpha.waos.model.DownloadRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,7 +49,9 @@ class EnhancedDownloadManager(
     }
 
     private fun getAppDownloadDirectory(): File {
-        val dir = File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "WAOS/$appName")
+        // App-private storage; matches the WAOS root used everywhere else so
+        // every file sits in the same predictable place.
+        val dir = File(context.getExternalFilesDir(null), "WAOS/$appName")
         if (!dir.exists()) {
             dir.mkdirs()
         }

@@ -116,7 +116,7 @@ class DownloadViewModel @Inject constructor(
             currentAppName = webApp?.name ?: "Unknown"
 
             currentAppName?.let { appName ->
-                val rootDir = StorageUtil.getAppDownloadsDir(appName)
+                val rootDir = StorageUtil.getAppDownloadsDir(context, appName)
                 _rootFolderPath.value = rootDir.absolutePath
                 _currentFolderPath.value = rootDir.absolutePath
             }

@@ -4,10 +4,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.util.Log
 import android.webkit.CookieManager
 import android.webkit.MimeTypeMap
@@ -126,8 +124,11 @@ class DownloadManager @Inject constructor(
         val fileTypeFolder = getFileTypeFolder(mimeType)
         val appName = webApp?.name?.replace(Regex("[^a-zA-Z0-9]"), "_") ?: "Unknown"
 
-        // Create directory structure: /sdcard/Download/WAOS/{AppName}/{FileType}/
-        val baseDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "WAOS")
+        // App-private external storage:
+        // /Android/data/<pkg>/files/WAOS/{AppName}/{FileType}/ — invisible to
+        // Gallery / file manager, but the app has full access without
+        // storage permissions.
+        val baseDir = File(context.getExternalFilesDir(null), "WAOS")
         val typeDir = File(File(baseDir, appName), fileTypeFolder).apply { mkdirs() }
         val destFile = uniqueFile(typeDir, resolvedName)
 
@@ -198,7 +199,7 @@ class DownloadManager @Inject constructor(
                 ?: "download_${System.currentTimeMillis()}.$ext"
 
             val appName = webApp?.name?.replace(Regex("[^a-zA-Z0-9]"), "_") ?: "Unknown"
-            val baseDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "WAOS")
+            val baseDir = File(context.getExternalFilesDir(null), "WAOS")
             val typeDir = File(File(baseDir, appName), getFileTypeFolder(mime)).apply { mkdirs() }
             val destFile = uniqueFile(typeDir, resolved)
 
@@ -208,7 +209,9 @@ class DownloadManager @Inject constructor(
                 Uri.decode(payload).toByteArray(Charsets.UTF_8)
             }
             destFile.writeBytes(bytes)
-            MediaScannerConnection.scanFile(context, arrayOf(destFile.absolutePath), arrayOf(mime), null)
+            // Intentionally not calling MediaScannerConnection — the file lives
+            // in app-private storage and must NOT be exposed to Gallery /
+            // device file manager.
 
             val id = System.currentTimeMillis()
             scope.launch {
@@ -300,14 +303,9 @@ class DownloadManager @Inject constructor(
                                 errorMessage = if (newStatus == DownloadItem.Status.FAILED) "Reason $reason" else null
                             )
                             dao.updateDownload(updated)
-                            if (newStatus == DownloadItem.Status.COMPLETED && updated.filePath != null) {
-                                MediaScannerConnection.scanFile(
-                                    context,
-                                    arrayOf(updated.filePath),
-                                    arrayOf(updated.mimeType ?: "application/octet-stream"),
-                                    null
-                                )
-                            }
+                            // No MediaScannerConnection call — files live in
+                            // app-private storage and must not appear in
+                            // Gallery / device file manager.
                         }
                     }
                 } catch (e: Exception) {
@@ -336,7 +334,7 @@ class DownloadManager @Inject constructor(
                 "download_${System.currentTimeMillis()}.$ext"
             }
 
-        val baseDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "WAOS")
+        val baseDir = File(context.getExternalFilesDir(null), "WAOS")
         val typeDir = File(File(baseDir, appName), fileTypeFolder).apply { mkdirs() }
         val file = uniqueFile(typeDir, resolvedName)
         val id = System.currentTimeMillis()
@@ -345,10 +343,7 @@ class DownloadManager @Inject constructor(
             try {
                 val bytes = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT)
                 file.writeBytes(bytes)
-                MediaScannerConnection.scanFile(
-                    context, arrayOf(file.absolutePath),
-                    arrayOf(mimeType ?: "application/octet-stream"), null
-                )
+                // App-private storage: do not expose to Gallery / file manager.
                 dao.insertDownload(
                     DownloadItem(
                         webAppId = webAppId,
@@ -525,13 +520,8 @@ class DownloadManager @Inject constructor(
                     id = System.currentTimeMillis()
                 )
                 dao.insertDownload(item)
-                // Make it visible in the gallery / file manager.
-                MediaScannerConnection.scanFile(
-                    context,
-                    arrayOf(file.absolutePath),
-                    arrayOf(mimeType ?: "application/octet-stream"),
-                    null
-                )
+                // App-private storage: intentionally not media-scanned, so the
+                // file does NOT show up in Gallery / device file manager.
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -541,7 +531,7 @@ class DownloadManager @Inject constructor(
     fun saveScreenshot(fileName: String, bitmap: android.graphics.Bitmap) {
         scope.launch {
             try {
-                val baseDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "WAOS")
+                val baseDir = File(context.getExternalFilesDir(null), "WAOS")
                 val screenshotsDir = File(baseDir, "Screenshots")
                 screenshotsDir.mkdirs()
 
@@ -550,8 +540,8 @@ class DownloadManager @Inject constructor(
                 bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
                 stream.close()
 
-                // Scan the screenshot so it appears in gallery
-                MediaScannerConnection.scanFile(context, arrayOf(file.absolutePath), arrayOf("image/png"), null)
+                // App-private storage: do NOT media-scan; screenshots stay
+                // hidden from Gallery and device file manager.
 
                 // Optionally save to database as download
                 val item = DownloadItem(

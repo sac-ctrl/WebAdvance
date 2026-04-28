@@ -2397,9 +2397,10 @@ private fun getArchiveContents(file: File): List<String> {
 }
 
 private fun extractArchive(file: File, context: Context) {
-    // Simple extraction to downloads folder
-    val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS)
-    val extractDir = File(downloadsDir, "WAOS_Extracted/${file.nameWithoutExtension}")
+    // Extract into the app-private WAOS_Extracted folder so the contents
+    // stay invisible to Gallery / device file manager.
+    val baseDir = context.getExternalFilesDir(null)
+    val extractDir = File(baseDir, "WAOS_Extracted/${file.nameWithoutExtension}")
 
     try {
         extractDir.mkdirs()
