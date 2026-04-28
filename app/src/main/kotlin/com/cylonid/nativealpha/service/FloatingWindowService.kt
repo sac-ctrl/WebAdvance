@@ -24,9 +24,6 @@ import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.model.WindowEntity
 import com.cylonid.nativealpha.model.WindowPresetEntity
 import com.cylonid.nativealpha.repository.WebAppRepository
-import com.cylonid.nativealpha.ui.ClipboardManagerActivity
-import com.cylonid.nativealpha.ui.CredentialVaultActivity
-import com.cylonid.nativealpha.ui.DownloadHistoryActivity
 import com.cylonid.nativealpha.waos.util.WaosConstants
 import com.cylonid.nativealpha.webview.WebViewClientWithDownload
 import dagger.hilt.android.AndroidEntryPoint
@@ -53,6 +50,12 @@ class FloatingWindowService : Service() {
 
     @Inject
     lateinit var waosClipboard: com.cylonid.nativealpha.manager.ClipboardManager
+
+    @Inject
+    lateinit var credentialManager: com.cylonid.nativealpha.manager.CredentialManager
+
+    @Inject
+    lateinit var downloadManager: com.cylonid.nativealpha.manager.DownloadManager
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val floatingWindows = mutableMapOf<Long, FloatingWindowView>()
@@ -403,6 +406,16 @@ class FloatingWindowService : Service() {
             }
         }
 
+        // Cap the action panel height so it never grows past ~half the screen,
+        // and let the inner ScrollView handle overflow.
+        val scroll = panel.findViewById<View>(R.id.actionPanelScroll)
+        if (scroll != null) {
+            val maxPanelHeight = (resources.displayMetrics.heightPixels * 0.5f).toInt()
+            val lp = scroll.layoutParams
+            lp.height = maxPanelHeight
+            scroll.layoutParams = lp
+        }
+
         try {
             windowManager.addView(panel, params)
             actionPanelView = panel
@@ -656,30 +669,228 @@ class FloatingWindowService : Service() {
                     ).show()
                 }
             }
-            ACTION_TOOLBAR_CREDENTIALS -> {
-                startActivity(
-                    Intent(this, CredentialVaultActivity::class.java).apply {
-                        putExtra(WaosConstants.EXTRA_WAOS_APP_ID, windowView.appId)
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    }
-                )
+            ACTION_TOOLBAR_CREDENTIALS -> showToolInWindow(windowView, ToolType.VAULT)
+            ACTION_TOOLBAR_CLIPBOARD -> showToolInWindow(windowView, ToolType.CLIPBOARD)
+            ACTION_TOOLBAR_DOWNLOADS -> showToolInWindow(windowView, ToolType.DOWNLOADS)
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // In-window tool panel: Clipboard / Credentials / Downloads render INSIDE
+    // the floating window itself. A "back" button in the sub-header restores
+    // the WebView. Items are loaded one-shot from the same DAOs the full-screen
+    // tool activities use.
+    // -------------------------------------------------------------------------
+
+    private enum class ToolType { CLIPBOARD, VAULT, DOWNLOADS }
+
+    private fun showToolInWindow(windowView: FloatingWindowView, type: ToolType) {
+        val container = windowView.view.findViewById<android.widget.FrameLayout>(R.id.webViewContainer)
+            ?: return
+
+        // If a tool panel is already showing, swap content rather than stacking.
+        windowView.toolPanelView?.let {
+            try { container.removeView(it) } catch (_: Exception) {}
+            windowView.toolPanelView = null
+        }
+
+        val panel = LayoutInflater.from(this).inflate(R.layout.floating_tool_panel, container, false)
+        val title = panel.findViewById<TextView>(R.id.toolTitle)
+        val subtitle = panel.findViewById<TextView>(R.id.toolSubtitle)
+        val list = panel.findViewById<LinearLayout>(R.id.toolListContainer)
+        val empty = panel.findViewById<TextView>(R.id.toolEmptyState)
+        val backBtn = panel.findViewById<ImageButton>(R.id.toolBackButton)
+
+        title.text = when (type) {
+            ToolType.CLIPBOARD -> "Clipboard"
+            ToolType.VAULT -> "Vault"
+            ToolType.DOWNLOADS -> "Downloads"
+        }
+        empty.text = when (type) {
+            ToolType.CLIPBOARD -> "No clipboard items yet."
+            ToolType.VAULT -> "No saved logins yet."
+            ToolType.DOWNLOADS -> "No downloads yet."
+        }
+
+        backBtn.setOnClickListener { dismissToolPanel(windowView) }
+
+        // Hide the WebView + resize handle while the tool panel is up.
+        windowView.webView.visibility = View.GONE
+        windowView.view.findViewById<View>(R.id.resizeHandle)?.visibility = View.GONE
+
+        container.addView(
+            panel,
+            android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT
+            )
+        )
+        windowView.toolPanelView = panel
+
+        // Populate from the data layer.
+        serviceScope.launch {
+            try {
+                when (type) {
+                    ToolType.CLIPBOARD -> populateClipboard(windowView, list, subtitle, empty)
+                    ToolType.VAULT -> populateVault(windowView, list, subtitle, empty)
+                    ToolType.DOWNLOADS -> populateDownloads(windowView, list, subtitle, empty)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    empty.visibility = View.VISIBLE
+                    empty.text = "Couldn't load (${e.message ?: "unknown error"})"
+                }
             }
-            ACTION_TOOLBAR_CLIPBOARD -> {
-                startActivity(
-                    Intent(this, ClipboardManagerActivity::class.java).apply {
-                        putExtra(WaosConstants.EXTRA_CLIPBOARD_APP_ID, windowView.appId)
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    }
-                )
+        }
+    }
+
+    private fun dismissToolPanel(windowView: FloatingWindowView) {
+        val container = windowView.view.findViewById<android.widget.FrameLayout>(R.id.webViewContainer)
+        windowView.toolPanelView?.let { panel ->
+            try { container?.removeView(panel) } catch (_: Exception) {}
+        }
+        windowView.toolPanelView = null
+        windowView.webView.visibility = View.VISIBLE
+        windowView.view.findViewById<View>(R.id.resizeHandle)?.visibility = View.VISIBLE
+    }
+
+    private suspend fun populateClipboard(
+        windowView: FloatingWindowView,
+        list: LinearLayout,
+        subtitle: TextView,
+        empty: TextView
+    ) {
+        val items = waosClipboard
+            .getAppClipboardItems(windowView.appId, limit = 200)
+            .firstOrNull().orEmpty()
+        withContext(Dispatchers.Main) {
+            subtitle.text = if (items.isEmpty()) "" else "${items.size}"
+            empty.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
+            list.removeAllViews()
+            items.forEach { item ->
+                val row = LayoutInflater.from(this@FloatingWindowService)
+                    .inflate(R.layout.floating_tool_row, list, false)
+                row.findViewById<ImageView>(R.id.rowIcon).setImageResource(R.drawable.ic_fw_clipboard_24)
+                row.findViewById<TextView>(R.id.rowPrimary).text = item.content
+                row.findViewById<TextView>(R.id.rowSecondary).text =
+                    "${item.type.name.lowercase().replaceFirstChar { it.uppercase() }} · ${formatRelativeTime(item.timestamp.time)}"
+                val btn = row.findViewById<ImageButton>(R.id.rowAction)
+                btn.setImageResource(R.drawable.ic_baseline_content_copy_24)
+                btn.contentDescription = "Copy"
+                btn.setOnClickListener {
+                    waosClipboard.copyToSystemClipboard(item.content)
+                    android.widget.Toast.makeText(this@FloatingWindowService, "Copied", android.widget.Toast.LENGTH_SHORT).show()
+                }
+                row.setOnClickListener {
+                    waosClipboard.copyToSystemClipboard(item.content)
+                    android.widget.Toast.makeText(this@FloatingWindowService, "Copied", android.widget.Toast.LENGTH_SHORT).show()
+                }
+                list.addView(row)
             }
-            ACTION_TOOLBAR_DOWNLOADS -> {
-                startActivity(
-                    Intent(this, DownloadHistoryActivity::class.java).apply {
-                        putExtra(WaosConstants.EXTRA_DOWNLOAD_APP_ID, windowView.appId)
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    }
-                )
+        }
+    }
+
+    private suspend fun populateVault(
+        windowView: FloatingWindowView,
+        list: LinearLayout,
+        subtitle: TextView,
+        empty: TextView
+    ) {
+        val creds = credentialManager
+            .getDecryptedCredentialsForApp(windowView.appId)
+            .firstOrNull().orEmpty()
+        withContext(Dispatchers.Main) {
+            subtitle.text = if (creds.isEmpty()) "" else "${creds.size}"
+            empty.visibility = if (creds.isEmpty()) View.VISIBLE else View.GONE
+            list.removeAllViews()
+            creds.forEach { cred ->
+                val row = LayoutInflater.from(this@FloatingWindowService)
+                    .inflate(R.layout.floating_tool_row, list, false)
+                row.findViewById<ImageView>(R.id.rowIcon).setImageResource(R.drawable.ic_fw_key_24)
+                row.findViewById<TextView>(R.id.rowPrimary).text =
+                    cred.title.ifBlank { cred.username.ifBlank { "Login" } }
+                row.findViewById<TextView>(R.id.rowSecondary).text = cred.username.ifBlank { "—" }
+                val btn = row.findViewById<ImageButton>(R.id.rowAction)
+                btn.setImageResource(R.drawable.ic_baseline_content_copy_24)
+                btn.contentDescription = "Copy password"
+                btn.setOnClickListener {
+                    val clip = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                    clip?.setPrimaryClip(ClipData.newPlainText("Password", cred.password))
+                    android.widget.Toast.makeText(this@FloatingWindowService, "Password copied", android.widget.Toast.LENGTH_SHORT).show()
+                }
+                row.setOnClickListener {
+                    val clip = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+                    clip?.setPrimaryClip(ClipData.newPlainText("Username", cred.username))
+                    android.widget.Toast.makeText(this@FloatingWindowService, "Username copied", android.widget.Toast.LENGTH_SHORT).show()
+                }
+                list.addView(row)
             }
+        }
+    }
+
+    private suspend fun populateDownloads(
+        windowView: FloatingWindowView,
+        list: LinearLayout,
+        subtitle: TextView,
+        empty: TextView
+    ) {
+        val items = downloadManager
+            .getDownloadsForApp(windowView.appId)
+            .firstOrNull().orEmpty()
+            .sortedByDescending { it.timestamp }
+        withContext(Dispatchers.Main) {
+            subtitle.text = if (items.isEmpty()) "" else "${items.size}"
+            empty.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
+            list.removeAllViews()
+            items.forEach { dl ->
+                val row = LayoutInflater.from(this@FloatingWindowService)
+                    .inflate(R.layout.floating_tool_row, list, false)
+                row.findViewById<ImageView>(R.id.rowIcon)
+                    .setImageResource(R.drawable.ic_baseline_cloud_download_24)
+                row.findViewById<TextView>(R.id.rowPrimary).text = dl.fileName
+                val sizeStr = if (dl.fileSize > 0) dl.formattedFileSize else "—"
+                row.findViewById<TextView>(R.id.rowSecondary).text =
+                    "${dl.status.name.lowercase().replaceFirstChar { it.uppercase() }} · $sizeStr"
+                val btn = row.findViewById<ImageButton>(R.id.rowAction)
+                btn.setImageResource(R.drawable.ic_baseline_open_in_browser_24)
+                btn.contentDescription = "Open"
+                val openClick = openClick@{
+                    val path = dl.filePath ?: return@openClick
+                    val file = java.io.File(path)
+                    if (!file.exists()) {
+                        android.widget.Toast.makeText(this@FloatingWindowService, "File not found", android.widget.Toast.LENGTH_SHORT).show()
+                        return@openClick
+                    }
+                    try {
+                        val uri = androidx.core.content.FileProvider.getUriForFile(
+                            this@FloatingWindowService,
+                            "${packageName}.fileprovider",
+                            file
+                        )
+                        startActivity(Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(uri, dl.mimeType ?: "*/*")
+                            flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK
+                        })
+                    } catch (e: Exception) {
+                        android.widget.Toast.makeText(this@FloatingWindowService, "Can't open: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+                btn.setOnClickListener { openClick() }
+                row.setOnClickListener { openClick() }
+                list.addView(row)
+            }
+        }
+    }
+
+    private fun formatRelativeTime(timestampMs: Long): String {
+        val diff = System.currentTimeMillis() - timestampMs
+        return when {
+            diff < 60_000 -> "just now"
+            diff < 3_600_000 -> "${diff / 60_000}m ago"
+            diff < 86_400_000 -> "${diff / 3_600_000}h ago"
+            diff < 604_800_000 -> "${diff / 86_400_000}d ago"
+            else -> java.text.SimpleDateFormat("MMM d, yyyy", java.util.Locale.getDefault())
+                .format(java.util.Date(timestampMs))
         }
     }
 
@@ -798,6 +1009,7 @@ class FloatingWindowService : Service() {
         floatingWindows[windowId]?.let { windowView ->
             dismissActionPanel()
             dismissUrlEditor()
+            dismissToolPanel(windowView)
             windowManager.removeView(windowView.view)
             floatingWindows.remove(windowId)
             if (currentFrontWindow == windowId) {
@@ -823,7 +1035,10 @@ class FloatingWindowService : Service() {
                 // Restore original size
                 windowView.layoutParams.width = windowView.originalWidth
                 windowView.layoutParams.height = windowView.originalHeight
-                windowView.webView.visibility = View.VISIBLE
+                // Only unhide the WebView if no tool panel is currently shown.
+                if (windowView.toolPanelView == null) {
+                    windowView.webView.visibility = View.VISIBLE
+                }
             }
             windowManager.updateViewLayout(windowView.view, windowView.layoutParams)
         }
@@ -952,5 +1167,6 @@ data class FloatingWindowView(
     var adblockEnabled: Boolean = false,
     var autoScrollEnabled: Boolean = false,
     var autoClickEnabled: Boolean = false,
-    var originalUserAgent: String? = null
+    var originalUserAgent: String? = null,
+    var toolPanelView: View? = null
 )
