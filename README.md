@@ -9,7 +9,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-orange.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![Maintained](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
 
-**Native Alpha** turns any website into a native-looking Android app using the Android System WebView — delivering a borderless, full-screen experience with no browser chrome. It has evolved into a full **Web App Operating System (WAOS)** with advanced session isolation, per-app sandboxing, automation, credential management, and more.
+**Native Alpha** (now branded as **NexWeb OS** in-app) turns any website into a native-looking Android app using the Android System WebView — delivering a borderless, full-screen experience with no browser chrome. It has evolved into a full **Web App Operating System (WAOS)** with advanced session isolation, per-app sandboxing, automation, credential management, in-page clipboard capture, Chrome-parity downloads, a persistent back-stack across process kills, a glass-style floating window suite, a modern Universal File Viewer, and an app-wide theming system (Dark / Light / Matrix).
 
 ---
 
@@ -54,18 +54,27 @@
 
 ### Privacy & Security
 - **Biometric access protection** — fingerprint + PIN fallback per web app
-- **Credential Vault** — encrypted storage for per-site usernames and passwords
+- **Credential Vault** — encrypted storage for per-site usernames and passwords (AES + Android KeyStore)
 - **Force Dark Mode** — applies dark rendering to any website (configurable by time of day)
 - **Clear cache on exit** — optional per-app cache clearing
+- **App-private file storage** — every download, blob save, data-URL save, screenshot, session export and archive extraction is written to app-private external storage (`getExternalFilesDir()/WAOS/<App>/<Type>/`), so files never appear in the device gallery or other apps
+- **Universal Crash Logger** — `GlobalCrashHandler` intercepts every uncaught exception, persists the full trace, and shows a recoverable `CrashActivity` with copy-to-clipboard; full crash history is browsable from Settings
+- **Modern Permissions screen** — every manifest permission is grouped by category (Files, Camera/Mic, Location, Notifications, Display Over Apps, Network), with a granted-progress bar, one-tap **Grant All**, per-permission status pills (Granted / Off / Blocked), and automatic deep-link to system Settings for blocked or special-access permissions (`MANAGE_EXTERNAL_STORAGE`, `SYSTEM_ALERT_WINDOW`)
 - **Minimal permissions** — only requests permissions that specific features require
 
 ### WAOS Dashboard
 - **Central multi-app hub** — view, launch, and manage all your web apps from one place
+- **Glassmorphism cards + animated gradient background** — modern dashboard with category filter chips and grid/list toggle
+- **Auto-fetched favicons on cards** — Coil-loaded site favicons with a Google s2 fallback and a gradient/emoji last-resort; the first successful page load auto-saves the favicon to `WebApp.iconUrl`
 - **Smart folder grouping** — organise apps by category or domain
+- **Sort & Group sheet** — modal with real-time app reordering
 - **Card notification badges** — see at a glance which apps have new activity
+- **Status indicators** — pulsing animated status dots (Active = green, Background = yellow, Error = red)
 - **Last-updated timestamps** — know when each app was last refreshed
 - **Drag & drop reordering** — rearrange your app list with long-press and drag
 - **Swipe actions** — swipe to delete or open per-app settings
+- **Long-press context menu** — Open / Float / Edit + Downloads / Clipboard / Vault + Delete
+- **Add to Home Screen** — composes a 192×192 launcher icon (favicon + small NexWeb badge) and pins it via `ShortcutManagerCompat`. Tapping it goes through `WebAppLauncherActivity` (a tiny `Theme.NoDisplay` trampoline) so each app opens in its own dedicated `:webapp_N` sandbox process
 
 ### Automation Engine
 - **Auto-click** — define CSS selectors or coordinates to be clicked automatically
@@ -73,16 +82,22 @@
 - **Custom JavaScript injection** — run arbitrary scripts on page load
 - **Form-fill automation** — automate repetitive form inputs
 
-### Floating Windows
+### Floating Windows (Glass UI)
 - **Floating bubble launcher** — a persistent overlay bubble for quick app switching
-- **Floating Window Manager** — run web apps in resizable overlay windows above other apps
-- **Multi-window support** — view multiple web apps simultaneously
+- **Resizable glass overlay window** — rounded floating window above other apps with traffic-light style minimize / maximize / close, app-icon badge, title, and clickable URL chip
+- **Multi-window support** — view multiple web apps simultaneously, each as its own overlay
+- **Glass action panel** — overflow opens a custom panel (replaces the legacy `PopupMenu`) sectioned into Navigation / Modes (toggle pills) / Page / Tools, capped at ~50% of screen height with an internal `ScrollView`, so it always fits one screen
+- **Inline URL editor** — pencil icon on the URL chip opens a glass editor overlay with auto-`https://` normalisation, Google-search fallback for non-URL queries, and per-app history tracking via `LinkHistoryTracker`
+- **In-window tools** — tapping Vault / Clipboard / Downloads from the action panel opens a tool panel **inside the floating window itself** (not a separate Activity): sub-header with back arrow + title + count, scrollable rows that copy / open the underlying item, and a clean restore-to-WebView on back/close/minimize
+- **Per-window automation toggles** — Adblock, Auto-scroll, Auto-click, Desktop UA can all be toggled live from the action panel
+- **Copy URL → per-app history** — Floating-window Copy URL also persists into the per-app Clipboard Manager (not just the system clipboard)
 
 ### Per-App Managers
-- **Clipboard Manager** — isolated clipboard history per web app with swipe-to-delete
-- **Download Manager** — per-app download tracking with search and filter, custom download folders
-- **Universal File Viewer** — open images, video, audio, PDF, and text files in-app
-- **Screenshot & Annotation** — capture and annotate screenshots from inside any web app
+- **Clipboard Manager** — isolated clipboard history per web app with pin / edit / copy-back / delete, type filter chips (All / Text / Links / Images), search, and a Pinned + Recent split
+- **Per-WebView clipboard capture** — every page load injects a guarded JS listener that hooks every Chrome copy/cut path (`copy`/`cut` events, `navigator.clipboard.writeText`/`write`, and the legacy `document.execCommand('copy'|'cut')`); captured text is de-duped within 1.5s, auto-typed (URL vs. text), and persisted into the per-app `clipboard_items` table — so anything copied inside the page shows up in real time in the Clipboard Manager
+- **Download Manager (Chrome-parity)** — per-app download tracking with search and filter; downloader forwards the WebView's cookie jar (`CookieManager`) plus `User-Agent`, `Content-Disposition`, `Referer` and explicit MIME, so authenticated downloads (Drive, intranet, paywalled CDNs) succeed; filenames resolve via `URLUtil.guessFileName` with collision-safe `name (1).ext`; `data:` URLs are decoded inline; `blob:` URLs are extracted via in-page XHR → base64 → JS bridge (fixes WhatsApp blob downloads); image long-press uses authenticated XHR with a cookie-aware system fallback
+- **Universal File Viewer** — opens images, video, audio, PDF, doc, text, archive, APK and HTML files in-app with a fixed dark **theater-mode palette**. PDF: bottom glass card with first/prev/jump/next/last + zoom slider + Fit/Reset/Night chips + jump-to-page dialog + nightMode reload. Video: gradient scrim, scrub row, large radial-gradient circular play, prev/-10/play/+10/next, speed slider, frame capture. Audio: 220dp hero album art with radial glow, progress slider, shuffle/repeat/skip ±10. Text: search field with highlights + font slider + wrap toggle + line/char/size chips. Archive: type-color icon header, search, entry rows, **Extract** button (extracts to app-private storage). APK: version + permissions header
+- **Screenshot & Annotation** — capture and annotate screenshots from inside any web app; saved to app-private storage
 
 ### Notifications & Background Tasks
 - **Notification Manager** — per-app notification history and management
@@ -94,12 +109,22 @@
 - **Link Suggestion Engine** — smart URL suggestions based on history
 - **Link Management UI** — browse and manage link history in-app
 
-### Backup & Restore
-- **Full backup/restore** — export and import all web apps, settings, and session data
+### Persistent WebView History & Sessions
+- **Persistent back/forward stack** — the entire WebView history (`copyBackForwardList`) is `Parcel`-marshalled to `filesDir/waos_history/app_<id>.bundle` on every `onPageFinished` and on dispose, then restored before the first `loadUrl` — so Back works even after the OS kills the process
+- **Page History UI** — a `WaosPageHistoryDialog` lists every entry in the back/forward stack with one-tap jump and Clear History
+- **Session Export / Import** — export a full encrypted session snapshot (cookies + localStorage + sessionStorage + IndexedDB metadata) as a `.waos` file (also auto-copied to the in-app downloader). Import via SAF file picker **or** via clipboard text — Export Session auto-copies the JSON payload to the system clipboard, and Import Session opens a dialog with a clipboard-pre-filled text field plus a "Pick file…" fallback, making cross-device session transfer trivial
 
-### UI & Accessibility
+### Backup & Restore (non-destructive merge)
+- **Full bundle** — `.waos` backup contains every Room table (web apps, clipboard, credentials, downloads, window presets, notifications, notification & security settings) plus every SharedPreferences XML the app owns
+- **SAF flow** — Backup writes `WAOS_Backup_<timestamp>.waos` to a folder you pick (persistable URI permission); Restore reads any `.waos` file
+- **Non-destructive merge** — restore is a true merge, not a wipe-and-rewrite. Web apps are matched by normalised URL (`normalizeAppKey`) and never duplicated; the backup-side ID is remapped to the local ID via `appIdMap`. Per-app data is deduped at insert time (clipboard by `appId+content+timestamp`, credentials by `appId+title+username`, downloads by `appId+url+fileName`, presets by `name`, notifications by `appName+title+message+timestamp`). Single-row settings only restore if absent locally; `mergeSharedPreferences` only sets keys that aren't already present. The result message reports newly-added vs. matched counts
+- **Legacy compatibility** — v1/v2 backups (data at root) still restore
+
+### UI, Theming & Accessibility
 - **Material Design 3** — modern MD3 components and dynamic theming
-- **Jetpack Compose screens** — settings, dashboard, file viewer, security, notifications, and more are built with Compose
+- **Jetpack Compose screens** — settings, dashboard, file viewer, security, notifications, permissions, and more are built with Compose
+- **App-wide theme switch (System / Dark / Light / Matrix)** — flip themes from Settings with **no activity restart**. A global `ThemeState` singleton + property-getter colour palette in `Color.kt` makes every composable recompose the instant the toggle flips. The **Matrix** palette renders pure-black backgrounds with phosphor-green text and a monospace `Typography` for a full terminal aesthetic. The selected theme is also applied in every `:webapp_N` sandbox process from `App.java` so the very first frame paints correctly
+- **Adaptive launcher icon** — adaptive XML wrapping the NexWeb logo with a 22% inset bitmap so launcher masks never crop the artwork; PNGs generated at every `mipmap-*hdpi` density
 - **Comprehensive accessibility support** — content descriptions and semantic markup throughout
 - **Haptic feedback** — tactile responses on key interactions
 
@@ -301,14 +326,38 @@ Push to any of the watched branches, open a pull request, or trigger manually vi
 ### Floating Windows
 
 - Requires the **Display over other apps** permission
-- Launch the floating bubble from the WAOS Dashboard
-- Managed by `FloatingWindowManagerScreen` and `FloatingWindowViewModel`
+- Launch the floating bubble from the WAOS Dashboard, or float any open web app from its action panel / context menu
+- Managed by `FloatingWindowService` (overlay rendering) + `FloatingWindowManagerScreen` and `FloatingWindowViewModel`
+- Glass styling lives in `fw_*` drawables / colours and `floating_window_styles.xml`
+- Layouts: `floating_window.xml`, `floating_action_panel.xml` + `floating_action_tile.xml`, `floating_url_editor.xml`, `floating_tool_panel.xml` + `floating_tool_row.xml`
+- **In-window tools** load one-shot from the same DAOs the standalone activities use (`waosClipboard.getAppClipboardItems`, `credentialManager.getDecryptedCredentialsForApp`, `downloadManager.getDownloadsForApp`); `dismissToolPanel(...)` is also called on minimize and close so the WebView is always restored cleanly
 
 ### Universal File Viewer
 
-- Triggered when a download is intercepted
-- Supports: images, video, audio, PDF, plain text
-- Uses `UniversalFileViewerComposable` and `FileViewerViewModel`
+- Triggered when a download is intercepted, or by tapping any item in the Download Manager
+- Supports: **images, video, audio, PDF, doc, plain text, archives (zip / tar / 7z), APK, HTML**
+- Theater-mode dark palette is always applied regardless of the app's selected theme, so PDFs/images/video always have proper contrast
+- Archive extraction targets app-private external storage (no user-visible files in the device gallery)
+- Uses `UniversalFileViewerComposable` / `UniversalFileViewerScreen` + `FileViewerViewModel`
+
+### Persistent History & Sessions
+
+- Per-app WebView back/forward stack survives process kill (saved to `filesDir/waos_history/app_<id>.bundle`)
+- 3-dot → **Page History** opens `WaosPageHistoryDialog` for direct jumps
+- 3-dot → **Export Session** writes an encrypted `.waos` snapshot, copies the JSON payload to the system clipboard, and registers a downloader entry; **Import Session** opens a dialog with a clipboard-pre-filled text field plus a SAF "Pick file…" fallback
+
+### App Theming
+
+- Settings → **App Theme** dropdown selects System / Dark / Light / Matrix
+- All four palettes hot-swap with no activity restart via the `ThemeState` singleton
+- Matrix palette also swaps the global `Typography` to `FontFamily.Monospace`
+- Theme is re-applied in every `:webapp_N` sandbox process from `App.java` before any activity inflates
+
+### Backup & Restore
+
+- Settings → **Backup** opens a folder picker (SAF) and writes `WAOS_Backup_<timestamp>.waos`
+- Settings → **Restore** opens a file picker; restore is a non-destructive merge (see Features above for the dedupe strategy)
+- Implemented in `BackupService` / `BackupViewModel`
 
 ---
 
