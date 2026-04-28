@@ -10,13 +10,16 @@ import android.net.Uri
 import android.os.Build
 import android.os.IBinder
 import android.view.*
+import android.view.inputmethod.EditorInfo
 import android.webkit.WebView
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.cylonid.nativealpha.R
+import com.cylonid.nativealpha.links.LinkHistoryTracker
 import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.model.WindowEntity
 import com.cylonid.nativealpha.model.WindowPresetEntity
@@ -58,6 +61,7 @@ class FloatingWindowService : Service() {
     val openWindows: StateFlow<List<WindowEntity>> = _openWindows.asStateFlow()
 
     private var actionPanelView: View? = null
+    private var urlEditorView: View? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -228,6 +232,13 @@ class FloatingWindowService : Service() {
         overflowButton?.setOnClickListener {
             showActionPanel(it, windowView, webAppUrl)
         }
+
+        // URL chip → open the address editor
+        val urlChipContainer = view.findViewById<View>(R.id.urlChipContainer)
+        val urlChipEditIcon = view.findViewById<View>(R.id.urlChipEditIcon)
+        val openEditor = View.OnClickListener { showUrlEditor(windowView) }
+        urlChipContainer?.setOnClickListener(openEditor)
+        urlChipEditIcon?.setOnClickListener(openEditor)
 
         val resizeHandle = view.findViewById<View>(R.id.resizeHandle)
         var initialWidth = 0
@@ -408,6 +419,115 @@ class FloatingWindowService : Service() {
             }
         }
         actionPanelView = null
+    }
+
+    private fun showUrlEditor(windowView: FloatingWindowView) {
+        dismissActionPanel()
+        dismissUrlEditor()
+
+        val editor = LayoutInflater.from(this).inflate(R.layout.floating_url_editor, null, false)
+        val input = editor.findViewById<EditText>(R.id.urlInput)
+        val goBtn = editor.findViewById<TextView>(R.id.urlGo)
+        val cancelBtn = editor.findViewById<TextView>(R.id.urlCancel)
+        val clearBtn = editor.findViewById<ImageButton>(R.id.urlClear)
+
+        val currentUrl = windowView.webView.url ?: ""
+        input.setText(currentUrl)
+        input.setSelection(input.text.length)
+
+        clearBtn.setOnClickListener {
+            input.text.clear()
+            input.requestFocus()
+        }
+        cancelBtn.setOnClickListener { dismissUrlEditor() }
+
+        val submit = submit@{
+            val raw = input.text.toString().trim()
+            if (raw.isEmpty()) return@submit
+            val finalUrl = normalizeUrl(raw)
+            windowView.webView.loadUrl(finalUrl)
+            recordManualNavigation(windowView, finalUrl)
+            dismissUrlEditor()
+        }
+
+        goBtn.setOnClickListener { submit() }
+        input.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_GO ||
+                actionId == EditorInfo.IME_ACTION_DONE ||
+                actionId == EditorInfo.IME_ACTION_SEND
+            ) {
+                submit(); true
+            } else false
+        }
+
+        editor.isFocusableInTouchMode = true
+        editor.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
+                dismissUrlEditor(); true
+            } else false
+        }
+
+        val params = WindowManager.LayoutParams().apply {
+            width = WindowManager.LayoutParams.WRAP_CONTENT
+            height = WindowManager.LayoutParams.WRAP_CONTENT
+            type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+            } else {
+                WindowManager.LayoutParams.TYPE_PHONE
+            }
+            flags = WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                    WindowManager.LayoutParams.FLAG_DIM_BEHIND
+            dimAmount = 0.4f
+            format = PixelFormat.TRANSLUCENT
+            gravity = Gravity.CENTER
+            softInputMode = WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE or
+                    WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+            windowAnimations = android.R.style.Animation_Dialog
+        }
+
+        try {
+            windowManager.addView(editor, params)
+            urlEditorView = editor
+            input.requestFocus()
+        } catch (_: Exception) {
+            urlEditorView = null
+        }
+    }
+
+    private fun dismissUrlEditor() {
+        urlEditorView?.let { editor ->
+            try {
+                windowManager.removeView(editor)
+            } catch (_: Exception) {
+            }
+        }
+        urlEditorView = null
+    }
+
+    private fun normalizeUrl(raw: String): String {
+        val trimmed = raw.trim()
+        if (trimmed.isEmpty()) return trimmed
+        // Already has a scheme
+        if (trimmed.matches(Regex("^[a-zA-Z][a-zA-Z0-9+.-]*://.*"))) return trimmed
+        // Looks like a search query (has whitespace or no dot)
+        val looksLikeUrl = !trimmed.contains(' ') && (trimmed.contains('.') || trimmed.startsWith("localhost"))
+        return if (looksLikeUrl) "https://$trimmed"
+        else "https://www.google.com/search?q=${Uri.encode(trimmed)}"
+    }
+
+    private fun recordManualNavigation(windowView: FloatingWindowView, url: String) {
+        serviceScope.launch {
+            try {
+                LinkHistoryTracker(applicationContext, windowView.appId).recordAction(
+                    url = url,
+                    pageTitle = windowView.appName,
+                    action = "manual_navigate",
+                    format = "PLAIN_URL",
+                    referrer = windowView.webView.url
+                )
+            } catch (_: Exception) {
+            }
+        }
     }
 
     private fun bindToggleTile(
@@ -677,6 +797,7 @@ class FloatingWindowService : Service() {
     private fun removeFloatingWindow(windowId: Long) {
         floatingWindows[windowId]?.let { windowView ->
             dismissActionPanel()
+            dismissUrlEditor()
             windowManager.removeView(windowView.view)
             floatingWindows.remove(windowId)
             if (currentFrontWindow == windowId) {
@@ -737,6 +858,7 @@ class FloatingWindowService : Service() {
 
     private fun closeAllWindows() {
         dismissActionPanel()
+        dismissUrlEditor()
         floatingWindows.values.forEach { windowView ->
             windowManager.removeView(windowView.view)
         }
@@ -778,6 +900,7 @@ class FloatingWindowService : Service() {
 
     override fun onDestroy() {
         dismissActionPanel()
+        dismissUrlEditor()
         serviceScope.cancel()
         super.onDestroy()
     }

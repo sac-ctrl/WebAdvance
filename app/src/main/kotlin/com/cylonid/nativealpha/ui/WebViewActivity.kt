@@ -34,6 +34,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -85,6 +86,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
@@ -115,6 +117,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -131,6 +134,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.cylonid.nativealpha.links.LinkHistoryTracker
 import com.cylonid.nativealpha.model.WebApp
 import com.cylonid.nativealpha.ui.theme.BgDeep
 import com.cylonid.nativealpha.ui.theme.BgDark
@@ -154,6 +158,7 @@ import com.cylonid.nativealpha.ui.DownloadHistoryActivity
 import com.cylonid.nativealpha.waos.util.WaosConstants
 import com.cylonid.nativealpha.webview.SessionManager
 import com.cylonid.nativealpha.webview.WebViewClientWithDownload
+import kotlinx.coroutines.launch
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -879,12 +884,30 @@ fun WebViewScreen(
             .background(BgDeep)
             .statusBarsPadding()
     ) {
+        val urlEditScope = rememberCoroutineScope()
         WaosTopBar(
             title = webApp?.name ?: "Web App",
             url = webViewState.currentUrl,
             isLoading = webViewState.isLoading,
             progress = webViewState.progress,
-            onBack = onBackPressed
+            onBack = onBackPressed,
+            onEditUrl = { newUrl ->
+                val wv = webViewRef.value ?: return@WaosTopBar
+                val previous = wv.url
+                wv.loadUrl(newUrl)
+                urlEditScope.launch {
+                    try {
+                        LinkHistoryTracker(context.applicationContext, webAppId).recordAction(
+                            url = newUrl,
+                            pageTitle = webApp?.name ?: "",
+                            action = "manual_navigate",
+                            format = "PLAIN_URL",
+                            referrer = previous
+                        )
+                    } catch (_: Exception) {
+                    }
+                }
+            }
         )
 
         Box(modifier = Modifier.weight(1f)) {
@@ -1804,8 +1827,11 @@ private fun WaosTopBar(
     url: String,
     isLoading: Boolean,
     progress: Int,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onEditUrl: (String) -> Unit = {}
 ) {
+    var showEditor by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1831,14 +1857,47 @@ private fun WaosTopBar(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                if (url.isNotBlank()) {
+                Row(
+                    modifier = Modifier
+                        .padding(top = 2.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(CardSurface)
+                        .clickable { showEditor = true }
+                        .padding(start = 8.dp, end = 4.dp, top = 2.dp, bottom = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Language,
+                        contentDescription = null,
+                        tint = CyanPrimary,
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
                     Text(
-                        text = url.replace("https://", "").replace("http://", ""),
+                        text = if (url.isBlank()) "Tap to enter URL"
+                        else url.replace("https://", "").replace("http://", ""),
                         color = TextMuted,
                         fontSize = 11.sp,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
+                    Spacer(Modifier.width(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clip(androidx.compose.foundation.shape.CircleShape)
+                            .background(BgDark)
+                            .clickable { showEditor = true },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Edit URL",
+                            tint = CyanPrimary,
+                            modifier = Modifier.size(12.dp)
+                        )
+                    }
                 }
             }
             if (isLoading) {
@@ -1859,6 +1918,80 @@ private fun WaosTopBar(
             }
         }
     }
+
+    if (showEditor) {
+        UrlEditorDialog(
+            initialUrl = url,
+            onDismiss = { showEditor = false },
+            onSubmit = { entered ->
+                showEditor = false
+                val normalized = normalizeUserUrl(entered)
+                if (normalized.isNotBlank()) onEditUrl(normalized)
+            }
+        )
+    }
+}
+
+@Composable
+private fun UrlEditorDialog(
+    initialUrl: String,
+    onDismiss: () -> Unit,
+    onSubmit: (String) -> Unit
+) {
+    var text by remember { mutableStateOf(initialUrl) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = BgDark,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.Language, contentDescription = null, tint = CyanPrimary, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Edit address", color = TextPrimary, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            }
+        },
+        text = {
+            OutlinedTextField(
+                value = text,
+                onValueChange = { text = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                placeholder = { Text("https://example.com or search…", color = TextMuted, fontSize = 13.sp) },
+                trailingIcon = {
+                    if (text.isNotEmpty()) {
+                        IconButton(onClick = { text = "" }) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear", tint = TextMuted, modifier = Modifier.size(18.dp))
+                        }
+                    }
+                },
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = TextPrimary,
+                    unfocusedTextColor = TextPrimary,
+                    focusedBorderColor = CyanPrimary,
+                    unfocusedBorderColor = CardBorder,
+                    cursorColor = CyanPrimary
+                )
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = { onSubmit(text) },
+                colors = ButtonDefaults.buttonColors(containerColor = CyanPrimary)
+            ) { Text("Go", color = BgDeep, fontWeight = FontWeight.SemiBold) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel", color = TextSecondary) }
+        }
+    )
+}
+
+private fun normalizeUserUrl(raw: String): String {
+    val trimmed = raw.trim()
+    if (trimmed.isEmpty()) return ""
+    if (trimmed.matches(Regex("^[a-zA-Z][a-zA-Z0-9+.-]*://.*"))) return trimmed
+    val looksLikeUrl = !trimmed.contains(' ') &&
+            (trimmed.contains('.') || trimmed.startsWith("localhost"))
+    return if (looksLikeUrl) "https://$trimmed"
+    else "https://www.google.com/search?q=${Uri.encode(trimmed)}"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
